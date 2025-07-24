@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../provider/task_provider.dart';
 import 'package:myapp/utils/app_colors.dart'; // Import AppColors
+import '../../domain/entities/task.dart'; // Corrected import path for Task entity
+import '../widgets/task_detail_dialog.dart'; // Import the custom dialog
 
 class TaskPlannerPage extends StatefulWidget {
   const TaskPlannerPage({super.key});
@@ -112,6 +114,15 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
             ),
           ],
         );
+      },
+    );
+  }
+
+  void _showTaskDetailsDialog(Task task) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TaskDetailDialog(task: task); // Use the custom dialog
       },
     );
   }
@@ -281,7 +292,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
               _buildCalendar(),
               const SizedBox(height: 24.0),
               Text(
-                'Tasks for ${DateFormat('d MMMM yyyy').format(_selectedDate)}', // Changed from Habits to Tasks
+                'Tasks for ${DateFormat('d MMMM yyyy').format(_selectedDate)}',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12.0),
@@ -298,7 +309,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
 
                   if (tasksForSelectedDate.isEmpty) {
                     return const Center(
-                      child: Text('No tasks for this date.'), // Changed from habits or tasks to tasks
+                      child: Text('No tasks for this date.'),
                     );
                   } else {
                     return ListView.builder(
@@ -324,22 +335,32 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                                color: task.isCompleted ? AppColors.greyColor : Theme.of(context).textTheme.bodyMedium?.color, // Dim completed tasks
                             ),
                           ),
-                          subtitle: task.description.isNotEmpty ? Text(
-                            task.description,
-                            style: TextStyle(
-                              decoration: task.isCompleted
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
-                               color: task.isCompleted ? AppColors.greyColor : Theme.of(context).textTheme.bodySmall?.color, // Dim completed tasks
+                          subtitle: Text(
+                            'Due: ${DateFormat('MMM d, yyyy').format(task.dueDate)}', // Display due date as subtitle
+                             style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: task.isCompleted ? AppColors.greyColor : Theme.of(context).textTheme.bodySmall?.color, // Dim completed tasks
                             ),
-                          ) : null, // Don't show subtitle if description is empty
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline, color: AppColors.greyColor), // Apply grey color to delete icon
-                            onPressed: () {
-                              taskProvider.deleteTask(task.id);
-                            },
-                            tooltip: 'Delete Task',
                           ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.info_outline, color: AppColors.greyColor), // Info icon
+                                onPressed: () {
+                                  _showTaskDetailsDialog(task); // Show task details on info icon tap
+                                },
+                                tooltip: 'Task Details',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, color: AppColors.greyColor), // Delete icon
+                                onPressed: () {
+                                  taskProvider.deleteTask(task.id);
+                                },
+                                tooltip: 'Delete Task',
+                              ),
+                            ],
+                          ), // Use Row for multiple trailing icons
                         );
                       },
                     );
@@ -352,7 +373,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
-        tooltip: 'Add Task', // Changed from Habit/Task to Task
+        tooltip: 'Add Task',
         child: const Icon(Icons.add),
       ),
     );
