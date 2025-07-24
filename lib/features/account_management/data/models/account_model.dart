@@ -4,26 +4,26 @@ import 'package:myapp/features/account_management/domain/entities/account.dart';
 part 'account_model.g.dart';
 
 @HiveType(typeId: 0)
-class AccountModel extends Account {
-  @override // Tambahkan @override
+class AccountModel extends HiveObject implements Account {
+  @override
   @HiveField(0)
   final String id;
-  @override // Tambahkan @override
+  @override
   @HiveField(1)
   final String website;
-  @override // Tambahkan @override
+  @override
   @HiveField(2)
   final String username;
-  @override // Tambahkan @override
+  @override
   @HiveField(3)
   final String password;
 
-  const AccountModel({
+  AccountModel({
     required this.id,
     required this.website,
     required this.username,
     required this.password,
-  }) : super(id: id, website: website, username: username, password: password);
+  });
 
   factory AccountModel.fromEntity(Account account) {
     return AccountModel(
@@ -34,7 +34,7 @@ class AccountModel extends Account {
     );
   }
 
-  Account toEntity() {
+   Account toEntity() {
     return Account(
       id: id,
       website: website,
@@ -42,4 +42,10 @@ class AccountModel extends Account {
       password: password,
     );
   }
+
+  @override
+  List<Object?> get props => [id, website, username, password];
+
+  @override
+  bool get stringify => true;
 }

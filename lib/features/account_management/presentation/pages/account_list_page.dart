@@ -3,7 +3,7 @@ import 'package:myapp/features/account_management/presentation/pages/account_det
 import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/account_management/domain/entities/account.dart';
-import 'package:flutter/services.dart'; // Tambahkan import ini kembali
+import 'package:flutter/services.dart';
 
 class AccountListPage extends StatefulWidget {
   const AccountListPage({super.key});
@@ -16,10 +16,10 @@ class _AccountListPageState extends State<AccountListPage> {
   @override
   void initState() {
     super.initState();
-    // Load accounts when the page is initialized
-    // Menggunakan addPostFrameCallback untuk memastikan context tersedia
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AccountProvider>(context, listen: false).loadAccounts();
+      if (mounted) { // Add mounted check here
+        Provider.of<AccountProvider>(context, listen: false).loadAccounts();
+      }
     });
   }
 
@@ -29,8 +29,6 @@ class _AccountListPageState extends State<AccountListPage> {
       appBar: AppBar(
         title: const Text('Password Manager'),
         centerTitle: true,
-        // Hapus elevation untuk tampilan lebih flat
-        // elevation: 0, // Sudah diatur di tema
       ),
       body: Consumer<AccountProvider>(
         builder: (context, provider, child) {
@@ -43,13 +41,13 @@ class _AccountListPageState extends State<AccountListPage> {
                 child: Text(
                   provider.message.isNotEmpty ? provider.message : 'No accounts found. Tap the + button to add one.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium, // Gunakan gaya dari tema
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
             );
           } else {
             return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8.0), // Tambahkan padding vertikal
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
               itemCount: provider.accounts.length,
               itemBuilder: (context, index) {
                 final account = provider.accounts[index];
@@ -62,28 +60,26 @@ class _AccountListPageState extends State<AccountListPage> {
                         builder: (context) => AccountDetailPage(account: account),
                       ),
                     ).then((_) {
-                      // Cek mounted sebelum menggunakan context
-                      if (mounted) {
-                         provider.loadAccounts(); // Reload after returning from detail page
+                      if (mounted) { // Add mounted check here
+                         Provider.of<AccountProvider>(context, listen: false).loadAccounts();
                       }
                     });
                   },
                   onDelete: () {
-                    // Show a confirmation dialog before deleting
-                    showDialog( // Menggunakan showDialog dari material
+                    showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Confirm Deletion'),
                         content: Text('Are you sure you want to delete account for ${account.website}?'),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.pop(context), // Tutup dialog
+                            onPressed: () => Navigator.pop(context),
                             child: const Text('Cancel'),
                           ),
                           TextButton(
                             onPressed: () {
                               provider.removeAccount(account.id);
-                              Navigator.pop(context); // Tutup dialog
+                              Navigator.pop(context);
                             },
                             child: const Text('Delete'),
                           ),
@@ -105,14 +101,13 @@ class _AccountListPageState extends State<AccountListPage> {
               builder: (context) => const AccountDetailPage(),
             ),
           ).then((_) {
-             // Cek mounted sebelum menggunakan context
-            if (mounted) {
-               Provider.of<AccountProvider>(context, listen: false).loadAccounts(); // Reload after adding
+            if (mounted) { // Add mounted check here
+               Provider.of<AccountProvider>(context, listen: false).loadAccounts();
             }
           });
         },
         tooltip: 'Add Account',
-        child: const Icon(Icons.add), // Icon Material Symbols terbaru
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -132,6 +127,7 @@ class AccountListItem extends StatelessWidget {
 
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
+    // Access ScaffoldMessengerState using rootNavigator: true
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$label copied to clipboard')),
     );
@@ -140,66 +136,64 @@ class AccountListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // Margin, elevasi, shape, padding sudah diatur di CardTheme
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Padding di dalam card
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               account.website,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold), // Judul tebal
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 4.0), // Spasi kecil
+            const SizedBox(height: 4.0),
             Row(
               children: [
                 Expanded(
                   child: Text(
                     'Username: ${account.username}',
-                    style: Theme.of(context).textTheme.bodyMedium, // Gaya teks body
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.copy_outlined), // Icon copy outlined
+                  icon: const Icon(Icons.copy_outlined),
                   tooltip: 'Copy Username',
                   onPressed: () => _copyToClipboard(context, account.username, 'Username'),
-                  color: Theme.of(context).colorScheme.primary, // Warna sesuai tema
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             ),
-            const SizedBox(height: 4.0), // Spasi kecil
+            const SizedBox(height: 4.0),
             Row(
               children: [
                 Expanded(
                   child: Text(
                     'Password: ${account.password}',
-                    style: Theme.of(context).textTheme.bodyMedium, // Gaya teks body
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
                  IconButton(
-                  icon: const Icon(Icons.copy_outlined), // Icon copy outlined
+                  icon: const Icon(Icons.copy_outlined),
                   tooltip: 'Copy Password',
                   onPressed: () => _copyToClipboard(context, account.password, 'Password'),
-                  color: Theme.of(context).colorScheme.primary, // Warna sesuai tema
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             ),
-            const Divider(height: 16.0), // Garis pemisah
+            const Divider(height: 16.0),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end, // Tombol di kanan
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                  TextButton.icon(
                   onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined), // Icon edit outlined
+                  icon: const Icon(Icons.edit_outlined),
                   label: const Text('Edit'),
-                  // style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.primary), // Sudah diatur di tema jika menggunakan gaya default
                 ),
-                const SizedBox(width: 8.0), // Spasi antar tombol
+                const SizedBox(width: 8.0),
                 TextButton.icon(
                   onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline), // Icon delete outlined
+                  icon: const Icon(Icons.delete_outline),
                   label: const Text('Delete'),
-                   style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error), // Warna teks error tetap di sini karena spesifik
+                   style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
                 ),
               ],
             ),

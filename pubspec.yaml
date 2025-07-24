@@ -39,8 +39,11 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   uuid: ^4.1.0 # Untuk menghasilkan ID unik
-  provider: ^6.0.5 # Untuk state management (pilihan awal, bisa diganti nanti)
+  provider: ^6.1.5 # Untuk state management (pilihan awal, bisa diganti nanti)
   intl: ^0.20.2
+  firebase_core: ^3.15.2 # Add firebase_core dependency
+  firebase_auth: ^5.7.0
+  google_sign_in: ^6.2.1 # Downgraded to latest stable version
 
 dev_dependencies:
   flutter_test:
