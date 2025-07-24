@@ -228,9 +228,14 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                    final bool hasUncompletedTasks = tasksForDay.isNotEmpty &&
                       tasksForDay.any((task) => !task.isCompleted);
 
+                  // Determine if the due date has passed and there are uncompleted tasks
+                  final bool isOverdue = hasUncompletedTasks && currentDate.isBefore(DateTime.now());
+
                   Color dayColor = Colors.transparent; // Default color
                    if (isSelected) {
                      dayColor = AppColors.primaryColor; // Selected date is always primary
+                   } else if (isOverdue) {
+                     dayColor = AppColors.errorColor.withOpacity(0.5); // Red/error for overdue and uncompleted tasks
                    } else if (allTasksCompleted) {
                      dayColor = AppColors.primaryColor.withOpacity(0.5); // Primary color for all completed tasks
                    } else if (hasUncompletedTasks) {
@@ -254,8 +259,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                         child: Text(
                           day.toString(),
                           style: TextStyle(
-                            color: isSelected || allTasksCompleted ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
-                            fontWeight: isSelected || allTasksCompleted || hasUncompletedTasks ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected || allTasksCompleted || isOverdue ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+                            fontWeight: isSelected || allTasksCompleted || hasUncompletedTasks || isOverdue ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                       ),
