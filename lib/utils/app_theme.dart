@@ -5,16 +5,16 @@ import 'app_colors.dart';
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   colorScheme: ColorScheme.fromSeed(
-    seedColor: primarySeedColor,
+    seedColor: AppColors.primarySeedColor,
     brightness: Brightness.light,
   ).copyWith(
-      primary: primaryColor, // Ensure primary color is used explicitly
-      secondary: secondaryColor, // Ensure secondary color is used explicitly
-      error: errorColor, // Ensure error color is used explicitly
+      primary: AppColors.primaryColor, // Ensure primary color is used explicitly
+      secondary: AppColors.secondaryColor, // Ensure secondary color is used explicitly
+      error: AppColors.errorColor, // Ensure error color is used explicitly
   ),
   visualDensity: VisualDensity.adaptivePlatformDensity,
   appBarTheme: AppBarTheme(
-    backgroundColor: primaryColor, // Use the defined primary color
+    backgroundColor: AppColors.primaryColor, // Use the defined primary color
     foregroundColor: Colors.white, // Text/icon color on AppBar
     titleTextStyle: const TextStyle(
       fontSize: 20,
@@ -27,7 +27,7 @@ final ThemeData lightTheme = ThemeData(
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       foregroundColor: Colors.white, // Button text color
-      backgroundColor: primaryColor, // Button background color
+      backgroundColor: AppColors.primaryColor, // Button background color
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0), // Rounded corners
       ),
@@ -35,7 +35,7 @@ final ThemeData lightTheme = ThemeData(
     ),
   ),
    floatingActionButtonTheme: FloatingActionButtonThemeData(
-    backgroundColor: primaryColor, // FAB background color
+    backgroundColor: AppColors.primaryColor, // FAB background color
     foregroundColor: Colors.white, // FAB icon color
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16.0), // FAB rounded shape
@@ -47,7 +47,7 @@ final ThemeData lightTheme = ThemeData(
       borderSide: BorderSide.none, // Remove default border
     ),
     filled: true, // Fill background of the field
-    fillColor: primaryColor.withAlpha((255 * 0.1).round()), // Using withAlpha for opacity
+    fillColor: AppColors.primaryColor.withAlpha((255 * 0.1).round()), // Using withAlpha for opacity
     contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0), // Field content padding
   ),
   cardTheme: const CardThemeData(
@@ -67,16 +67,16 @@ final ThemeData lightTheme = ThemeData(
 final ThemeData darkTheme = ThemeData(
   useMaterial3: true,
    colorScheme: ColorScheme.fromSeed(
-    seedColor: primarySeedColor,
+    seedColor: AppColors.primarySeedColor,
     brightness: Brightness.dark,
   ).copyWith(
-       primary: primaryDarkColor, // Ensure primary dark color is used explicitly
-      secondary: secondaryDarkColor, // Ensure secondary dark color is used explicitly
-      error: errorDarkColor, // Ensure error dark color is used explicitly
+       primary: AppColors.primaryDarkColor, // Ensure primary dark color is used explicitly
+      secondary: AppColors.secondaryDarkColor, // Ensure secondary dark color is used explicitly
+      error: AppColors.errorDarkColor, // Ensure error dark color is used explicitly
    ),
   visualDensity: VisualDensity.adaptivePlatformDensity,
    appBarTheme: AppBarTheme(
-    backgroundColor: greyDarkColor, // Dark mode AppBar color
+    backgroundColor: AppColors.greyDarkColor, // Dark mode AppBar color
     foregroundColor: Colors.white, // Text/icon color on AppBar
     titleTextStyle: const TextStyle(
       fontSize: 20,
@@ -89,7 +89,7 @@ final ThemeData darkTheme = ThemeData(
    elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       foregroundColor: Colors.black, // Button text color
-      backgroundColor: primaryDarkColor, // Button background color
+      backgroundColor: AppColors.primaryDarkColor, // Button background color
        shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0), // Rounded corners
       ),
@@ -97,7 +97,7 @@ final ThemeData darkTheme = ThemeData(
     ),
   ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-    backgroundColor: primaryDarkColor, // FAB background color
+    backgroundColor: AppColors.primaryDarkColor, // FAB background color
     foregroundColor: Colors.black, // FAB icon color
      shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16.0), // FAB rounded shape
@@ -109,7 +109,7 @@ final ThemeData darkTheme = ThemeData(
       borderSide: BorderSide.none, // Remove default border
     ),
     filled: true, // Fill background of the field
-    fillColor: primaryDarkColor.withAlpha((255 * 0.3).round()), // Using withAlpha for opacity
+    fillColor: AppColors.primaryDarkColor.withAlpha((255 * 0.3).round()), // Using withAlpha for opacity
      contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0), // Field content padding
   ),
    cardTheme: const CardThemeData(

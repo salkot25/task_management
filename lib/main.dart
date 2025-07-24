@@ -1,46 +1,48 @@
 import 'package:flutter/material.dart';
-// Remove all Hive related imports
-// import 'package:hive_flutter/hive_flutter.dart';
-// import 'package:myapp/features/account_management/data/datasources/account_local_data_source.dart';
-// import 'package:myapp/features/account_management/data/models/account_model.dart'; // Import AccountModel
-import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart';
-// Remove UseCase imports
-// import 'package:myapp/features/account_management/domain/usecases/create_account.dart';
-// import 'package:myapp/features/account_management/domain/usecases/delete_account.dart';
-// import 'package:myapp/features/account_management/domain/usecases/get_all_accounts.dart';
-// import 'package:myapp/features/account_management/domain/usecases/update_account.dart';
-import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/utils/app_theme.dart'; // Import the app_theme.dart file
-import 'package:myapp/features/task_planner/presentation/provider/task_provider.dart'; // Import TaskProvider
-import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart'; // Import CashcardProvider
-// Remove unused import as HomePage will be part of StatefulShellRoute
-// import 'package:myapp/presentation/pages/home_page.dart';
-import 'package:firebase_core/firebase_core.dart'; // Import firebase_core
-import 'firebase_options.dart'; // Import firebase_options.dart
-import 'package:myapp/features/auth/presentation/provider/auth_provider.dart'; // Import AuthProvider
-import 'package:myapp/features/auth/data/repositories/auth_repository_impl.dart'; // Import AuthRepositoryImpl
-import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart'; // Import AuthRemoteDataSource
-import 'package:go_router/go_router.dart'; // Import go_router
-import 'package:myapp/features/auth/presentation/pages/login_page.dart'; // Import LoginPage
-import 'package:myapp/features/auth/presentation/pages/register_page.dart'; // Import RegisterPage
-import 'package:myapp/features/auth/presentation/pages/forgot_password_page.dart'; // Import ForgotPasswordPage
+import 'package:go_router/go_router.dart';
+import 'dart:developer' as developer; // Import developer for logging
 
-// Import the pages for the bottom navigation bar
-import 'package:myapp/features/task_planner/presentation/pages/task_planner_page.dart';
-import 'package:myapp/features/account_management/presentation/pages/account_list_page.dart';
-import 'package:myapp/features/cashcard/presentation/pages/cashcard_page.dart';
+// Import Theme
+import 'package:myapp/utils/app_theme.dart';
+
+// Import Firebase
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import FirebaseFirestore
+
+// Import Auth Features
+import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:myapp/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:myapp/features/auth/domain/repositories/profile_repository.dart'; // Import ProfileRepository
+import 'package:myapp/features/auth/domain/usecases/create_profile.dart'; // Import CreateProfile use case
+import 'package:myapp/features/auth/domain/usecases/get_profile.dart'; // Import GetProfile use case
+import 'package:myapp/features/auth/domain/usecases/update_profile.dart'; // Import UpdateProfile use case
+import 'package:myapp/features/auth/data/datasources/profile_firestore_data_source.dart'; // Import ProfileFirestoreDataSource
+import 'package:myapp/features/auth/data/repositories/profile_repository_impl.dart'; // Import ProfileRepositoryImpl
+import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
+import 'package:myapp/features/auth/presentation/pages/login_page.dart';
+import 'package:myapp/features/auth/presentation/pages/register_page.dart';
+import 'package:myapp/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
 
-// Import TaskPlanner dependencies
+// Import Account Features
+import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart';
+import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart';
+import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
+import 'package:myapp/features/account_management/presentation/pages/account_list_page.dart';
+
+// Import Task Planner Features
 import 'package:myapp/features/task_planner/data/datasources/task_firestore_data_source.dart';
 import 'package:myapp/features/task_planner/domain/repositories/task_repository.dart';
+import 'package:myapp/features/task_planner/presentation/provider/task_provider.dart';
+import 'package:myapp/features/task_planner/presentation/pages/task_planner_page.dart';
 
-// Import Account Management Firestore dependencies
-import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart';
-import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_data_source.dart'; // Import transaction data source
-import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart'; // Import transaction repository
-import 'dart:developer' as developer; // Import developer for logging
+// Import Cashcard Features
+import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_data_source.dart';
+import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart';
+import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart';
+import 'package:myapp/features/cashcard/presentation/pages/cashcard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,25 +52,20 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Remove all Hive initialization related to Account Management
-  // await Hive.initFlutter();
-  // // Pastikan AccountModelAdapter sudah digenerasi oleh build_runner
-  // if (!Hive.isAdapterRegistered(0)) {
-  //   Hive.registerAdapter(AccountModelAdapter());
-  // }
-
   // Dependency Injection Setup for Account Management (using Firestore)
   final accountFirestoreDataSource = AccountFirestoreDataSourceImpl();
   final accountRepository = AccountRepositoryImpl(firestoreDataSource: accountFirestoreDataSource);
-  // Remove UseCase instances
-  // final createAccount = CreateAccount(accountRepository);
-  // final getAllAccounts = GetAllAccounts(accountRepository);
-  // final updateAccount = UpdateAccount(accountRepository);
-  // final deleteAccount = DeleteAccount(accountRepository);
 
   // Dependency Injection Setup for Auth
   final authRemoteDataSource = AuthRemoteDataSourceImpl();
   final authRepository = AuthRepositoryImpl(remoteDataSource: authRemoteDataSource);
+
+  // Dependency Injection Setup for Profile (using Firestore)
+  final profileFirestoreDataSource = ProfileFirestoreDataSourceImpl(firestore: FirebaseFirestore.instance);
+  final profileRepository = ProfileRepositoryImpl(firestoreDataSource: profileFirestoreDataSource);
+  final createProfileUseCase = CreateProfile(profileRepository);
+  final getProfileUseCase = GetProfile(profileRepository);
+  final updateProfileUseCase = UpdateProfile(profileRepository);
 
   // Dependency Injection Setup for Task Planner (using Firestore)
   final taskFirestoreDataSource = TaskFirestoreDataSourceImpl();
@@ -83,12 +80,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(
           create: (context) => AccountProvider(
-            accountRepository: accountRepository, // Provide the Firestore-based repository
-            // Remove UseCase arguments
-            // createAccountUseCase: createAccount,
-            // getAllAccountsUseCase: getAllAccounts,
-            // updateAccountUseCase: updateAccount,
-            // deleteAccountUseCase: deleteAccount,
+            accountRepository: accountRepository,
           ),
         ),
         ChangeNotifierProvider(
@@ -98,7 +90,13 @@ void main() async {
           create: (context) => CashcardProvider(transactionRepository), // Provide transactionRepository
         ),
         ChangeNotifierProvider(
-          create: (context) => AuthProvider(authRepository: authRepository),
+          create: (context) => AuthProvider(
+            authRepository: authRepository,
+            profileRepository: profileRepository, // Provide profileRepository
+            createProfileUseCase: createProfileUseCase, // Provide createProfileUseCase
+            getProfileUseCase: getProfileUseCase, // Provide getProfileUseCase
+            updateProfileUseCase: updateProfileUseCase, // Provide updateProfileUseCase
+          ),
         ),
       ],
       child: const MyApp(),
@@ -123,6 +121,11 @@ class _MyAppState extends State<MyApp> {
 
     _router = GoRouter(
       routes: [
+        // Redirect root path to /tasks
+        GoRoute(
+          path: '/',
+          redirect: (context, state) => '/tasks',
+        ),
         // Authentication Routes
         GoRoute(
           path: '/login',

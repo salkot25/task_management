@@ -21,7 +21,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     GoogleSignIn? googleSignIn,
   })
       : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn(); // Correct initialization
+        _googleSignIn = googleSignIn ?? GoogleSignIn(signInOption: SignInOption.standard, clientId: '1:1074161513774:web:1b22b81a2cf8f2618736bf'); // Use your web client ID here
 
   @override
   Future<UserModel> signInWithEmailAndPassword(String email, String password) async {
