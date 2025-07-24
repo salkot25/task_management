@@ -46,6 +46,7 @@ dependencies:
   google_sign_in: ^6.2.1 # Downgraded to latest stable version
   go_router: ^16.0.0
   cloud_firestore: ^5.6.12
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../provider/task_provider.dart';
+import 'package:myapp/utils/app_colors.dart'; // Import AppColors
 
 class TaskPlannerPage extends StatefulWidget {
   const TaskPlannerPage({super.key});
@@ -15,23 +16,30 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
+  late DateTime _focusedMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusedMonth = DateTime.now();
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: DateTime.now(),
+      firstDate: DateTime(2000), // Allow selecting past dates
       lastDate: DateTime(2101),
     );
-    // Check mounted before calling setState
     if (picked != null && picked != _selectedDate && mounted) {
       setState(() {
         _selectedDate = picked;
+        _focusedMonth = DateTime(picked.year, picked.month); // Update focused month when date is picked
       });
     }
   }
 
-  void _addTask(BuildContext dialogContext) { // Pass dialog context
+  void _addTask(BuildContext dialogContext) {
     if (_formKey.currentState!.validate()) {
       Provider.of<TaskProvider>(context, listen: false).addTask(
         _titleController.text,
@@ -40,20 +48,19 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       );
       _titleController.clear();
       _descriptionController.clear();
-      // Check mounted before calling setState
       if (mounted) {
         setState(() {
-          _selectedDate = DateTime.now(); // Reset date to today
+          // Keep the selected date as is after adding a task for it
         });
       }
-      Navigator.of(dialogContext).pop(); // Close the dialog using dialog context
+      Navigator.of(dialogContext).pop();
     }
   }
 
   void _showAddTaskDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) { // Capture dialog context
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Add New Task'),
           content: SingleChildScrollView(
@@ -96,14 +103,157 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Close the dialog using dialog context
+                Navigator.of(dialogContext).pop();
               },
             ),
             ElevatedButton(
-              onPressed: () => _addTask(dialogContext), // Pass dialog context to _addTask
+              onPressed: () => _addTask(dialogContext),
               child: const Text('Add Task'),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  // Helper to get the number of days in a month
+  int _daysInMonth(DateTime date) {
+    var firstDayThisMonth = DateTime(date.year, date.month, date.day);
+    var firstDayNextMonth = DateTime(firstDayThisMonth.year, firstDayThisMonth.month + 1, firstDayThisMonth.day);
+    return firstDayNextMonth.difference(firstDayThisMonth).inDays;
+  }
+
+  // Helper to get the weekday of the first day of the month (1 for Monday, 7 for Sunday)
+  int _firstWeekday(DateTime date) {
+    return DateTime(date.year, date.month, 1).weekday;
+  }
+
+ Widget _buildCalendar() {
+    final int daysInMonth = _daysInMonth(_focusedMonth);
+    final int firstWeekday = _firstWeekday(_focusedMonth); // 1 is Monday, 7 is Sunday
+    final int emptyCells = firstWeekday - 1; // Number of empty cells before the 1st day
+
+    return Consumer<TaskProvider>(
+      builder: (context, taskProvider, child) {
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor, // Use card color for the calendar background
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios),
+                    onPressed: () {
+                      setState(() {
+                        _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
+                      });
+                    },
+                  ),
+                  Text(
+                    DateFormat('MMMM yyyy').format(_focusedMonth),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios),
+                    onPressed: () {
+                      setState(() {
+                        _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8.0),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text('S', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('M', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('T', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('W', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('T', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('F', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('S', style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 8.0),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(), // Disable grid scrolling
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  crossAxisSpacing: 4.0,
+                  mainAxisSpacing: 4.0,
+                  childAspectRatio: 1.0, // Make cells square
+                ),
+                itemCount: daysInMonth + emptyCells,
+                itemBuilder: (context, index) {
+                  if (index < emptyCells) {
+                    return Container(); // Empty container for spacing
+                  }
+                  final int day = index - emptyCells + 1;
+                  final DateTime currentDate = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+                  final bool isSelected = currentDate.year == _selectedDate.year &&
+                      currentDate.month == _selectedDate.month &&
+                      currentDate.day == _selectedDate.day;
+
+                  // Check for tasks on the current day
+                  final tasksForDay = taskProvider.tasks.where((task) {
+                     return task.dueDate.year == currentDate.year &&
+                           task.dueDate.month == currentDate.month &&
+                           task.dueDate.day == currentDate.day;
+                  }).toList();
+
+                  // Determine if all tasks are completed
+                  final bool allTasksCompleted = tasksForDay.isNotEmpty &&
+                      tasksForDay.every((task) => task.isCompleted);
+
+                   // Determine if there are uncompleted tasks
+                   final bool hasUncompletedTasks = tasksForDay.isNotEmpty &&
+                      tasksForDay.any((task) => !task.isCompleted);
+
+                  Color dayColor = Colors.transparent; // Default color
+                   if (isSelected) {
+                     dayColor = AppColors.primaryColor; // Selected date is always primary
+                   } else if (allTasksCompleted) {
+                     dayColor = AppColors.primaryColor.withOpacity(0.5); // Primary color for all completed tasks
+                   } else if (hasUncompletedTasks) {
+                     dayColor = AppColors.warningColor.withOpacity(0.5); // Warning color for uncompleted tasks
+                   }
+
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedDate = currentDate;
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: dayColor,
+                        borderRadius: BorderRadius.circular(8.0),
+                        border: Border.all(color: AppColors.greyLightColor),
+                      ),
+                      child: Center(
+                        child: Text(
+                          day.toString(),
+                          style: TextStyle(
+                            color: isSelected || allTasksCompleted ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+                            fontWeight: isSelected || allTasksCompleted || hasUncompletedTasks ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         );
       },
     );
@@ -122,65 +272,87 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       appBar: AppBar(
         title: const Text('Task Planner'),
       ),
-      body: Consumer<TaskProvider>(
-        builder: (context, taskProvider, child) {
-          // Show a loading indicator while tasks are being fetched
-          // This assumes your TaskProvider has a loading state or the initial stream is empty
-          // if (taskProvider.isLoading) { // Uncomment if you add a loading state to TaskProvider
-          //   return const Center(child: CircularProgressIndicator());
-          // }
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildCalendar(),
+              const SizedBox(height: 24.0),
+              Text(
+                'Tasks for ${DateFormat('d MMMM yyyy').format(_selectedDate)}', // Changed from Habits to Tasks
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12.0),
+              Consumer<TaskProvider>(
+                builder: (context, taskProvider, child) {
+                  // Filter tasks by selected date
+                  final tasksForSelectedDate = taskProvider.tasks.where((task) {
+                    // Compare dates without considering time
+                    return task.dueDate.year == _selectedDate.year &&
+                           task.dueDate.month == _selectedDate.month &&
+                           task.dueDate.day == _selectedDate.day;
+                  }).toList();
 
-          if (taskProvider.tasks.isEmpty) {
-             return const Center(
-              child: Text('No tasks yet! Tap the + button to add one.'),
-            );
-          } else {
-            return ListView.builder(
-              itemCount: taskProvider.tasks.length,
-              itemBuilder: (context, index) {
-                final task = taskProvider.tasks[index];
-                return ListTile(
-                  leading: Checkbox(
-                    value: task.isCompleted,
-                    onChanged: (bool? value) {
-                      taskProvider.toggleTaskStatus(task.id);
-                    },
-                  ),
-                  title: Text(
-                    task.title,
-                    style: TextStyle(
-                      decoration: task.isCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${task.description} - Due: ${DateFormat('MMM d, yyyy').format(task.dueDate)}',
-                     style: TextStyle(
-                      decoration: task.isCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                    ),
-                  ),
-                   // Optional: Add a delete icon
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                       taskProvider.deleteTask(task.id);
-                    },
-                    tooltip: 'Delete Task',
-                  ),
-                  // You can add onTap for editing the task if needed
-                  // onTap: () { ... },
-                );
-              },
-            );
-          }
-        },
+
+                  if (tasksForSelectedDate.isEmpty) {
+                    return const Center(
+                      child: Text('No tasks for this date.'), // Changed from habits or tasks to tasks
+                    );
+                  } else {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(), // Disable list scrolling
+                      itemCount: tasksForSelectedDate.length,
+                      itemBuilder: (context, index) {
+                        final task = tasksForSelectedDate[index];
+                        return ListTile(
+                          leading: Checkbox(
+                            value: task.isCompleted,
+                            onChanged: (bool? value) {
+                              taskProvider.toggleTaskStatus(task.id);
+                            },
+                            activeColor: AppColors.primaryColor, // Apply primary color to checkbox
+                          ),
+                          title: Text(
+                            task.title,
+                            style: TextStyle(
+                              decoration: task.isCompleted
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                               color: task.isCompleted ? AppColors.greyColor : Theme.of(context).textTheme.bodyMedium?.color, // Dim completed tasks
+                            ),
+                          ),
+                          subtitle: task.description.isNotEmpty ? Text(
+                            task.description,
+                            style: TextStyle(
+                              decoration: task.isCompleted
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                               color: task.isCompleted ? AppColors.greyColor : Theme.of(context).textTheme.bodySmall?.color, // Dim completed tasks
+                            ),
+                          ) : null, // Don't show subtitle if description is empty
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline, color: AppColors.greyColor), // Apply grey color to delete icon
+                            onPressed: () {
+                              taskProvider.deleteTask(task.id);
+                            },
+                            tooltip: 'Delete Task',
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
-        tooltip: 'Add Task',
+        tooltip: 'Add Task', // Changed from Habit/Task to Task
         child: const Icon(Icons.add),
       ),
     );
