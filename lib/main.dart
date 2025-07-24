@@ -12,7 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:myapp/utils/app_theme.dart'; // Import the app_theme.dart file
 import 'package:myapp/features/task_planner/presentation/provider/task_provider.dart'; // Import TaskProvider
 import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart'; // Import CashcardProvider
-import 'package:myapp/presentation/pages/home_page.dart'; // Import HomePage
+// Remove unused import as HomePage will be part of StatefulShellRoute
+// import 'package:myapp/presentation/pages/home_page.dart';
 import 'package:firebase_core/firebase_core.dart'; // Import firebase_core
 import 'firebase_options.dart'; // Import firebase_options.dart
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart'; // Import AuthProvider
@@ -22,6 +23,12 @@ import 'package:go_router/go_router.dart'; // Import go_router
 import 'package:myapp/features/auth/presentation/pages/login_page.dart'; // Import LoginPage
 import 'package:myapp/features/auth/presentation/pages/register_page.dart'; // Import RegisterPage
 import 'package:myapp/features/auth/presentation/pages/forgot_password_page.dart'; // Import ForgotPasswordPage
+
+// Import the pages for the bottom navigation bar
+import 'package:myapp/features/task_planner/presentation/pages/task_planner_page.dart';
+import 'package:myapp/features/account_management/presentation/pages/account_list_page.dart';
+import 'package:myapp/features/cashcard/presentation/pages/cashcard_page.dart';
+import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,10 +100,7 @@ class _MyAppState extends State<MyApp> {
 
     _router = GoRouter(
       routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const HomePage(),
-        ),
+        // Authentication Routes
         GoRoute(
           path: '/login',
           builder: (context, state) => const LoginPage(),
@@ -109,43 +113,93 @@ class _MyAppState extends State<MyApp> {
           path: '/forgot-password',
           builder: (context, state) => const ForgotPasswordPage(),
         ),
-        // Add routes for other main pages if needed (e.g., /tasks, /accounts, /cashcard, /profile)
-        // GoRoute(
-        //   path: '/tasks',
-        //   builder: (context, state) => const TaskPlannerPage(),
-        // ),
-        // GoRoute(
-        //   path: '/accounts',
-        //   builder: (context, state) => const AccountListPage(),
-        // ),
-         //GoRoute(
-        //   path: '/cashcard',
-        //   builder: (context, state) => const CashcardPage(),
-        // ),
-        // GoRoute(
-        //   path: '/profile',
-        //   builder: (context, state) => const ProfilePage(),
-        // ),
+
+        // Stateful shell route for bottom navigation bar
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            // the UI shell
+            return Scaffold(
+              body: navigationShell, // Display the currently selected branch's content
+              bottomNavigationBar: BottomNavigationBar(
+                items: const <BottomNavigationBarItem>[
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.checklist_outlined),
+                    label: 'Tasks',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.lock_outline),
+                    label: 'Vault',
+                  ),
+                   BottomNavigationBarItem(
+                    icon: Icon(Icons.account_balance_wallet_outlined),
+                    label: 'Cashcard',
+                  ),
+                   BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    label: 'Profile',
+                  ),
+                ],
+                currentIndex: navigationShell.currentIndex,
+                selectedItemColor: Theme.of(context).colorScheme.primary,
+                unselectedItemColor: Colors.grey,
+                showUnselectedLabels: true,
+                 onTap: (index) {
+                  // Use the navigationShell to navigate to the selected branch
+                  navigationShell.goBranch(index);
+                },
+              ),
+            );
+          },
+          branches: [
+            // Branch for Tasks
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/tasks',
+                builder: (context, state) => const TaskPlannerPage(),
+              ),
+            ]),
+            // Branch for Accounts (Vault)
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/accounts',
+                builder: (context, state) => const AccountListPage(),
+              ),
+            ]),
+            // Branch for Cashcard
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/cashcard',
+                builder: (context, state) => const CashcardPage(),
+              ),
+            ]),
+            // Branch for Profile
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfilePage(),
+              ),
+            ]),
+          ],
+        ),
       ],
       redirect:
           (BuildContext context, GoRouterState state) {
         final bool isAuthenticated = authProvider.user != null;
-        final bool isLoggingIn = state.uri.path == '/login';
-        final bool isRegistering = state.uri.path == '/register';
+        final bool isAuthenticating = state.uri.path == '/login' || state.uri.path == '/register' || state.uri.path == '/forgot-password';
 
         print('Redirect triggered:'); // Added logging
         print('  isAuthenticated: $isAuthenticated');
         print('  current path: ${state.uri.path}');
 
-        // If the user is not authenticated and is not on the login or register page, redirect to login
-        if (!isAuthenticated && !isLoggingIn && !isRegistering) {
-           print('  Redirecting to /login'); // Added logging
+        // If the user is not authenticated and is trying to access a protected route, redirect to login
+        if (!isAuthenticated && !isAuthenticating) {
+           print('  Redirecting to /login (unauthenticated)'); // Added logging
           return '/login';
         }
-        // If the user is authenticated and is on the login or register page, redirect to home
-        if (isAuthenticated && (isLoggingIn || isRegistering)) {
-           print('  Redirecting to /'); // Added logging
-          return '/';
+        // If the user is authenticated and is trying to access an authentication route, redirect to home (or the default tab)
+        if (isAuthenticated && isAuthenticating) {
+           print('  Redirecting to / (authenticated)'); // Added logging
+          return '/'; // Redirect to the default route within the StatefulShellRoute
         }
 
         // No redirect needed
@@ -153,6 +207,7 @@ class _MyAppState extends State<MyApp> {
         return null;
       },
        refreshListenable: authProvider, // Listen to auth state changes
+      initialLocation: '/tasks', // Set the initial location to the first tab
     );
   }
 
@@ -163,7 +218,7 @@ class _MyAppState extends State<MyApp> {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.system,
-      routerConfig: _router, // Use routerConfig instead of home
+      routerConfig: _router,
       debugShowCheckedModeBanner: false,
     );
   }

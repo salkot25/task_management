@@ -79,7 +79,7 @@ class LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 16.0),
                 Text(
-                  'FRACTALZ', // App Name/Tagline
+                  'TASKS MANAGEMENT', // App Name/Tagline
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall, // Use headlineSmall for tagline
                 ),
