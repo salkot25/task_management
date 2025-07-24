@@ -118,7 +118,7 @@ class _CashcardPageState extends State<CashcardPage> {
   // Method to show the add transaction bottom modal
   void _showAddTransactionModal(BuildContext context) {
     // Get provider here to access selectedTransactionType for initial value
-    final cashcardProvider = Provider.of<CashcardProvider>(
+    Provider.of<CashcardProvider>(
       context,
       listen: false,
     );

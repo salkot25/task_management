@@ -85,9 +85,12 @@ class _AccountDetailDialogContentState
             children: [
               TextFormField(
                 controller: websiteController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Website',
-                  prefixIcon: Icon(Icons.language_outlined),
+                  prefixIcon: const Icon(Icons.language_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -100,9 +103,12 @@ class _AccountDetailDialogContentState
               const SizedBox(height: 16.0),
               TextFormField(
                 controller: usernameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Username',
-                  prefixIcon: Icon(Icons.person_outline),
+                  prefixIcon: const Icon(Icons.person_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -129,6 +135,9 @@ class _AccountDetailDialogContentState
                         _isPasswordVisible = !_isPasswordVisible;
                       });
                     },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
                   ),
                 ),
                 obscureText: !_isPasswordVisible,

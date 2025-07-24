@@ -1,53 +1,52 @@
 import 'package:flutter/foundation.dart';
 import 'package:myapp/core/error/failures.dart';
 import 'package:myapp/features/account_management/domain/entities/account.dart';
-// Remove unused UseCase imports as we will directly use the repository methods
-// import 'package:myapp/features/account_management/domain/usecases/create_account.dart';
-// import 'package:myapp/features/account_management/domain/usecases/delete_account.dart';
-// import 'package:myapp/features/account_management/domain/usecases/get_all_accounts.dart';
-// import 'package:myapp/features/account_management/domain/usecases/update_account.dart';
-// import 'package:myapp/core/usecases/usecase.dart'; // Remove unused import
-
-import 'package:myapp/features/account_management/domain/repositories/account_repository.dart'; // Import the repository
+import 'package:myapp/features/account_management/domain/repositories/account_repository.dart';
 
 class AccountProvider with ChangeNotifier {
-  // Replace UseCases with the repository
   final AccountRepository accountRepository;
 
   List<Account> _accounts = [];
   String _message = '';
   bool _isLoading = false;
+  String _filterWebsite = ''; // New state for website filter
 
   AccountProvider({required this.accountRepository});
 
-  List<Account> get accounts => _accounts;
+  // Filtered list of accounts
+  List<Account> get accounts {
+    if (_filterWebsite.isEmpty) {
+      return _accounts;
+    } else {
+      return _accounts
+          .where(
+            (account) => account.website.toLowerCase().contains(
+              _filterWebsite.toLowerCase(),
+            ),
+          )
+          .toList();
+    }
+  }
+
   String get message => _message;
   bool get isLoading => _isLoading;
+  String get filterWebsite => _filterWebsite; // Getter for filter website
 
-  // Use a Stream for real-time updates if the repository provides one
-  // Or fetch once if the repository returns a Future
+  // Method to set the website filter
+  void setFilterWebsite(String filter) {
+    _filterWebsite = filter;
+    notifyListeners(); // Notify listeners to rebuild UI with filtered data
+  }
+
   Future<void> loadAccounts() async {
     _isLoading = true;
     notifyListeners();
 
-    // If using a Stream from the repository:
-    // accountRepository.getAccounts().listen((accountList) {
-    //   _accounts = accountList;
-    //   _isLoading = false; // Move isLoading update here if using Stream
-    //   notifyListeners();
-    // }, onError: (error) { // Handle stream errors
-    //    _message = 'Error fetching accounts: $error';
-    //    _accounts = [];
-    //    _isLoading = false;
-    //    notifyListeners();
-    // });
-
-    // If using Future from the repository (current implementation):
     final result = await accountRepository.getAllAccounts();
     result.fold(
       (failure) {
         _message = _mapFailureToMessage(failure);
-        _accounts = [];
+        _accounts = []; // Clear accounts on failure
       },
       (accounts) {
         _accounts = accounts;

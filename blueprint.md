@@ -11,20 +11,22 @@ This application is a personal finance tracker with a password management featur
 - Copy username or password to the clipboard with a single tap.
 - Edit existing account details.
 - Delete accounts.
-- Modern and eye-catching design for account list items.
+- Modern and eye-catching design for account list items with username and password displayed in `TextFormField`s.
 - Add and edit account details using a popup dialog.
 
 ### Plan
 
-**Goal:** Implement adding and editing account details using a popup dialog in `AccountListPage`, similar to the add task functionality.
+**Goal:** Change the display of username and password in `AccountListItem` back to `TextFormField`s, integrating copy and password visibility functionality within them.
 
 **Steps:**
 
-1. Modify `AccountListPage` to call a new method `_showAccountDetailDialog` when adding or editing an account.
-2. Create `_showAccountDetailDialog` method in `_AccountListPageState` to display `AccountDetailPage` (or its content) as a dialog using `showDialog`.
-3. Adapt `AccountDetailPage` (or create a new widget for the dialog content) to function without a `Scaffold`, including form fields, validation, and action buttons (Cancel, Save/Update).
-4. Ensure data is correctly passed to the dialog for editing, and handle the case for adding a new account.
-5. Update the account list by calling `provider.loadAccounts()` after the dialog is closed.
-6. Remove the old page-based navigation for add/edit.
-7. Run `dart format .` and `flutter analyze`.
-8. Update the blueprint.md.
+1. Modify the `AccountListItem` widget in `lib/features/account_management/presentation/pages/account_list_page.dart`.
+2. Replace the current `Row` widgets for username and password with `TextFormField`s.
+3. Configure the `TextFormField` for username to be `readOnly` and include a copy icon in its `suffixIcon`.
+4. Configure the `TextFormField` for password to be `readOnly`, `obscureText` (toggled by state), and include both a visibility toggle icon and a copy icon in its `suffixIcon`.
+5. Adjust the `decoration` of the `TextFormField`s to fit the modern card design, potentially removing default borders.
+6. Ensure copy to clipboard and password visibility toggle functionality works correctly.
+7. Keep the website text and action buttons (Edit, Delete) as they are in the current card design.
+8. Verify the updated design and functionality in the preview.
+9. Run `dart format .` and `flutter analyze`.
+10. Update the blueprint.md.

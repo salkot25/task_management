@@ -14,6 +14,9 @@ class AccountListPage extends StatefulWidget {
 }
 
 class _AccountListPageState extends State<AccountListPage> {
+  bool _isSearching = false; // State to manage search bar visibility
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -22,6 +25,12 @@ class _AccountListPageState extends State<AccountListPage> {
         Provider.of<AccountProvider>(context, listen: false).loadAccounts();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   // Method to show the account detail dialog
@@ -39,14 +48,69 @@ class _AccountListPageState extends State<AccountListPage> {
     // After the dialog is closed, refresh the account list
     // Check if the widget is still mounted before using context
     if (mounted) {
+      // Clear the search filter when dialog is closed
+      Provider.of<AccountProvider>(context, listen: false).setFilterWebsite('');
+      _searchController.clear(); // Clear search text field as well
       Provider.of<AccountProvider>(context, listen: false).loadAccounts();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Consume the provider here to get the filterWebsite value
+    final accountProvider = Provider.of<AccountProvider>(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Password Manager'), centerTitle: true),
+      appBar: AppBar(
+        title:
+            _isSearching
+                ? TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search website...',
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimary.withOpacity(0.7),
+                    ),
+                  ),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 18.0,
+                  ),
+                  onChanged: (value) {
+                    // Update the filter in the provider
+                    accountProvider.setFilterWebsite(value);
+                  },
+                )
+                : const Text('Password Manager'),
+        centerTitle: !_isSearching, // Center title only when not searching
+        actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  // Clear search when closing search bar
+                  accountProvider.setFilterWebsite('');
+                  _searchController.clear();
+                }
+              });
+            },
+          ),
+        ],
+        // Apply AppBar theme from AppTheme
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+        titleTextStyle:
+            _isSearching
+                ? null
+                : Theme.of(context)
+                    .appBarTheme
+                    .titleTextStyle, // Use themed title style when not searching
+      ),
       body: Consumer<AccountProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
@@ -58,6 +122,10 @@ class _AccountListPageState extends State<AccountListPage> {
                 child: Text(
                   provider.message.isNotEmpty
                       ? provider.message
+                      : accountProvider
+                          .filterWebsite
+                          .isNotEmpty // Check filter website as well
+                      ? 'No accounts found for "${accountProvider.filterWebsite}".'
                       : 'No accounts found. Tap the + button to add one.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium,
@@ -159,10 +227,12 @@ class _AccountListItemState extends State<AccountListItem> {
         borderRadius: BorderRadius.circular(12.0),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, 2),
+            color: Theme.of(context).colorScheme.primary.withAlpha(
+              (255 * 0.05).round(),
+            ), // Softer shadow
+            spreadRadius: 0,
+            blurRadius: 8,
+            offset: Offset(0, 4), // More spread out shadow
           ),
         ],
       ),
@@ -170,36 +240,43 @@ class _AccountListItemState extends State<AccountListItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Website
-          Text(
-            widget.account.website,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 12.0),
-
-          // Username
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(
-                Icons.person_outline,
+                Icons.language_outlined,
                 size: 20.0,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ), // Subtle icon
               const SizedBox(width: 8.0),
               Expanded(
                 child: Text(
-                  widget.account.username,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  widget.account.website,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ), // Emphasize website
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.copy_outlined, size: 20.0),
+            ],
+          ),
+          const SizedBox(height: 16.0), // Increased space
+          // Username
+          TextFormField(
+            initialValue: widget.account.username,
+            readOnly: true,
+            decoration: InputDecoration(
+              labelText: 'Username',
+              prefixIcon: const Icon(
+                Icons.person_outline,
+                size: 20.0,
+              ), // Adjusted icon size
+              suffixIcon: IconButton(
+                icon: const Icon(
+                  Icons.copy_outlined,
+                  size: 20.0,
+                ), // Adjusted icon size
                 tooltip: 'Copy Username',
                 onPressed:
                     () => _copyToClipboard(
@@ -207,70 +284,88 @@ class _AccountListItemState extends State<AccountListItem> {
                       widget.account.username,
                       'Username',
                     ),
-                color: Theme.of(context).colorScheme.primary,
-                visualDensity: VisualDensity.compact,
               ),
-            ],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                borderSide: BorderSide.none, // Remove the border line
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 8.0,
+              ), // Adjust padding
+              isDense: true, // Reduce vertical space
+              labelStyle:
+                  Theme.of(context).textTheme.bodySmall, // Smaller label
+              filled: true, // Fill background
+              fillColor: Theme.of(context).colorScheme.surfaceVariant
+                  .withOpacity(0.5), // Use a subtle fill color
+            ),
+            style: Theme.of(context).textTheme.bodyMedium, // Apply text style
           ),
-          const SizedBox(height: 8.0),
-
+          const SizedBox(height: 12.0), // Adjusted space
           // Password
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
+          TextFormField(
+            initialValue: widget.account.password,
+            readOnly: true,
+            obscureText: !_isPasswordVisible,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              prefixIcon: const Icon(
                 Icons.lock_outline,
                 size: 20.0,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: Text(
-                  _isPasswordVisible
-                      ? widget.account.password
-                      : '•' *
-                          widget
-                              .account
-                              .password
-                              .length, // Toggle mask password
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    letterSpacing: _isPasswordVisible ? 1.0 : 2.0,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  size: 20.0,
-                ),
-                tooltip: _isPasswordVisible ? 'Hide Password' : 'Show Password',
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-                color: Theme.of(context).colorScheme.primary,
-                visualDensity: VisualDensity.compact,
-              ),
-              IconButton(
-                icon: const Icon(Icons.copy_outlined, size: 20.0),
-                tooltip: 'Copy Password',
-                onPressed:
-                    () => _copyToClipboard(
-                      context,
-                      widget.account.password,
-                      'Password',
+              ), // Adjusted icon size
+              suffixIcon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      size: 20.0, // Adjusted icon size
                     ),
-                color: Theme.of(context).colorScheme.primary,
-                visualDensity: VisualDensity.compact,
+                    tooltip:
+                        _isPasswordVisible ? 'Hide Password' : 'Show Password',
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.copy_outlined,
+                      size: 20.0,
+                    ), // Adjusted icon size
+                    tooltip: 'Copy Password',
+                    onPressed:
+                        () => _copyToClipboard(
+                          context,
+                          widget.account.password,
+                          'Password',
+                        ),
+                  ),
+                ],
               ),
-            ],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                borderSide: BorderSide.none, // Remove the border line
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 8.0,
+              ), // Adjust padding
+              isDense: true, // Reduce vertical space
+              labelStyle:
+                  Theme.of(context).textTheme.bodySmall, // Smaller label
+              filled: true, // Fill background
+              fillColor: Theme.of(context).colorScheme.surfaceVariant
+                  .withOpacity(0.5), // Use a subtle fill color
+            ),
+            style: Theme.of(context).textTheme.bodyMedium, // Apply text style
           ),
 
-          const Divider(height: 24.0),
-
+          const Divider(height: 24.0), // Keep divider and space
           // Actions (Edit, Delete)
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
