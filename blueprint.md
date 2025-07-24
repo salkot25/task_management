@@ -13,20 +13,23 @@ This application is a personal finance tracker with a password management featur
 - Delete accounts.
 - Modern and eye-catching design for account list items with username and password displayed in `TextFormField`s.
 - Add and edit account details using a popup dialog.
+- Filter accounts by website in the AppBar.
+- Modern and eye-catching Bottom Navigation Bar design.
 
 ### Plan
 
-**Goal:** Change the display of username and password in `AccountListItem` back to `TextFormField`s, integrating copy and password visibility functionality within them.
+**Goal:** Change the design of the Bottom Navigation Bar to match the provided image, with a rounded background for the selected item's icon.
 
 **Steps:**
 
-1. Modify the `AccountListItem` widget in `lib/features/account_management/presentation/pages/account_list_page.dart`.
-2. Replace the current `Row` widgets for username and password with `TextFormField`s.
-3. Configure the `TextFormField` for username to be `readOnly` and include a copy icon in its `suffixIcon`.
-4. Configure the `TextFormField` for password to be `readOnly`, `obscureText` (toggled by state), and include both a visibility toggle icon and a copy icon in its `suffixIcon`.
-5. Adjust the `decoration` of the `TextFormField`s to fit the modern card design, potentially removing default borders.
-6. Ensure copy to clipboard and password visibility toggle functionality works correctly.
-7. Keep the website text and action buttons (Edit, Delete) as they are in the current card design.
-8. Verify the updated design and functionality in the preview.
-9. Run `dart format .` and `flutter analyze`.
-10. Update the blueprint.md.
+1. Modify the `BottomNavigationBar` widget in `lib/main.dart`.
+2. Set the background color to a light color from the theme.
+3. Adjust `selectedItemColor` and `unselectedItemColor` using theme colors.
+4. Customize each `BottomNavigationBarItem`:
+    - For the selected item, wrap the `icon` in a `Container` with `BoxDecoration` to create the rounded background effect.
+    - For unselected items, use standard `Icon` and `Text`.
+    - Adjust padding and margin within `BottomNavigationBarItem` or the icons/labels to achieve the desired spacing and alignment.
+5. Ensure `showUnselectedLabels` is true.
+6. Verify the updated design in the preview.
+7. Run `dart format .` and `flutter analyze`.
+8. Update the blueprint.md.

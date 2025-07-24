@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/features/task_planner/domain/repositories/task_repository.dart' as task_repository_impl;
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:developer' as developer; // Import developer for logging
@@ -12,14 +13,18 @@ import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import FirebaseFirestore
 
 // Import Auth Features
-import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart';
-import 'package:myapp/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:myapp/features/auth/domain/repositories/profile_repository.dart'; // Import ProfileRepository
-import 'package:myapp/features/auth/domain/usecases/create_profile.dart'; // Import CreateProfile use case
-import 'package:myapp/features/auth/domain/usecases/get_profile.dart'; // Import GetProfile use case
-import 'package:myapp/features/auth/domain/usecases/update_profile.dart'; // Import UpdateProfile use case
-import 'package:myapp/features/auth/data/datasources/profile_firestore_data_source.dart'; // Import ProfileFirestoreDataSource
-import 'package:myapp/features/auth/data/repositories/profile_repository_impl.dart'; // Import ProfileRepositoryImpl
+import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart'
+    as auth_remote_data_source;
+import 'package:myapp/features/auth/data/repositories/auth_repository_impl.dart'
+    as auth_repository_impl;
+import 'package:myapp/features/auth/domain/repositories/profile_repository.dart';
+import 'package:myapp/features/auth/domain/usecases/create_profile.dart';
+import 'package:myapp/features/auth/domain/usecases/get_profile.dart';
+import 'package:myapp/features/auth/domain/usecases/update_profile.dart';
+import 'package:myapp/features/auth/data/datasources/profile_firestore_data_source.dart'
+    as profile_firestore_data_source;
+import 'package:myapp/features/auth/data/repositories/profile_repository_impl.dart'
+    as profile_repository_impl;
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
 import 'package:myapp/features/auth/presentation/pages/login_page.dart';
 import 'package:myapp/features/auth/presentation/pages/register_page.dart';
@@ -27,20 +32,25 @@ import 'package:myapp/features/auth/presentation/pages/forgot_password_page.dart
 import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
 
 // Import Account Features
-import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart';
-import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart';
+import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart'
+    as account_firestore_data_source;
+import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart'
+    as account_repository_impl;
 import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
 import 'package:myapp/features/account_management/presentation/pages/account_list_page.dart';
 
 // Import Task Planner Features
-import 'package:myapp/features/task_planner/data/datasources/task_firestore_data_source.dart';
+import 'package:myapp/features/task_planner/data/datasources/task_firestore_data_source.dart'
+    as task_firestore_data_source;
 import 'package:myapp/features/task_planner/domain/repositories/task_repository.dart';
 import 'package:myapp/features/task_planner/presentation/provider/task_provider.dart';
 import 'package:myapp/features/task_planner/presentation/pages/task_planner_page.dart';
 
 // Import Cashcard Features
-import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_data_source.dart';
-import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart';
+import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_data_source.dart'
+    as transaction_firestore_data_source;
+import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart'
+    as transaction_repository_impl;
 import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart';
 import 'package:myapp/features/cashcard/presentation/pages/cashcard_page.dart';
 
@@ -51,22 +61,25 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Dependency Injection Setup for Account Management (using Firestore)
-  final accountFirestoreDataSource = AccountFirestoreDataSourceImpl();
-  final accountRepository = AccountRepositoryImpl(
+  final accountFirestoreDataSource =
+      account_firestore_data_source.AccountFirestoreDataSourceImpl();
+  final accountRepository = account_repository_impl.AccountRepositoryImpl(
     firestoreDataSource: accountFirestoreDataSource,
   );
 
   // Dependency Injection Setup for Auth
-  final authRemoteDataSource = AuthRemoteDataSourceImpl();
-  final authRepository = AuthRepositoryImpl(
+  final authRemoteDataSource =
+      auth_remote_data_source.AuthRemoteDataSourceImpl();
+  final authRepository = auth_repository_impl.AuthRepositoryImpl(
     remoteDataSource: authRemoteDataSource,
   );
 
   // Dependency Injection Setup for Profile (using Firestore)
-  final profileFirestoreDataSource = ProfileFirestoreDataSourceImpl(
-    firestore: FirebaseFirestore.instance,
-  );
-  final profileRepository = ProfileRepositoryImpl(
+  final profileFirestoreDataSource =
+      profile_firestore_data_source.ProfileFirestoreDataSourceImpl(
+        firestore: FirebaseFirestore.instance,
+      );
+  final profileRepository = profile_repository_impl.ProfileRepositoryImpl(
     firestoreDataSource: profileFirestoreDataSource,
   );
   final createProfileUseCase = CreateProfile(profileRepository);
@@ -74,16 +87,19 @@ void main() async {
   final updateProfileUseCase = UpdateProfile(profileRepository);
 
   // Dependency Injection Setup for Task Planner (using Firestore)
-  final taskFirestoreDataSource = TaskFirestoreDataSourceImpl();
-  final taskRepository = TaskRepositoryImpl(
+  final taskFirestoreDataSource =
+      task_firestore_data_source.TaskFirestoreDataSourceImpl();
+  final taskRepository = task_repository_impl.TaskRepositoryImpl(
     firestoreDataSource: taskFirestoreDataSource,
   );
 
   // Dependency Injection Setup for Cashcard (using Firestore)
-  final transactionFirestoreDataSource = TransactionFirestoreDataSourceImpl();
-  final transactionRepository = TransactionRepositoryImpl(
-    transactionFirestoreDataSource,
-  );
+  final transactionFirestoreDataSource =
+      transaction_firestore_data_source.TransactionFirestoreDataSourceImpl();
+  final transactionRepository =
+      transaction_repository_impl.TransactionRepositoryImpl(
+        transactionFirestoreDataSource,
+      );
 
   runApp(
     MultiProvider(
@@ -163,32 +179,66 @@ class _MyAppState extends State<MyApp> {
               body:
                   navigationShell, // Display the currently selected branch's content
               bottomNavigationBar: BottomNavigationBar(
-                items: const <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.checklist_outlined),
-                    label: 'Tasks',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.lock_outline),
-                    label: 'Vault',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.account_balance_wallet_outlined),
-                    label: 'Cashcard',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    label: 'Profile',
-                  ),
-                ],
-                currentIndex: navigationShell.currentIndex,
-                selectedItemColor: Theme.of(context).colorScheme.primary,
-                unselectedItemColor: Colors.grey,
+                type:
+                    BottomNavigationBarType
+                        .fixed, // Ensure items are fixed width
+                backgroundColor:
+                    Theme.of(context).colorScheme.surface, // Light background
+                selectedItemColor:
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary, // Accent color for selected
+                unselectedItemColor: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(
+                  0.6,
+                ), // Darker color with opacity for unselected
                 showUnselectedLabels: true,
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ), // Optional: make selected label bold
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                ), // Optional: make unselected label normal
+                currentIndex: navigationShell.currentIndex,
                 onTap: (index) {
                   // Use the navigationShell to navigate to the selected branch
                   navigationShell.goBranch(index);
                 },
+                items: [
+                  BottomNavigationBarItem(
+                    icon: _buildNavItemIcon(
+                      Icons.checklist_outlined,
+                      navigationShell.currentIndex == 0,
+                      context,
+                    ), // Custom icon builder
+                    label: 'Tasks',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: _buildNavItemIcon(
+                      Icons.lock_outline,
+                      navigationShell.currentIndex == 1,
+                      context,
+                    ), // Custom icon builder
+                    label: 'Vault',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: _buildNavItemIcon(
+                      Icons.account_balance_wallet_outlined,
+                      navigationShell.currentIndex == 2,
+                      context,
+                    ), // Custom icon builder
+                    label: 'Cashcard',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: _buildNavItemIcon(
+                      Icons.person_outline,
+                      navigationShell.currentIndex == 3,
+                      context,
+                    ), // Custom icon builder
+                    label: 'Profile',
+                  ),
+                ],
               ),
             );
           },
@@ -278,6 +328,36 @@ class _MyAppState extends State<MyApp> {
       },
       refreshListenable: authProvider, // Listen to auth state changes
       initialLocation: '/tasks', // Set the initial location to the first tab
+    );
+  }
+
+  // Helper method to build custom nav bar item icon
+  Widget _buildNavItemIcon(
+    IconData iconData,
+    bool isSelected,
+    BuildContext context,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12.0,
+        vertical: 6.0,
+      ), // Adjust padding for the background
+      decoration:
+          isSelected
+              ? BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(
+                  0.15,
+                ), // Light accent color background
+                borderRadius: BorderRadius.circular(20.0), // Rounded corners
+              )
+              : null, // No decoration when not selected
+      child: Icon(
+        iconData,
+        color:
+            isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+      ), // Apply colors here
     );
   }
 
