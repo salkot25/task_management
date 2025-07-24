@@ -30,6 +30,10 @@ import 'package:myapp/features/account_management/presentation/pages/account_lis
 import 'package:myapp/features/cashcard/presentation/pages/cashcard_page.dart';
 import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
 
+// Import TaskPlanner dependencies
+import 'package:myapp/features/task_planner/data/datasources/task_firestore_data_source.dart';
+import 'package:myapp/features/task_planner/domain/repositories/task_repository.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -57,6 +61,10 @@ void main() async {
   final authRemoteDataSource = AuthRemoteDataSourceImpl();
   final authRepository = AuthRepositoryImpl(remoteDataSource: authRemoteDataSource);
 
+  // Dependency Injection Setup for Task Planner
+  final taskFirestoreDataSource = TaskFirestoreDataSourceImpl();
+  final taskRepository = TaskRepositoryImpl(firestoreDataSource: taskFirestoreDataSource);
+
   runApp(
     MultiProvider(
       providers: [
@@ -69,7 +77,7 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) => TaskProvider(),
+          create: (context) => TaskProvider(taskRepository: taskRepository), // Provide taskRepository
         ),
         ChangeNotifierProvider(
           create: (context) => CashcardProvider(),

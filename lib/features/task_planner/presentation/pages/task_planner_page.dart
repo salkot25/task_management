@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-
-import '../../domain/entities/task.dart'; // Assuming Task entity is here
 import '../provider/task_provider.dart';
 
 class TaskPlannerPage extends StatefulWidget {
@@ -122,18 +120,58 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       ),
       body: Consumer<TaskProvider>(
         builder: (context, taskProvider, child) {
-          return ListView.builder(
-            itemCount: taskProvider.tasks.length,
-            itemBuilder: (context, index) {
-              final task = taskProvider.tasks[index];
-              return ListTile(
-                title: Text(task.title),
-                subtitle: Text(
-                    '${task.description ?? 'No description'} - Due: ${DateFormat('MMM d, yyyy').format(task.dueDate)}'),
-                // Add more task details or actions here
-              );
-            },
-          );
+          // Show a loading indicator while tasks are being fetched
+          // This assumes your TaskProvider has a loading state or the initial stream is empty
+          // if (taskProvider.isLoading) { // Uncomment if you add a loading state to TaskProvider
+          //   return const Center(child: CircularProgressIndicator());
+          // }
+
+          if (taskProvider.tasks.isEmpty) {
+             return const Center(
+              child: Text('No tasks yet! Tap the + button to add one.'),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: taskProvider.tasks.length,
+              itemBuilder: (context, index) {
+                final task = taskProvider.tasks[index];
+                return ListTile(
+                  leading: Checkbox(
+                    value: task.isCompleted,
+                    onChanged: (bool? value) {
+                      taskProvider.toggleTaskStatus(task.id);
+                    },
+                  ),
+                  title: Text(
+                    task.title,
+                    style: TextStyle(
+                      decoration: task.isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${task.description} - Due: ${DateFormat('MMM d, yyyy').format(task.dueDate)}',
+                     style: TextStyle(
+                      decoration: task.isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
+                  ),
+                   // Optional: Add a delete icon
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () {
+                       taskProvider.deleteTask(task.id);
+                    },
+                    tooltip: 'Delete Task',
+                  ),
+                  // You can add onTap for editing the task if needed
+                  // onTap: () { ... },
+                );
+              },
+            );
+          }
         },
       ),
       floatingActionButton: FloatingActionButton(

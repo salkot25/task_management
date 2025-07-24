@@ -16,8 +16,11 @@ class _AccountListPageState extends State<AccountListPage> {
   @override
   void initState() {
     super.initState();
+    // It's generally safe to use context in initState or addPostFrameCallback
+    // if you check mounted before using context in asynchronous callbacks.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) { // Add mounted check here
+      // Check if the widget is still mounted before using context
+      if (mounted) {
         Provider.of<AccountProvider>(context, listen: false).loadAccounts();
       }
     });
@@ -60,7 +63,8 @@ class _AccountListPageState extends State<AccountListPage> {
                         builder: (context) => AccountDetailPage(account: account),
                       ),
                     ).then((_) {
-                      if (mounted) { // Add mounted check here
+                      // Check if the widget is still mounted after navigation returns
+                      if (mounted) {
                          Provider.of<AccountProvider>(context, listen: false).loadAccounts();
                       }
                     });
@@ -101,7 +105,8 @@ class _AccountListPageState extends State<AccountListPage> {
               builder: (context) => const AccountDetailPage(),
             ),
           ).then((_) {
-            if (mounted) { // Add mounted check here
+            // Check if the widget is still mounted after navigation returns
+            if (mounted) {
                Provider.of<AccountProvider>(context, listen: false).loadAccounts();
             }
           });
@@ -128,6 +133,7 @@ class AccountListItem extends StatelessWidget {
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     // Access ScaffoldMessengerState using rootNavigator: true
+    // It's generally safe to use context for showing Snackbars if the widget is part of the tree.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$label copied to clipboard')),
     );

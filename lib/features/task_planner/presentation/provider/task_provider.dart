@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/task.dart';
-import 'package:uuid/uuid.dart'; // For generating unique IDs
+import '../../domain/repositories/task_repository.dart';
+import 'package:uuid/uuid.dart';
 
 class TaskProvider with ChangeNotifier {
-  final List<Task> _tasks = [];
+  final TaskRepository taskRepository;
+  // Initial state can be an empty list or loading indicator
+  List<Task> _tasks = [];
+
+  TaskProvider({required this.taskRepository}) {
+    // Listen to the stream of tasks from the repository
+    taskRepository.getTasks().listen((taskList) {
+      _tasks = taskList;
+      notifyListeners();
+    });
+  }
 
   List<Task> get tasks => _tasks;
 
-  void addTask(String title, String description, DateTime dueDate) {
+  Future<void> addTask(String title, String description, DateTime dueDate) async {
     const uuid = Uuid();
     final newTask = Task(
       id: uuid.v4(),
@@ -15,22 +26,19 @@ class TaskProvider with ChangeNotifier {
       description: description,
       dueDate: dueDate,
     );
-    _tasks.add(newTask);
-    notifyListeners();
+    await taskRepository.addTask(newTask);
+    // The listener will update _tasks and notifyListeners()
   }
 
-  void toggleTaskStatus(String id) {
-    final taskIndex = _tasks.indexWhere((task) => task.id == id);
-    if (taskIndex != -1) {
-      _tasks[taskIndex] = _tasks[taskIndex].copyWith(
-        isCompleted: !_tasks[taskIndex].isCompleted,
-      );
-      notifyListeners();
-    }
+  Future<void> toggleTaskStatus(String id) async {
+    final taskToUpdate = _tasks.firstWhere((task) => task.id == id);
+    final updatedTask = taskToUpdate.copyWith(isCompleted: !taskToUpdate.isCompleted);
+    await taskRepository.updateTask(updatedTask);
+    // The listener will update _tasks and notifyListeners()
   }
 
-  void deleteTask(String id) {
-    _tasks.removeWhere((task) => task.id == id);
-    notifyListeners();
+  Future<void> deleteTask(String id) async {
+    await taskRepository.deleteTask(id);
+    // The listener will update _tasks and notifyListeners()
   }
 }
