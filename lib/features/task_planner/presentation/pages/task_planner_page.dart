@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
+import '../../domain/entities/task.dart'; // Assuming Task entity is here
 import '../provider/task_provider.dart';
-import 'package:intl/intl.dart'; // For date formatting
 
 class TaskPlannerPage extends StatefulWidget {
   const TaskPlannerPage({super.key});
 
   @override
-  State<TaskPlannerPage> createState() => _TaskPlannerPageState();
+  _TaskPlannerPageState createState() => _TaskPlannerPageState();
 }
 
 class _TaskPlannerPageState extends State<TaskPlannerPage> {
@@ -30,7 +32,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
     }
   }
 
-  void _addTask() {
+  void _addTask(BuildContext dialogContext) { // Pass dialog context
     if (_formKey.currentState!.validate()) {
       Provider.of<TaskProvider>(context, listen: false).addTask(
         _titleController.text,
@@ -40,16 +42,16 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       _titleController.clear();
       _descriptionController.clear();
       setState(() {
-         _selectedDate = DateTime.now(); // Reset date to today
+        _selectedDate = DateTime.now(); // Reset date to today
       });
-      Navigator.of(context).pop(); // Close the dialog
+      Navigator.of(dialogContext).pop(); // Close the dialog using dialog context
     }
   }
 
   void _showAddTaskDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) { // Capture dialog context
         return AlertDialog(
           title: const Text('Add New Task'),
           content: SingleChildScrollView(
@@ -78,12 +80,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                     ),
                     maxLines: 3,
                   ),
-                   const SizedBox(height: 12.0),
-                   ListTile(
-                     title: Text('Due Date: ${DateFormat('EEE, MMM d, yyyy').format(_selectedDate)}'),
-                     trailing: const Icon(Icons.calendar_today),
-                     onTap: () => _selectDate(context),
-                   ),
+                  const SizedBox(height: 12.0),
+                  ListTile(
+                    title: Text('Due Date: ${DateFormat('EEE, MMM d, yyyy').format(_selectedDate)}'),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () => _selectDate(context),
+                  ),
                 ],
               ),
             ),
@@ -92,11 +94,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
             TextButton(
               child: const Text('Cancel'),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop(); // Close the dialog using dialog context
               },
             ),
             ElevatedButton(
-              onPressed: _addTask,
+              onPressed: () => _addTask(dialogContext), // Pass dialog context to _addTask
               child: const Text('Add Task'),
             ),
           ],
@@ -114,52 +116,26 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final taskProvider = Provider.of<TaskProvider>(context);
-    final tasks = taskProvider.tasks;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Task Planner'),
       ),
-      body: tasks.isEmpty
-          ? const Center(
-              child: Text('No tasks yet! Add a new task using the + button.'),
-            )
-          : ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                final task = tasks[index];
-                return ListTile(
-                  leading: Checkbox(
-                    value: task.isCompleted,
-                    onChanged: (bool? value) {
-                      if (value != null) {
-                        taskProvider.toggleTaskStatus(task.id);
-                      }
-                    },
-                  ),
-                  title: Text(
-                    task.title,
-                    style: TextStyle(
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (task.description.isNotEmpty) Text(task.description),
-                       Text('Due: ${DateFormat('MMM d, yyyy').format(task.dueDate)}'),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      taskProvider.deleteTask(task.id);
-                    },
-                  ),
-                );
-              },
-            ),
+      body: Consumer<TaskProvider>(
+        builder: (context, taskProvider, child) {
+          return ListView.builder(
+            itemCount: taskProvider.tasks.length,
+            itemBuilder: (context, index) {
+              final task = taskProvider.tasks[index];
+              return ListTile(
+                title: Text(task.title),
+                subtitle: Text(
+                    '${task.description ?? 'No description'} - Due: ${DateFormat('MMM d, yyyy').format(task.dueDate)}'),
+                // Add more task details or actions here
+              );
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
         tooltip: 'Add Task',
