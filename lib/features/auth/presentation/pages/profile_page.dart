@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
+import 'package:go_router/go_router.dart'; // Import go_router
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -12,11 +13,11 @@ class ProfilePage extends StatelessWidget {
 
     if (user == null) {
       // Redirect to login page if user is not logged in
-      // This navigation logic should ideally be in a wrapper widget 
-      // that listens to auth state changes at a higher level.
-      // For simplicity in this example, we might navigate here.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-         Navigator.of(context).pushReplacementNamed('/login'); // Example navigation
+      // This navigation logic is now handled by go_router's redirect.
+      // However, if this page is accessed directly somehow while unauthenticated,
+      // we can still use go_router to navigate.
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+         context.go('/login'); // Use go_router for navigation
       });
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()), // Or a loading/redirect message
@@ -31,7 +32,7 @@ class ProfilePage extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await authProvider.signOut();
-              // Navigation after logout will be handled by the auth state listener
+              // Navigation after logout will be handled by go_router's redirect
             },
             tooltip: 'Logout',
           ),

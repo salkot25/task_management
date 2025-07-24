@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
-import 'package:myapp/features/auth/presentation/pages/register_page.dart';
-import 'package:myapp/features/auth/presentation/pages/forgot_password_page.dart';
+import 'package:go_router/go_router.dart'; // Import go_router
+// Remove unused imports as navigation is handled by go_router
+// import 'package:myapp/features/auth/presentation/pages/register_page.dart';
+// import 'package:myapp/features/auth/presentation/pages/forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,7 +27,7 @@ class LoginPageState extends State<LoginPage> {
       );
 
       if (success) {
-        // Navigation after login will be handled by the auth state listener in AuthChecker
+        // Navigation after login is handled by go_router's redirect
       } else {
         if (!mounted) return; // Add mounted check
         ScaffoldMessenger.of(context).showSnackBar(
@@ -45,7 +47,7 @@ class LoginPageState extends State<LoginPage> {
           SnackBar(content: Text(authProvider.errorMessage ?? 'Google Sign In Failed')),
         );
       }
-       // Navigation after successful Google Sign-In will be handled by AuthChecker
+       // Navigation after successful Google Sign-In is handled by go_router's redirect
   }
 
   @override
@@ -110,19 +112,13 @@ class LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 16.0),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RegisterPage()),
-                    );
+                    context.go('/register'); // Use go_router
                   },
                   child: const Text("Don't have an account? Sign Up"),
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-                    );
+                    context.go('/forgot-password'); // Use go_router
                   },
                   child: const Text('Forgot Password?'),
                 ),

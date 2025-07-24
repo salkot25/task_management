@@ -44,6 +44,7 @@ dependencies:
   firebase_core: ^3.15.2 # Add firebase_core dependency
   firebase_auth: ^5.7.0
   google_sign_in: ^6.2.1 # Downgraded to latest stable version
+  go_router: ^16.0.0
 
 dev_dependencies:
   flutter_test:
