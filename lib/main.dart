@@ -38,6 +38,8 @@ import 'package:myapp/features/task_planner/domain/repositories/task_repository.
 
 // Import Account Management Firestore dependencies
 import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart';
+import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_data_source.dart'; // Import transaction data source
+import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart'; // Import transaction repository
 import 'dart:developer' as developer; // Import developer for logging
 
 void main() async {
@@ -72,6 +74,10 @@ void main() async {
   final taskFirestoreDataSource = TaskFirestoreDataSourceImpl();
   final taskRepository = TaskRepositoryImpl(firestoreDataSource: taskFirestoreDataSource);
 
+  // Dependency Injection Setup for Cashcard (using Firestore)
+  final transactionFirestoreDataSource = TransactionFirestoreDataSourceImpl();
+  final transactionRepository = TransactionRepositoryImpl(transactionFirestoreDataSource);
+
   runApp(
     MultiProvider(
       providers: [
@@ -89,7 +95,7 @@ void main() async {
           create: (context) => TaskProvider(taskRepository: taskRepository), // Provide taskRepository
         ),
         ChangeNotifierProvider(
-          create: (context) => CashcardProvider(),
+          create: (context) => CashcardProvider(transactionRepository), // Provide transactionRepository
         ),
         ChangeNotifierProvider(
           create: (context) => AuthProvider(authRepository: authRepository),

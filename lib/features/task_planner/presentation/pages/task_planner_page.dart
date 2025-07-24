@@ -23,7 +23,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _selectedDate) {
+    // Check mounted before calling setState
+    if (picked != null && picked != _selectedDate && mounted) {
       setState(() {
         _selectedDate = picked;
       });
@@ -39,9 +40,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       );
       _titleController.clear();
       _descriptionController.clear();
-      setState(() {
-        _selectedDate = DateTime.now(); // Reset date to today
-      });
+      // Check mounted before calling setState
+      if (mounted) {
+        setState(() {
+          _selectedDate = DateTime.now(); // Reset date to today
+        });
+      }
       Navigator.of(dialogContext).pop(); // Close the dialog using dialog context
     }
   }
