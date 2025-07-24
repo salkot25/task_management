@@ -79,13 +79,21 @@ class _AccountListPageState extends State<AccountListPage> {
                         content: Text('Are you sure you want to delete account for ${account.website}?'),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.pop(context), // It's safe to use context here
+                            onPressed: () {
+                               // Check if the widget is still mounted before navigating
+                              if (mounted) {
+                                Navigator.pop(context); // It's safe to use context here
+                              }
+                            }, 
                             child: const Text('Cancel'),
                           ),
                           TextButton(
                             onPressed: () {
                               provider.removeAccount(account.id);
-                              Navigator.pop(context); // It's safe to use context here
+                               // Check if the widget is still mounted before navigating
+                              if (mounted) {
+                                Navigator.pop(context); // It's safe to use context here
+                              }
                             },
                             child: const Text('Delete'),
                           ),
@@ -137,7 +145,7 @@ class AccountListItem extends StatelessWidget {
     // Access ScaffoldMessengerState using rootNavigator: true
     // It's generally safe to use context for showing Snackbars if the widget is part of the tree.
     // Check mounted before showing the snackbar is also a good practice, though often not strictly necessary here.
-     if (!mounted) return; // Added mounted check for consistency
+     if (!context.mounted) return; // Added mounted check for consistency
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$label copied to clipboard')),
     );
@@ -212,7 +220,4 @@ class AccountListItem extends StatelessWidget {
       ),
     );
   }
-
-   // Added mounted getter for StatelessWidget
-  bool get mounted => true; 
 }

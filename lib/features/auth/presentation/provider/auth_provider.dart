@@ -160,6 +160,7 @@ class AuthProvider extends ChangeNotifier {
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (profile) => _profile = profile,
     );
+     // Ensure notifyListeners is called after profile update, regardless of success
      notifyListeners();
   }
 
