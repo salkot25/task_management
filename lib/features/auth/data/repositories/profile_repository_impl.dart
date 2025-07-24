@@ -22,7 +22,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     } on OtherException catch (e) {
       return Left(ServerFailure(e.message));
     } on PlatformException catch (e) {
-       return Left(ServerFailure(e.message ?? 'Unknown platform error'));
+      return Left(ServerFailure(e.message ?? 'Unknown platform error'));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -37,8 +37,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Left(ServerFailure(e.message));
     } on OtherException catch (e) {
       return Left(ServerFailure(e.message));
-     } on PlatformException catch (e) {
-       return Left(ServerFailure(e.message ?? 'Unknown platform error'));
+    } on PlatformException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown platform error'));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -53,8 +53,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Left(ServerFailure(e.message));
     } on OtherException catch (e) {
       return Left(ServerFailure(e.message));
-     } on PlatformException catch (e) {
-       return Left(ServerFailure(e.message ?? 'Unknown platform error'));
+    } on PlatformException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Unknown platform error'));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

@@ -22,7 +22,11 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
       if (!mounted) return; // Add mounted check
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authProvider.errorMessage ?? 'Error sending reset email')),
+        SnackBar(
+          content: Text(
+            authProvider.errorMessage ?? 'Error sending reset email',
+          ),
+        ),
       );
 
       if (success) {
@@ -43,9 +47,7 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forgot Password'),
-      ),
+      appBar: AppBar(title: const Text('Forgot Password')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),

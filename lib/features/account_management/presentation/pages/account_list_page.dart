@@ -29,10 +29,7 @@ class _AccountListPageState extends State<AccountListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Password Manager'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Password Manager'), centerTitle: true),
       body: Consumer<AccountProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
@@ -42,7 +39,9 @@ class _AccountListPageState extends State<AccountListPage> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  provider.message.isNotEmpty ? provider.message : 'No accounts found. Tap the + button to add one.',
+                  provider.message.isNotEmpty
+                      ? provider.message
+                      : 'No accounts found. Tap the + button to add one.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
@@ -60,45 +59,56 @@ class _AccountListPageState extends State<AccountListPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AccountDetailPage(account: account),
+                        builder:
+                            (context) => AccountDetailPage(account: account),
                       ),
                     ).then((_) {
                       // Check if the widget is still mounted after navigation returns
                       if (mounted) {
-                         Provider.of<AccountProvider>(context, listen: false).loadAccounts();
+                        Provider.of<AccountProvider>(
+                          context,
+                          listen: false,
+                        ).loadAccounts();
                       }
                     });
                   },
                   onDelete: () {
-                     // Check if the widget is still mounted before showing the dialog
-                    if (!mounted) return; 
+                    // Check if the widget is still mounted before showing the dialog
+                    if (!mounted) return;
                     showDialog(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Confirm Deletion'),
-                        content: Text('Are you sure you want to delete account for ${account.website}?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                               // Check if the widget is still mounted before navigating
-                              if (mounted) {
-                                Navigator.pop(context); // It's safe to use context here
-                              }
-                            }, 
-                            child: const Text('Cancel'),
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text('Confirm Deletion'),
+                            content: Text(
+                              'Are you sure you want to delete account for ${account.website}?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  // Check if the widget is still mounted before navigating
+                                  if (mounted) {
+                                    Navigator.pop(
+                                      context,
+                                    ); // It's safe to use context here
+                                  }
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  provider.removeAccount(account.id);
+                                  // Check if the widget is still mounted before navigating
+                                  if (mounted) {
+                                    Navigator.pop(
+                                      context,
+                                    ); // It's safe to use context here
+                                  }
+                                },
+                                child: const Text('Delete'),
+                              ),
+                            ],
                           ),
-                          TextButton(
-                            onPressed: () {
-                              provider.removeAccount(account.id);
-                               // Check if the widget is still mounted before navigating
-                              if (mounted) {
-                                Navigator.pop(context); // It's safe to use context here
-                              }
-                            },
-                            child: const Text('Delete'),
-                          ),
-                        ],
-                      ),
                     );
                   },
                 );
@@ -111,13 +121,14 @@ class _AccountListPageState extends State<AccountListPage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const AccountDetailPage(),
-            ),
+            MaterialPageRoute(builder: (context) => const AccountDetailPage()),
           ).then((_) {
             // Check if the widget is still mounted after navigation returns
             if (mounted) {
-               Provider.of<AccountProvider>(context, listen: false).loadAccounts();
+              Provider.of<AccountProvider>(
+                context,
+                listen: false,
+              ).loadAccounts();
             }
           });
         },
@@ -145,10 +156,10 @@ class AccountListItem extends StatelessWidget {
     // Access ScaffoldMessengerState using rootNavigator: true
     // It's generally safe to use context for showing Snackbars if the widget is part of the tree.
     // Check mounted before showing the snackbar is also a good practice, though often not strictly necessary here.
-     if (!context.mounted) return; // Added mounted check for consistency
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label copied to clipboard')),
-    );
+    if (!context.mounted) return; // Added mounted check for consistency
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$label copied to clipboard')));
   }
 
   @override
@@ -161,7 +172,9 @@ class AccountListItem extends StatelessWidget {
           children: [
             Text(
               account.website,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4.0),
             Row(
@@ -175,7 +188,12 @@ class AccountListItem extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.copy_outlined),
                   tooltip: 'Copy Username',
-                  onPressed: () => _copyToClipboard(context, account.username, 'Username'),
+                  onPressed:
+                      () => _copyToClipboard(
+                        context,
+                        account.username,
+                        'Username',
+                      ),
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ],
@@ -189,10 +207,15 @@ class AccountListItem extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
-                 IconButton(
+                IconButton(
                   icon: const Icon(Icons.copy_outlined),
                   tooltip: 'Copy Password',
-                  onPressed: () => _copyToClipboard(context, account.password, 'Password'),
+                  onPressed:
+                      () => _copyToClipboard(
+                        context,
+                        account.password,
+                        'Password',
+                      ),
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ],
@@ -201,7 +224,7 @@ class AccountListItem extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                 TextButton.icon(
+                TextButton.icon(
                   onPressed: onEdit,
                   icon: const Icon(Icons.edit_outlined),
                   label: const Text('Edit'),
@@ -211,7 +234,9 @@ class AccountListItem extends StatelessWidget {
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('Delete'),
-                   style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
                 ),
               ],
             ),

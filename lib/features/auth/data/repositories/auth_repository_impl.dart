@@ -13,10 +13,18 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, User>> signInWithEmailAndPassword(String email, String password) async {
+  Future<Either<Failure, User>> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     try {
-      final userModel = await remoteDataSource.signInWithEmailAndPassword(email, password);
-      return Right(User(uid: userModel.uid, email: userModel.email)); // Convert UserModel to User
+      final userModel = await remoteDataSource.signInWithEmailAndPassword(
+        email,
+        password,
+      );
+      return Right(
+        User(uid: userModel.uid, email: userModel.email),
+      ); // Convert UserModel to User
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -28,10 +36,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> signUpWithEmailAndPassword(String email, String password) async {
+  Future<Either<Failure, User>> signUpWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     try {
-      final userModel = await remoteDataSource.signUpWithEmailAndPassword(email, password);
-      return Right(User(uid: userModel.uid, email: userModel.email)); // Convert UserModel to User
+      final userModel = await remoteDataSource.signUpWithEmailAndPassword(
+        email,
+        password,
+      );
+      return Right(
+        User(uid: userModel.uid, email: userModel.email),
+      ); // Convert UserModel to User
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -71,14 +87,22 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Stream<User?> get authStateChanges {
-    return remoteDataSource.authStateChanges.map((userModel) => userModel != null ? User(uid: userModel.uid, email: userModel.email) : null); // Convert UserModel to User
+    return remoteDataSource.authStateChanges.map(
+      (userModel) =>
+          userModel != null
+              ? User(uid: userModel.uid, email: userModel.email)
+              : null,
+    ); // Convert UserModel to User
   }
 
-   @override
+  @override
   Future<Either<Failure, User>> signInWithGoogle() async {
     try {
-      final userModel = await remoteDataSource.signInWithGoogle(); // Use remote data source
-      return Right(User(uid: userModel.uid, email: userModel.email)); // Convert UserModel to User
+      final userModel =
+          await remoteDataSource.signInWithGoogle(); // Use remote data source
+      return Right(
+        User(uid: userModel.uid, email: userModel.email),
+      ); // Convert UserModel to User
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on firebase_auth.FirebaseAuthException catch (e) {
@@ -99,7 +123,9 @@ class AuthRepositoryImpl implements AuthRepository {
       case 'weak-password':
         return AuthFailure('The password provided is too weak.');
       default:
-        return AuthFailure(e.message ?? 'An unknown authentication error occurred.');
+        return AuthFailure(
+          e.message ?? 'An unknown authentication error occurred.',
+        );
     }
   }
 }

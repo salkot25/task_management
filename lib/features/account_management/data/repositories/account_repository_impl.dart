@@ -16,7 +16,10 @@ class AccountRepositoryImpl implements AccountRepository {
       await firestoreDataSource.addAccount(account);
       return const Right(null);
     } catch (e) {
-       developer.log('Error creating account: $e', name: 'AccountRepository'); // Replaced print with logging
+      developer.log(
+        'Error creating account: $e',
+        name: 'AccountRepository',
+      ); // Replaced print with logging
       return Left(ServerFailure());
     }
   }
@@ -27,7 +30,10 @@ class AccountRepositoryImpl implements AccountRepository {
       final accounts = await firestoreDataSource.getAccounts().first;
       return Right(accounts);
     } catch (e) {
-       developer.log('Error fetching accounts: $e', name: 'AccountRepository'); // Replaced print with logging
+      developer.log(
+        'Error fetching accounts: $e',
+        name: 'AccountRepository',
+      ); // Replaced print with logging
       return Left(ServerFailure());
     }
   }
@@ -38,7 +44,10 @@ class AccountRepositoryImpl implements AccountRepository {
       await firestoreDataSource.updateAccount(account);
       return const Right(null);
     } catch (e) {
-       developer.log('Error updating account: $e', name: 'AccountRepository'); // Replaced print with logging
+      developer.log(
+        'Error updating account: $e',
+        name: 'AccountRepository',
+      ); // Replaced print with logging
       return Left(ServerFailure());
     }
   }
@@ -49,7 +58,10 @@ class AccountRepositoryImpl implements AccountRepository {
       await firestoreDataSource.deleteAccount(id);
       return const Right(null);
     } catch (e) {
-       developer.log('Error deleting account: $e', name: 'AccountRepository'); // Replaced print with logging
+      developer.log(
+        'Error deleting account: $e',
+        name: 'AccountRepository',
+      ); // Replaced print with logging
       return Left(ServerFailure());
     }
   }

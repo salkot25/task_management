@@ -18,7 +18,11 @@ class TaskProvider with ChangeNotifier {
 
   List<Task> get tasks => _tasks;
 
-  Future<void> addTask(String title, String description, DateTime dueDate) async {
+  Future<void> addTask(
+    String title,
+    String description,
+    DateTime dueDate,
+  ) async {
     const uuid = Uuid();
     final newTask = Task(
       id: uuid.v4(),
@@ -32,7 +36,9 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> toggleTaskStatus(String id) async {
     final taskToUpdate = _tasks.firstWhere((task) => task.id == id);
-    final updatedTask = taskToUpdate.copyWith(isCompleted: !taskToUpdate.isCompleted);
+    final updatedTask = taskToUpdate.copyWith(
+      isCompleted: !taskToUpdate.isCompleted,
+    );
     await taskRepository.updateTask(updatedTask);
     // The listener will update _tasks and notifyListeners()
   }

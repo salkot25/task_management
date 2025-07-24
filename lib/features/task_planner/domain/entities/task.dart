@@ -56,7 +56,10 @@ class Task {
       }
     } catch (e) {
       // Handle parsing errors, e.g., if the format is unexpected
-      developer.log('Error parsing dueDate: $e. Using current DateTime.', name: 'Task'); // Replaced print with logging
+      developer.log(
+        'Error parsing dueDate: $e. Using current DateTime.',
+        name: 'Task',
+      ); // Replaced print with logging
       parsedDueDate = DateTime.now(); // Provide a default DateTime on error
     }
 

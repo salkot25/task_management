@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/transaction.dart';
-import '../../domain/repositories/transaction_repository.dart';
+import 'package:myapp/features/cashcard/domain/entities/transaction.dart';
+import 'package:myapp/features/cashcard/domain/repositories/transaction_repository.dart';
 
 class CashcardProvider with ChangeNotifier {
   final TransactionRepository repository;
@@ -10,6 +10,10 @@ class CashcardProvider with ChangeNotifier {
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
   bool _showAllTime = true; // New flag for all time view
+
+  // Added for tracking the selected transaction type in the modal
+  TransactionType _selectedTransactionType =
+      TransactionType.expense; // Default to expense
 
   CashcardProvider(this.repository) {
     _listenToTransactions();
@@ -21,8 +25,9 @@ class CashcardProvider with ChangeNotifier {
     } else {
       // Apply month/year filter
       return _transactions.where((transaction) {
+        // Add null checks for transaction
         return transaction.date.month == _selectedMonth &&
-               transaction.date.year == _selectedYear;
+            transaction.date.year == _selectedYear;
       }).toList();
     }
   }
@@ -31,6 +36,9 @@ class CashcardProvider with ChangeNotifier {
   int get selectedMonth => _selectedMonth;
   int get selectedYear => _selectedYear;
   bool get showAllTime => _showAllTime; // Getter for the new flag
+
+  // Getter for the selected transaction type in the modal
+  TransactionType get selectedTransactionType => _selectedTransactionType;
 
   // Calculate total income for the *currently displayed* transactions (filtered or all time)
   double get totalIncome {
@@ -87,6 +95,12 @@ class CashcardProvider with ChangeNotifier {
   // Method to set the filter to show all time
   void setShowAllTime(bool value) {
     _showAllTime = value;
+    notifyListeners();
+  }
+
+  // Method to update the selected transaction type in the modal
+  void setSelectedTransactionType(TransactionType type) {
+    _selectedTransactionType = type;
     notifyListeners();
   }
 

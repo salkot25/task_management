@@ -37,16 +37,18 @@ class LoginPageState extends State<LoginPage> {
   }
 
   void _signInWithGoogle() async {
-     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      bool success = await authProvider.signInWithGoogle();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    bool success = await authProvider.signInWithGoogle();
 
-      if (!success) {
-         if (!mounted) return; // Add mounted check
-         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authProvider.errorMessage ?? 'Google Sign In Failed')),
-        );
-      }
-       // Navigation after successful Google Sign-In is handled by go_router's redirect
+    if (!success) {
+      if (!mounted) return; // Add mounted check
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? 'Google Sign In Failed'),
+        ),
+      );
+    }
+    // Navigation after successful Google Sign-In is handled by go_router's redirect
   }
 
   @override
@@ -71,7 +73,8 @@ class LoginPageState extends State<LoginPage> {
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch elements horizontally
+              crossAxisAlignment:
+                  CrossAxisAlignment.stretch, // Stretch elements horizontally
               children: <Widget>[
                 // Replace FlutterLogo with Image.asset for your logo
                 Image.asset(
@@ -82,15 +85,20 @@ class LoginPageState extends State<LoginPage> {
                 Text(
                   'TASKS MANAGEMENT', // App Name/Tagline
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall, // Use headlineSmall for tagline
+                  style:
+                      Theme.of(context)
+                          .textTheme
+                          .headlineSmall, // Use headlineSmall for tagline
                 ),
                 const SizedBox(height: 48.0), // Increased space before fields
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        8.0,
+                      ), // Rounded corners
                       borderSide: BorderSide.none, // No border line
                     ),
                     filled: true,
@@ -107,13 +115,15 @@ class LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _passwordController,
-                   decoration: InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        8.0,
+                      ), // Rounded corners
                       borderSide: BorderSide.none, // No border line
                     ),
-                     filled: true,
+                    filled: true,
                     fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   obscureText: true,
@@ -133,27 +143,43 @@ class LoginPageState extends State<LoginPage> {
                     },
                     child: Text(
                       'Forgot Password?',
-                      style: TextStyle(color: Theme.of(context).colorScheme.primary), // Use primary color for text button
-                      ),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                      ), // Use primary color for text button
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24.0), // Increased space before login button
-                 if (authProvider.isLoading)
+                const SizedBox(
+                  height: 24.0,
+                ), // Increased space before login button
+                if (authProvider.isLoading)
                   const Center(child: CircularProgressIndicator())
                 else
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0), // Increased vertical padding
-                       shape: RoundedRectangleBorder(
-                         borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16.0,
+                      ), // Increased vertical padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          8.0,
+                        ), // Rounded corners
                       ),
-                       backgroundColor: Theme.of(context).colorScheme.primary, // Use primary color for button background
-                       foregroundColor: Theme.of(context).colorScheme.onPrimary, // Use onPrimary for text color
+                      backgroundColor:
+                          Theme.of(context)
+                              .colorScheme
+                              .primary, // Use primary color for button background
+                      foregroundColor:
+                          Theme.of(context)
+                              .colorScheme
+                              .onPrimary, // Use onPrimary for text color
                     ),
                     child: const Text('Login'),
                   ),
-                const SizedBox(height: 24.0), // Increased space after login button
+                const SizedBox(
+                  height: 24.0,
+                ), // Increased space after login button
                 Row(
                   children: <Widget>[
                     const Expanded(
@@ -163,7 +189,10 @@ class LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
                         'Or sign in with',
-                        style: Theme.of(context).textTheme.bodyMedium, // Use bodyMedium for this text
+                        style:
+                            Theme.of(context)
+                                .textTheme
+                                .bodyMedium, // Use bodyMedium for this text
                       ),
                     ),
                     const Expanded(
@@ -192,14 +221,18 @@ class LoginPageState extends State<LoginPage> {
                     Container(
                       width: 60, // Adjust size as needed
                       height: 60,
-                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400), // Changed from withOpacity
-                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey.shade400,
+                        ), // Changed from withOpacity
+                        borderRadius: BorderRadius.circular(
+                          8.0,
+                        ), // Rounded corners
                       ),
                       child: IconButton(
                         icon: Image.asset(
-                           'assets/images/google.png', // Google logo asset
-                            width: 30, // Adjust logo size
+                          'assets/images/google.png', // Google logo asset
+                          width: 30, // Adjust logo size
                         ),
                         onPressed: _signInWithGoogle,
                       ),
@@ -212,16 +245,24 @@ class LoginPageState extends State<LoginPage> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: Theme.of(context).textTheme.bodyMedium, // Use bodyMedium
+                      style:
+                          Theme.of(
+                            context,
+                          ).textTheme.bodyMedium, // Use bodyMedium
                     ),
                     TextButton(
                       onPressed: () {
-                         developer.log('Register now button tapped!', name: 'LoginPage'); // Replaced print with logging
+                        developer.log(
+                          'Register now button tapped!',
+                          name: 'LoginPage',
+                        ); // Replaced print with logging
                         context.go('/register');
                       },
                       child: Text(
                         'Register now',
-                         style: TextStyle(color: Theme.of(context).colorScheme.primary), // Use primary color
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                        ), // Use primary color
                       ),
                     ),
                   ],

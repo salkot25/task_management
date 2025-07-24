@@ -17,16 +17,17 @@ class RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController(); // Added confirm password controller
+  final TextEditingController _confirmPasswordController =
+      TextEditingController(); // Added confirm password controller
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
       // Add password confirmation check
       if (_passwordController.text != _confirmPasswordController.text) {
         if (!mounted) return; // Add mounted check
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Passwords do not match')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
         return;
       }
 
@@ -42,7 +43,9 @@ class RegisterPageState extends State<RegisterPage> {
       } else {
         if (!mounted) return; // Add mounted check
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authProvider.errorMessage ?? 'Registration Failed')),
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Registration Failed'),
+          ),
         );
       }
     }
@@ -58,7 +61,10 @@ class RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    developer.log('Building RegisterPage', name: 'RegisterPage'); // Replaced print with logging
+    developer.log(
+      'Building RegisterPage',
+      name: 'RegisterPage',
+    ); // Replaced print with logging
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
@@ -72,9 +78,10 @@ class RegisterPageState extends State<RegisterPage> {
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch elements horizontally
+              crossAxisAlignment:
+                  CrossAxisAlignment.stretch, // Stretch elements horizontally
               children: <Widget>[
-                 // Replace FlutterLogo with Image.asset for your logo
+                // Replace FlutterLogo with Image.asset for your logo
                 Image.asset(
                   'assets/images/logo.png', // Your logo asset path
                   height: 100, // Adjust height as needed
@@ -83,15 +90,20 @@ class RegisterPageState extends State<RegisterPage> {
                 Text(
                   'Create Account', // Title
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall, // Use headlineSmall for title
+                  style:
+                      Theme.of(
+                        context,
+                      ).textTheme.headlineSmall, // Use headlineSmall for title
                 ),
-                 const SizedBox(height: 48.0), // Increased space before fields
+                const SizedBox(height: 48.0), // Increased space before fields
                 TextFormField(
                   controller: _emailController,
-                   decoration: InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Email',
-                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        8.0,
+                      ), // Rounded corners
                       borderSide: BorderSide.none, // No border line
                     ),
                     filled: true,
@@ -110,11 +122,13 @@ class RegisterPageState extends State<RegisterPage> {
                   controller: _passwordController,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        8.0,
+                      ), // Rounded corners
                       borderSide: BorderSide.none, // No border line
                     ),
-                     filled: true,
+                    filled: true,
                     fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   obscureText: true,
@@ -128,16 +142,18 @@ class RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                 const SizedBox(height: 16.0),
-                 TextFormField(
+                const SizedBox(height: 16.0),
+                TextFormField(
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
-                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        8.0,
+                      ), // Rounded corners
                       borderSide: BorderSide.none, // No border line
                     ),
-                     filled: true,
+                    filled: true,
                     fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   obscureText: true,
@@ -145,43 +161,64 @@ class RegisterPageState extends State<RegisterPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please confirm your password';
                     }
-                     if (value != _passwordController.text) {
+                    if (value != _passwordController.text) {
                       return 'Passwords do not match';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 24.0), // Increased space before register button
+                const SizedBox(
+                  height: 24.0,
+                ), // Increased space before register button
                 if (authProvider.isLoading)
                   const Center(child: CircularProgressIndicator())
                 else
                   ElevatedButton(
                     onPressed: _register,
-                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0), // Increased vertical padding
-                       shape: RoundedRectangleBorder(
-                         borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16.0,
+                      ), // Increased vertical padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          8.0,
+                        ), // Rounded corners
                       ),
-                       backgroundColor: Theme.of(context).colorScheme.primary, // Use primary color for button background
-                       foregroundColor: Theme.of(context).colorScheme.onPrimary, // Use onPrimary for text color
+                      backgroundColor:
+                          Theme.of(context)
+                              .colorScheme
+                              .primary, // Use primary color for button background
+                      foregroundColor:
+                          Theme.of(context)
+                              .colorScheme
+                              .onPrimary, // Use onPrimary for text color
                     ),
                     child: const Text('Register'),
                   ),
-                const SizedBox(height: 24.0), // Increased space after register button
+                const SizedBox(
+                  height: 24.0,
+                ), // Increased space after register button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "Already have an account? ",
-                       style: Theme.of(context).textTheme.bodyMedium, // Use bodyMedium
+                      style:
+                          Theme.of(
+                            context,
+                          ).textTheme.bodyMedium, // Use bodyMedium
                     ),
                     TextButton(
                       onPressed: () {
-                        context.go('/login'); // Use go_router to navigate back to login
+                        context.go(
+                          '/login',
+                        ); // Use go_router to navigate back to login
                       },
                       child: Text(
                         'Sign In',
-                         style: TextStyle(color: Theme.of(context).colorScheme.primary), // Use primary color
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                        ), // Use primary color
                       ),
                     ),
                   ],

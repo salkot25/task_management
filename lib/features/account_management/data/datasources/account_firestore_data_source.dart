@@ -13,7 +13,10 @@ class AccountFirestoreDataSourceImpl implements AccountFirestoreDataSource {
 
   @override
   Future<void> addAccount(Account account) {
-    return _firestore.collection('accounts').doc(account.id).set(account.toMap());
+    return _firestore
+        .collection('accounts')
+        .doc(account.id)
+        .set(account.toMap());
   }
 
   @override
@@ -25,7 +28,10 @@ class AccountFirestoreDataSourceImpl implements AccountFirestoreDataSource {
 
   @override
   Future<void> updateAccount(Account account) {
-    return _firestore.collection('accounts').doc(account.id).update(account.toMap());
+    return _firestore
+        .collection('accounts')
+        .doc(account.id)
+        .update(account.toMap());
   }
 
   @override

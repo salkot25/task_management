@@ -15,7 +15,7 @@ class CashcardProvider with ChangeNotifier {
       // Apply month/year filter
       return _transactions.where((transaction) {
         return transaction.date.month == _selectedMonth &&
-               transaction.date.year == _selectedYear;
+            transaction.date.year == _selectedYear;
       }).toList();
     }
   }

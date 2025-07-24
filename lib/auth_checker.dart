@@ -13,11 +13,7 @@ class AuthChecker extends StatelessWidget {
 
     // If the user is loading, show a loading spinner
     if (authProvider.isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     // If the user is logged in, show the home page

@@ -18,9 +18,7 @@ class AccountProvider with ChangeNotifier {
   String _message = '';
   bool _isLoading = false;
 
-  AccountProvider({
-    required this.accountRepository,
-  });
+  AccountProvider({required this.accountRepository});
 
   List<Account> get accounts => _accounts;
   String get message => _message;
@@ -45,17 +43,17 @@ class AccountProvider with ChangeNotifier {
     // });
 
     // If using Future from the repository (current implementation):
-     final result = await accountRepository.getAllAccounts();
-     result.fold(
-       (failure) {
-         _message = _mapFailureToMessage(failure);
-         _accounts = [];
-       },
-       (accounts) {
-         _accounts = accounts;
-         _message = '';
-       },
-     );
+    final result = await accountRepository.getAllAccounts();
+    result.fold(
+      (failure) {
+        _message = _mapFailureToMessage(failure);
+        _accounts = [];
+      },
+      (accounts) {
+        _accounts = accounts;
+        _message = '';
+      },
+    );
 
     _isLoading = false;
     notifyListeners();
@@ -122,8 +120,9 @@ class AccountProvider with ChangeNotifier {
     switch (failure.runtimeType) {
       case ServerFailure _: // Change to ServerFailure
         return 'Server Failure: Unable to process request';
-       case CacheFailure _: // Keep CacheFailure case if still possible in other parts
-         return 'Cache Failure: Unable to load or save data';
+      case CacheFailure
+      _: // Keep CacheFailure case if still possible in other parts
+        return 'Cache Failure: Unable to load or save data';
       default:
         return 'Unexpected Error';
     }

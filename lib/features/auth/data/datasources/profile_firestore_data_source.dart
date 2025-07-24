@@ -29,7 +29,9 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
     } on PlatformException catch (e) {
       throw FirestoreException(e.message ?? 'Failed to create profile');
     } catch (e) {
-      throw OtherException(e.toString()); // Use OtherException for unexpected errors
+      throw OtherException(
+        e.toString(),
+      ); // Use OtherException for unexpected errors
     }
   }
 
@@ -52,7 +54,9 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
     } on PlatformException catch (e) {
       throw FirestoreException(e.message ?? 'Failed to get profile');
     } catch (e) {
-      throw OtherException(e.toString()); // Use OtherException for unexpected errors
+      throw OtherException(
+        e.toString(),
+      ); // Use OtherException for unexpected errors
     }
   }
 
@@ -69,7 +73,9 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
     } on PlatformException catch (e) {
       throw FirestoreException(e.message ?? 'Failed to update profile');
     } catch (e) {
-      throw OtherException(e.toString()); // Use OtherException for unexpected errors
+      throw OtherException(
+        e.toString(),
+      ); // Use OtherException for unexpected errors
     }
   }
 }

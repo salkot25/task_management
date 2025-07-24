@@ -11,9 +11,7 @@ class TaskDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       elevation: 0.0,
       backgroundColor: Colors.transparent,
       child: contentBox(context),
@@ -44,21 +42,29 @@ class TaskDetailDialog extends StatelessWidget {
               Text(
                 task.title,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ), // Modern title style
+                  color: AppColors.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ), // Modern title style
               ),
               const SizedBox(height: 16.0),
               Row(
                 children: [
-                  Icon(Icons.calendar_today, color: AppColors.greyColor, size: 20.0), // Calendar icon
+                  Icon(
+                    Icons.calendar_today,
+                    color: AppColors.greyColor,
+                    size: 20.0,
+                  ), // Calendar icon
                   const SizedBox(width: 8.0),
                   Text(
                     'Due Date: ${DateFormat('MMM d, yyyy').format(task.dueDate)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontStyle: FontStyle.italic,
-                           color: Theme.of(context).textTheme.bodyMedium?.color, // Use default text color
-                        ),
+                      fontStyle: FontStyle.italic,
+                      color:
+                          Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.color, // Use default text color
+                    ),
                   ),
                 ],
               ),
@@ -70,15 +76,19 @@ class TaskDetailDialog extends StatelessWidget {
                     Text(
                       'Description:',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8.0),
                     Text(
                       task.description,
-                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                           color: Theme.of(context).textTheme.bodyMedium?.color, // Use default text color
-                        ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color:
+                            Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.color, // Use default text color
+                      ),
                     ),
                   ],
                 ),
@@ -91,7 +101,10 @@ class TaskDetailDialog extends StatelessWidget {
                   },
                   child: Text(
                     'Close',
-                    style: TextStyle(fontSize: 18, color: AppColors.primaryColor), // Use primary color for button
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppColors.primaryColor,
+                    ), // Use primary color for button
                   ),
                 ),
               ),

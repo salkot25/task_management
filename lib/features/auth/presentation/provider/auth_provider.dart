@@ -10,14 +10,12 @@ import 'package:myapp/features/auth/domain/usecases/update_profile.dart'; // Imp
 import 'package:myapp/features/auth/data/repositories/auth_repository_impl.dart'; // Import AuthRepositoryImpl
 // Import ProfileRepositoryImpl
 
-
 class AuthProvider extends ChangeNotifier {
   final AuthRepository authRepository;
   final ProfileRepository profileRepository; // Add ProfileRepository
   final CreateProfile createProfileUseCase; // Add CreateProfile use case
   final GetProfile getProfileUseCase; // Add GetProfile use case
   final UpdateProfile updateProfileUseCase; // Add UpdateProfile use case
-
 
   User? _user;
   Profile? _profile; // Add Profile object
@@ -57,7 +55,10 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    final result = await authRepository.signInWithEmailAndPassword(email, password);
+    final result = await authRepository.signInWithEmailAndPassword(
+      email,
+      password,
+    );
 
     _isLoading = false;
     result.fold(
@@ -65,7 +66,7 @@ class AuthProvider extends ChangeNotifier {
       (user) => _user = user,
     );
     if (_user != null) {
-       await _getProfile(_user!.uid); // Fetch profile after successful sign in
+      await _getProfile(_user!.uid); // Fetch profile after successful sign in
     }
     notifyListeners();
     return _user != null;
@@ -76,17 +77,22 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    final result = await authRepository.signUpWithEmailAndPassword(email, password);
+    final result = await authRepository.signUpWithEmailAndPassword(
+      email,
+      password,
+    );
 
     _isLoading = false;
     result.fold(
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (user) => _user = user,
     );
-     if (_user != null) {
-       await _createProfile(Profile(uid: _user!.uid, name: _user!.email ?? '')); // Create profile after sign up
-       await _getProfile(_user!.uid); // Fetch newly created profile
-     }
+    if (_user != null) {
+      await _createProfile(
+        Profile(uid: _user!.uid, name: _user!.email ?? ''),
+      ); // Create profile after sign up
+      await _getProfile(_user!.uid); // Fetch newly created profile
+    }
     notifyListeners();
     return _user != null;
   }
@@ -115,18 +121,17 @@ class AuthProvider extends ChangeNotifier {
     final result = await authRepository.signOut();
 
     _isLoading = false;
-    result.fold(
-      (failure) => _errorMessage = _mapFailureToMessage(failure),
-      (_) {
-         _user = null;
-         _profile = null; // Clear profile on sign out
-      },
-    );
+    result.fold((failure) => _errorMessage = _mapFailureToMessage(failure), (
+      _,
+    ) {
+      _user = null;
+      _profile = null; // Clear profile on sign out
+    });
     notifyListeners();
   }
 
   Future<bool> signInWithGoogle() async {
-     _isLoading = true;
+    _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
@@ -137,9 +142,9 @@ class AuthProvider extends ChangeNotifier {
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (user) => _user = user,
     );
-     if (_user != null) {
-       await _getProfile(_user!.uid); // Fetch profile after Google sign in
-     }
+    if (_user != null) {
+      await _getProfile(_user!.uid); // Fetch profile after Google sign in
+    }
     notifyListeners();
     return _user != null;
   }
@@ -151,7 +156,7 @@ class AuthProvider extends ChangeNotifier {
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (_) => null,
     );
-     notifyListeners();
+    notifyListeners();
   }
 
   Future<void> _getProfile(String uid) async {
@@ -160,12 +165,12 @@ class AuthProvider extends ChangeNotifier {
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (profile) => _profile = profile,
     );
-     // Ensure notifyListeners is called after profile update, regardless of success
-     notifyListeners();
+    // Ensure notifyListeners is called after profile update, regardless of success
+    notifyListeners();
   }
 
   Future<void> updateProfile(Profile profile) async {
-     _isLoading = true;
+    _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
@@ -174,8 +179,8 @@ class AuthProvider extends ChangeNotifier {
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (_) => _profile = profile, // Update profile in state on success
     );
-     _isLoading = false;
-     notifyListeners();
+    _isLoading = false;
+    notifyListeners();
   }
 
   String? _mapFailureToMessage(Failure failure) {
@@ -189,7 +194,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-   // Helper method to get the current user's profile
+  // Helper method to get the current user's profile
   Future<Profile?> getCurrentUserProfile() async {
     if (_user != null && _profile == null) {
       await _getProfile(_user!.uid);

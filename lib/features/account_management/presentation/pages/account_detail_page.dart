@@ -47,10 +47,15 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
     if (_formKey.currentState!.validate()) {
       final provider = Provider.of<AccountProvider>(context, listen: false);
       final account = Account(
-        id: _isEditing ? widget.account!.id : const Uuid().v4(), // Use existing ID or generate new
+        id:
+            _isEditing
+                ? widget.account!.id
+                : const Uuid().v4(), // Use existing ID or generate new
         website: websiteController.text.trim(), // Hapus spasi di awal/akhir
         username: usernameController.text.trim(), // Hapus spasi di awal/akhir
-        password: passwordController.text, // Kata sandi tidak di-trim jika spasi penting
+        password:
+            passwordController
+                .text, // Kata sandi tidak di-trim jika spasi penting
       );
 
       if (_isEditing) {
@@ -61,8 +66,8 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
 
       Navigator.pop(context); // Go back after saving
     } else {
-       // Tampilkan snackbar jika form tidak valid
-       ScaffoldMessenger.of(context).showSnackBar(
+      // Tampilkan snackbar jika form tidak valid
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all fields')),
       );
     }
@@ -74,21 +79,24 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Account' : 'Add Account'),
         centerTitle: true,
-         // elevation: 0, // Sudah diatur di tema
+        // elevation: 0, // Sudah diatur di tema
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0), // Tambahkan padding lebih besar
         child: Form(
           key: _formKey,
           child: ListView(
-             // Gunakan ListView agar bisa di-scroll jika keyboard muncul
+            // Gunakan ListView agar bisa di-scroll jika keyboard muncul
             children: [
               TextFormField(
-                controller: websiteController, // Gunakan nama controller yang diperbarui
+                controller:
+                    websiteController, // Gunakan nama controller yang diperbarui
                 decoration: InputDecoration(
                   labelText: 'Website',
-                   // border, filled, fillColor, contentPadding diatur di InputDecorationTheme
-                  prefixIcon: const Icon(Icons.language_outlined), // Icon website
+                  // border, filled, fillColor, contentPadding diatur di InputDecorationTheme
+                  prefixIcon: const Icon(
+                    Icons.language_outlined,
+                  ), // Icon website
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -96,15 +104,16 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                   }
                   return null;
                 },
-                 keyboardType: TextInputType.url, // Keyboard type untuk URL
+                keyboardType: TextInputType.url, // Keyboard type untuk URL
               ),
               const SizedBox(height: 16.0), // Spasi antar field
               TextFormField(
-                controller: usernameController, // Gunakan nama controller yang diperbarui
+                controller:
+                    usernameController, // Gunakan nama controller yang diperbarui
                 decoration: InputDecoration(
                   labelText: 'Username',
-                   // border, filled, fillColor, contentPadding diatur di InputDecorationTheme
-                   prefixIcon: const Icon(Icons.person_outline), // Icon username
+                  // border, filled, fillColor, contentPadding diatur di InputDecorationTheme
+                  prefixIcon: const Icon(Icons.person_outline), // Icon username
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -112,18 +121,23 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                   }
                   return null;
                 },
-                 keyboardType: TextInputType.emailAddress, // Keyboard type untuk email/username
+                keyboardType:
+                    TextInputType
+                        .emailAddress, // Keyboard type untuk email/username
               ),
               const SizedBox(height: 16.0), // Spasi antar field
               TextFormField(
-                controller: passwordController, // Gunakan nama controller yang diperbarui
+                controller:
+                    passwordController, // Gunakan nama controller yang diperbarui
                 decoration: InputDecoration(
                   labelText: 'Password',
-                   // border, filled, fillColor, contentPadding diatur di InputDecorationTheme
+                  // border, filled, fillColor, contentPadding diatur di InputDecorationTheme
                   prefixIcon: const Icon(Icons.lock_outline), // Icon password
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      _isPasswordVisible
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                     ),
                     onPressed: () {
                       setState(() {
@@ -143,7 +157,7 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
               const SizedBox(height: 24.0), // Spasi sebelum tombol
               ElevatedButton(
                 onPressed: _saveAccount,
-                 // style diatur di ElevatedButtonThemeData
+                // style diatur di ElevatedButtonThemeData
                 child: Text(_isEditing ? 'Update Account' : 'Save Account'),
               ),
             ],

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Define primary seed color (matching the image)
-  static const Color primarySeedColor = Color(0xFF00BCD4); // Closer to the cyan/teal in the image
+  static const Color primarySeedColor = Color(
+    0xFF00BCD4,
+  ); // Closer to the cyan/teal in the image
 
   // Primary Colors (derived from the seed)
   static const Color primaryColor = primarySeedColor;
@@ -10,7 +12,7 @@ class AppColors {
   static const Color primaryDarkColor = Color(0xFF00838F); // Darker shade
 
   // Secondary Colors (can be adjusted to complement primary, keeping current for now)
-  static const Color secondaryColor = Color(0xFFFFC107); 
+  static const Color secondaryColor = Color(0xFFFFC107);
   static const Color secondaryLightColor = Color(0xFFFFECB3);
   static const Color secondaryDarkColor = Color(0xFFFFA000);
 
@@ -27,7 +29,8 @@ class AppColors {
   // Other Utility Colors (keeping current for now)
   static const Color warningColor = Color(0xFFFF9800);
   static const Color successColor = Color(0xFF4CAF50);
-  static const Color infoColor = primaryColor; // Info color often matches primary
+  static const Color infoColor =
+      primaryColor; // Info color often matches primary
 
   // Neutral Colors (for text, background, border, etc.)
   static const Color blackColor = Color(0xFF000000);
