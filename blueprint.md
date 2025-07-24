@@ -2,31 +2,29 @@
 
 ### Overview
 
-This application is a personal finance tracker designed to help users manage their income and expenses. It includes features for adding transactions, viewing transaction history, and summarizing financial activity.
+This application is a personal finance tracker with a password management feature. It allows users to securely store and manage their website login credentials.
 
 ### Features
 
-- Add new income and expense transactions with descriptions, amounts, and dates.
-- View a list of all transactions.
-- See a summary of total balance, total income, and total expense.
-- Filter transactions by month and year.
-- Modern and eye-catching design for transaction list items.
+- Securely store website usernames and passwords.
+- View a list of all saved accounts.
+- Copy username or password to the clipboard with a single tap.
+- Edit existing account details.
+- Delete accounts.
+- Modern and eye-catching design for account list items.
+- Add and edit account details using a popup dialog.
 
 ### Plan
 
-**Goal:** Enhance the visual design of the transaction list items in the Cashcard page to be more modern and eye-catching.
+**Goal:** Implement adding and editing account details using a popup dialog in `AccountListPage`, similar to the add task functionality.
 
 **Steps:**
 
-1. Modify the `ListView.builder` in `lib/features/cashcard/presentation/pages/cashcard_page.dart`.
-2. Replace the existing `Card` and `ListTile` with a custom container that includes:
-    - A more prominent display of the transaction amount with clear visual distinction between income and expense.
-    - A modern card design with rounded corners and subtle shadows.
-    - An icon indicating transaction type (income/expense) on the left.
-    - Transaction description.
-    - Transaction date.
-    - Use colors from `lib/utils/app_colors.dart` to maintain theme consistency.
-3. Ensure the design is responsive and works well on different screen sizes.
-4. Verify the updated design in the preview.
-5. Run `dart format .` and `flutter analyze` to ensure code quality.
-6. Update the blueprint.md with the completed changes.
+1. Modify `AccountListPage` to call a new method `_showAccountDetailDialog` when adding or editing an account.
+2. Create `_showAccountDetailDialog` method in `_AccountListPageState` to display `AccountDetailPage` (or its content) as a dialog using `showDialog`.
+3. Adapt `AccountDetailPage` (or create a new widget for the dialog content) to function without a `Scaffold`, including form fields, validation, and action buttons (Cancel, Save/Update).
+4. Ensure data is correctly passed to the dialog for editing, and handle the case for adding a new account.
+5. Update the account list by calling `provider.loadAccounts()` after the dialog is closed.
+6. Remove the old page-based navigation for add/edit.
+7. Run `dart format .` and `flutter analyze`.
+8. Update the blueprint.md.

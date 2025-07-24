@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/features/account_management/presentation/pages/account_detail_page.dart';
 import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/account_management/domain/entities/account.dart';
 import 'package:flutter/services.dart';
+// Import the new dialog content widget
+import 'package:myapp/features/account_management/presentation/widgets/account_detail_dialog_content.dart';
 
 class AccountListPage extends StatefulWidget {
   const AccountListPage({super.key});
@@ -16,14 +17,30 @@ class _AccountListPageState extends State<AccountListPage> {
   @override
   void initState() {
     super.initState();
-    // It's generally safe to use context in initState or addPostFrameCallback
-    // if you check mounted before using context in asynchronous callbacks.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Check if the widget is still mounted before using context
       if (mounted) {
         Provider.of<AccountProvider>(context, listen: false).loadAccounts();
       }
     });
+  }
+
+  // Method to show the account detail dialog
+  void _showAccountDetailDialog({Account? account}) async {
+    // Pass the context to the showDialog function
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AccountDetailDialogContent(
+          account: account,
+        ); // Use the new dialog content widget
+      },
+    );
+
+    // After the dialog is closed, refresh the account list
+    // Check if the widget is still mounted before using context
+    if (mounted) {
+      Provider.of<AccountProvider>(context, listen: false).loadAccounts();
+    }
   }
 
   @override
@@ -55,25 +72,9 @@ class _AccountListPageState extends State<AccountListPage> {
                 final account = provider.accounts[index];
                 return AccountListItem(
                   account: account,
-                  onEdit: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => AccountDetailPage(account: account),
-                      ),
-                    ).then((_) {
-                      // Check if the widget is still mounted after navigation returns
-                      if (mounted) {
-                        Provider.of<AccountProvider>(
-                          context,
-                          listen: false,
-                        ).loadAccounts();
-                      }
-                    });
-                  },
+                  // Call the dialog method for editing
+                  onEdit: () => _showAccountDetailDialog(account: account),
                   onDelete: () {
-                    // Check if the widget is still mounted before showing the dialog
                     if (!mounted) return;
                     showDialog(
                       context: context,
@@ -86,11 +87,8 @@ class _AccountListPageState extends State<AccountListPage> {
                             actions: [
                               TextButton(
                                 onPressed: () {
-                                  // Check if the widget is still mounted before navigating
                                   if (mounted) {
-                                    Navigator.pop(
-                                      context,
-                                    ); // It's safe to use context here
+                                    Navigator.pop(context);
                                   }
                                 },
                                 child: const Text('Cancel'),
@@ -98,11 +96,8 @@ class _AccountListPageState extends State<AccountListPage> {
                               TextButton(
                                 onPressed: () {
                                   provider.removeAccount(account.id);
-                                  // Check if the widget is still mounted before navigating
                                   if (mounted) {
-                                    Navigator.pop(
-                                      context,
-                                    ); // It's safe to use context here
+                                    Navigator.pop(context);
                                   }
                                 },
                                 child: const Text('Delete'),
@@ -118,20 +113,8 @@ class _AccountListPageState extends State<AccountListPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AccountDetailPage()),
-          ).then((_) {
-            // Check if the widget is still mounted after navigation returns
-            if (mounted) {
-              Provider.of<AccountProvider>(
-                context,
-                listen: false,
-              ).loadAccounts();
-            }
-          });
-        },
+        // Call the dialog method for adding
+        onPressed: () => _showAccountDetailDialog(),
         tooltip: 'Add Account',
         child: const Icon(Icons.add),
       ),
@@ -139,7 +122,7 @@ class _AccountListPageState extends State<AccountListPage> {
   }
 }
 
-class AccountListItem extends StatelessWidget {
+class AccountListItem extends StatefulWidget {
   final Account account;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -151,12 +134,16 @@ class AccountListItem extends StatelessWidget {
     required this.onDelete,
   });
 
+  @override
+  State<AccountListItem> createState() => _AccountListItemState();
+}
+
+class _AccountListItemState extends State<AccountListItem> {
+  bool _isPasswordVisible = false;
+
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
-    // Access ScaffoldMessengerState using rootNavigator: true
-    // It's generally safe to use context for showing Snackbars if the widget is part of the tree.
-    // Check mounted before showing the snackbar is also a good practice, though often not strictly necessary here.
-    if (!context.mounted) return; // Added mounted check for consistency
+    if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('$label copied to clipboard')));
@@ -164,84 +151,155 @@ class AccountListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              account.website,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4.0),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Username: ${account.username}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Website
+          Text(
+            widget.account.website,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 12.0),
+
+          // Username
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.person_outline,
+                size: 20.0,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: Text(
+                  widget.account.username,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.copy_outlined, size: 20.0),
+                tooltip: 'Copy Username',
+                onPressed:
+                    () => _copyToClipboard(
+                      context,
+                      widget.account.username,
+                      'Username',
+                    ),
+                color: Theme.of(context).colorScheme.primary,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+
+          // Password
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.lock_outline,
+                size: 20.0,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: Text(
+                  _isPasswordVisible
+                      ? widget.account.password
+                      : '•' *
+                          widget
+                              .account
+                              .password
+                              .length, // Toggle mask password
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    letterSpacing: _isPasswordVisible ? 1.0 : 2.0,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.copy_outlined),
-                  tooltip: 'Copy Username',
-                  onPressed:
-                      () => _copyToClipboard(
-                        context,
-                        account.username,
-                        'Username',
-                      ),
-                  color: Theme.of(context).colorScheme.primary,
+              ),
+              IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                  size: 20.0,
                 ),
-              ],
-            ),
-            const SizedBox(height: 4.0),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Password: ${account.password}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                tooltip: _isPasswordVisible ? 'Hide Password' : 'Show Password',
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+                color: Theme.of(context).colorScheme.primary,
+                visualDensity: VisualDensity.compact,
+              ),
+              IconButton(
+                icon: const Icon(Icons.copy_outlined, size: 20.0),
+                tooltip: 'Copy Password',
+                onPressed:
+                    () => _copyToClipboard(
+                      context,
+                      widget.account.password,
+                      'Password',
+                    ),
+                color: Theme.of(context).colorScheme.primary,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+
+          const Divider(height: 24.0),
+
+          // Actions (Edit, Delete)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: widget.onEdit,
+                icon: const Icon(Icons.edit_outlined, size: 20.0),
+                label: const Text('Edit'),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.copy_outlined),
-                  tooltip: 'Copy Password',
-                  onPressed:
-                      () => _copyToClipboard(
-                        context,
-                        account.password,
-                        'Password',
-                      ),
-                  color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 16.0),
+              TextButton.icon(
+                onPressed: widget.onDelete,
+                icon: const Icon(Icons.delete_outline, size: 20.0),
+                label: const Text('Delete'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-              ],
-            ),
-            const Divider(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton.icon(
-                  onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Edit'),
-                ),
-                const SizedBox(width: 8.0),
-                TextButton.icon(
-                  onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('Delete'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
