@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
 import 'package:go_router/go_router.dart'; // Import go_router
-import 'package:myapp/utils/app_colors.dart'; // Import app_colors
+// Remove unused import
+// import 'package:myapp/utils/app_colors.dart'; // Import app_colors
+import 'dart:developer' as developer; // Import developer for logging
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -21,6 +23,7 @@ class RegisterPageState extends State<RegisterPage> {
     if (_formKey.currentState!.validate()) {
       // Add password confirmation check
       if (_passwordController.text != _confirmPasswordController.text) {
+        if (!mounted) return; // Add mounted check
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Passwords do not match')),
         );
@@ -55,7 +58,7 @@ class RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('Building RegisterPage'); // Added logging
+    developer.log('Building RegisterPage', name: 'RegisterPage'); // Replaced print with logging
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
@@ -92,7 +95,7 @@ class RegisterPageState extends State<RegisterPage> {
                       borderSide: BorderSide.none, // No border line
                     ),
                     filled: true,
-                    fillColor: greyLightColor.withOpacity(0.4), // Light grey background
+                    fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -112,7 +115,7 @@ class RegisterPageState extends State<RegisterPage> {
                       borderSide: BorderSide.none, // No border line
                     ),
                      filled: true,
-                    fillColor: greyLightColor.withOpacity(0.4), // Light grey background
+                    fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   obscureText: true,
                   validator: (value) {
@@ -135,7 +138,7 @@ class RegisterPageState extends State<RegisterPage> {
                       borderSide: BorderSide.none, // No border line
                     ),
                      filled: true,
-                    fillColor: greyLightColor.withOpacity(0.4), // Light grey background
+                    fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   obscureText: true,
                   validator: (value) {

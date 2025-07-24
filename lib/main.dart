@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:myapp/features/account_management/data/datasources/account_local_data_source.dart';
-import 'package:myapp/features/account_management/data/models/account_model.dart'; // Import AccountModel
+// Remove all Hive related imports
+// import 'package:hive_flutter/hive_flutter.dart';
+// import 'package:myapp/features/account_management/data/datasources/account_local_data_source.dart';
+// import 'package:myapp/features/account_management/data/models/account_model.dart'; // Import AccountModel
 import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart';
-import 'package:myapp/features/account_management/domain/usecases/create_account.dart';
-import 'package:myapp/features/account_management/domain/usecases/delete_account.dart';
-import 'package:myapp/features/account_management/domain/usecases/get_all_accounts.dart';
-import 'package:myapp/features/account_management/domain/usecases/update_account.dart';
+// Remove UseCase imports
+// import 'package:myapp/features/account_management/domain/usecases/create_account.dart';
+// import 'package:myapp/features/account_management/domain/usecases/delete_account.dart';
+// import 'package:myapp/features/account_management/domain/usecases/get_all_accounts.dart';
+// import 'package:myapp/features/account_management/domain/usecases/update_account.dart';
 import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/utils/app_theme.dart'; // Import the app_theme.dart file
@@ -34,6 +36,10 @@ import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
 import 'package:myapp/features/task_planner/data/datasources/task_firestore_data_source.dart';
 import 'package:myapp/features/task_planner/domain/repositories/task_repository.dart';
 
+// Import Account Management Firestore dependencies
+import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart';
+import 'dart:developer' as developer; // Import developer for logging
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -42,26 +48,27 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await Hive.initFlutter();
-  // Pastikan AccountModelAdapter sudah digenerate oleh build_runner
-  if (!Hive.isAdapterRegistered(0)) {
-    Hive.registerAdapter(AccountModelAdapter());
-  }
+  // Remove all Hive initialization related to Account Management
+  // await Hive.initFlutter();
+  // // Pastikan AccountModelAdapter sudah digenerasi oleh build_runner
+  // if (!Hive.isAdapterRegistered(0)) {
+  //   Hive.registerAdapter(AccountModelAdapter());
+  // }
 
-  // Dependency Injection Setup (Simple) for Account Management
-  final accountLocalDataSource = AccountLocalDataSourceImpl();
-  final accountRepository =
-      AccountRepositoryImpl(localDataSource: accountLocalDataSource);
-  final createAccount = CreateAccount(accountRepository);
-  final getAllAccounts = GetAllAccounts(accountRepository);
-  final updateAccount = UpdateAccount(accountRepository);
-  final deleteAccount = DeleteAccount(accountRepository);
+  // Dependency Injection Setup for Account Management (using Firestore)
+  final accountFirestoreDataSource = AccountFirestoreDataSourceImpl();
+  final accountRepository = AccountRepositoryImpl(firestoreDataSource: accountFirestoreDataSource);
+  // Remove UseCase instances
+  // final createAccount = CreateAccount(accountRepository);
+  // final getAllAccounts = GetAllAccounts(accountRepository);
+  // final updateAccount = UpdateAccount(accountRepository);
+  // final deleteAccount = DeleteAccount(accountRepository);
 
   // Dependency Injection Setup for Auth
   final authRemoteDataSource = AuthRemoteDataSourceImpl();
   final authRepository = AuthRepositoryImpl(remoteDataSource: authRemoteDataSource);
 
-  // Dependency Injection Setup for Task Planner
+  // Dependency Injection Setup for Task Planner (using Firestore)
   final taskFirestoreDataSource = TaskFirestoreDataSourceImpl();
   final taskRepository = TaskRepositoryImpl(firestoreDataSource: taskFirestoreDataSource);
 
@@ -70,10 +77,12 @@ void main() async {
       providers: [
         ChangeNotifierProvider(
           create: (context) => AccountProvider(
-            createAccountUseCase: createAccount,
-            getAllAccountsUseCase: getAllAccounts,
-            updateAccountUseCase: updateAccount,
-            deleteAccountUseCase: deleteAccount,
+            accountRepository: accountRepository, // Provide the Firestore-based repository
+            // Remove UseCase arguments
+            // createAccountUseCase: createAccount,
+            // getAllAccountsUseCase: getAllAccounts,
+            // updateAccountUseCase: updateAccount,
+            // deleteAccountUseCase: deleteAccount,
           ),
         ),
         ChangeNotifierProvider(
@@ -195,23 +204,23 @@ class _MyAppState extends State<MyApp> {
         final bool isAuthenticated = authProvider.user != null;
         final bool isAuthenticating = state.uri.path == '/login' || state.uri.path == '/register' || state.uri.path == '/forgot-password';
 
-        print('Redirect triggered:'); // Added logging
-        print('  isAuthenticated: $isAuthenticated');
-        print('  current path: ${state.uri.path}');
+        developer.log('Redirect triggered:', name: 'Router'); // Replaced print with logging
+        developer.log('  isAuthenticated: $isAuthenticated', name: 'Router'); // Replaced print with logging
+        developer.log('  current path: ${state.uri.path}', name: 'Router'); // Replaced print with logging
 
         // If the user is not authenticated and is trying to access a protected route, redirect to login
         if (!isAuthenticated && !isAuthenticating) {
-           print('  Redirecting to /login (unauthenticated)'); // Added logging
+           developer.log('  Redirecting to /login (unauthenticated)', name: 'Router'); // Replaced print with logging
           return '/login';
         }
         // If the user is authenticated and is trying to access an authentication route, redirect to home (or the default tab)
         if (isAuthenticated && isAuthenticating) {
-           print('  Redirecting to / (authenticated)'); // Added logging
+           developer.log('  Redirecting to / (authenticated)', name: 'Router'); // Replaced print with logging
           return '/'; // Redirect to the default route within the StatefulShellRoute
         }
 
         // No redirect needed
-         print('  No redirect needed'); // Added logging
+         developer.log('  No redirect needed', name: 'Router'); // Replaced print with logging
         return null;
       },
        refreshListenable: authProvider, // Listen to auth state changes

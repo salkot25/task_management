@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
 import 'package:go_router/go_router.dart'; // Import go_router
-import 'package:myapp/utils/app_colors.dart'; // Import app_colors
+// Import app_colors
+import 'dart:developer' as developer; // Import developer for logging
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -93,7 +94,7 @@ class LoginPageState extends State<LoginPage> {
                       borderSide: BorderSide.none, // No border line
                     ),
                     filled: true,
-                    fillColor: greyLightColor.withOpacity(0.4), // Light grey background
+                    fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -113,7 +114,7 @@ class LoginPageState extends State<LoginPage> {
                       borderSide: BorderSide.none, // No border line
                     ),
                      filled: true,
-                    fillColor: greyLightColor.withOpacity(0.4), // Light grey background
+                    fillColor: Colors.grey.shade200, // Changed from withOpacity
                   ),
                   obscureText: true,
                   validator: (value) {
@@ -192,7 +193,7 @@ class LoginPageState extends State<LoginPage> {
                       width: 60, // Adjust size as needed
                       height: 60,
                        decoration: BoxDecoration(
-                        border: Border.all(color: greyColor.withOpacity(0.5)), // Border around button
+                        border: Border.all(color: Colors.grey.shade400), // Changed from withOpacity
                         borderRadius: BorderRadius.circular(8.0), // Rounded corners
                       ),
                       child: IconButton(
@@ -215,7 +216,7 @@ class LoginPageState extends State<LoginPage> {
                     ),
                     TextButton(
                       onPressed: () {
-                         print('Register now button tapped!'); // Added logging
+                         developer.log('Register now button tapped!', name: 'LoginPage'); // Replaced print with logging
                         context.go('/register');
                       },
                       child: Text(

@@ -1,55 +1,56 @@
 import 'package:dartz/dartz.dart';
-import 'package:myapp/core/error/exceptions.dart';
 import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/account_management/data/datasources/account_local_data_source.dart';
-import 'package:myapp/features/account_management/data/models/account_model.dart';
+import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart';
 import 'package:myapp/features/account_management/domain/entities/account.dart';
 import 'package:myapp/features/account_management/domain/repositories/account_repository.dart';
+import 'dart:developer' as developer; // Import developer for logging
 
 class AccountRepositoryImpl implements AccountRepository {
-  final AccountLocalDataSource localDataSource;
+  final AccountFirestoreDataSource firestoreDataSource;
 
-  AccountRepositoryImpl({required this.localDataSource});
+  AccountRepositoryImpl({required this.firestoreDataSource});
 
   @override
   Future<Either<Failure, void>> createAccount(Account account) async {
     try {
-      final accountModel = AccountModel.fromEntity(account);
-      await localDataSource.saveAccount(accountModel);
+      await firestoreDataSource.addAccount(account);
       return const Right(null);
-    } on CacheException {
-      return Left(CacheFailure());
+    } catch (e) {
+       developer.log('Error creating account: $e', name: 'AccountRepository'); // Replaced print with logging
+      return Left(ServerFailure());
     }
   }
 
   @override
   Future<Either<Failure, List<Account>>> getAllAccounts() async {
     try {
-      final accountModels = await localDataSource.getAllAccounts();
-      return Right(accountModels.map((model) => model.toEntity()).toList());
-    } on CacheException {
-      return Left(CacheFailure());
+      final accounts = await firestoreDataSource.getAccounts().first;
+      return Right(accounts);
+    } catch (e) {
+       developer.log('Error fetching accounts: $e', name: 'AccountRepository'); // Replaced print with logging
+      return Left(ServerFailure());
     }
   }
 
   @override
   Future<Either<Failure, void>> updateAccount(Account account) async {
     try {
-      final accountModel = AccountModel.fromEntity(account);
-      await localDataSource.updateAccount(accountModel);
+      await firestoreDataSource.updateAccount(account);
       return const Right(null);
-    } on CacheException {
-      return Left(CacheFailure());
+    } catch (e) {
+       developer.log('Error updating account: $e', name: 'AccountRepository'); // Replaced print with logging
+      return Left(ServerFailure());
     }
   }
 
   @override
   Future<Either<Failure, void>> deleteAccount(String id) async {
     try {
-      await localDataSource.deleteAccount(id);
+      await firestoreDataSource.deleteAccount(id);
       return const Right(null);
-    } on CacheException {
-      return Left(CacheFailure());
+    } catch (e) {
+       developer.log('Error deleting account: $e', name: 'AccountRepository'); // Replaced print with logging
+      return Left(ServerFailure());
     }
   }
 }
