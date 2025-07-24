@@ -131,17 +131,25 @@ class _MyAppState extends State<MyApp> {
           (BuildContext context, GoRouterState state) {
         final bool isAuthenticated = authProvider.user != null;
         final bool isLoggingIn = state.uri.path == '/login';
+        final bool isRegistering = state.uri.path == '/register';
 
-        // If the user is not authenticated and is not on the login page, redirect to login
-        if (!isAuthenticated && !isLoggingIn) {
+        print('Redirect triggered:'); // Added logging
+        print('  isAuthenticated: $isAuthenticated');
+        print('  current path: ${state.uri.path}');
+
+        // If the user is not authenticated and is not on the login or register page, redirect to login
+        if (!isAuthenticated && !isLoggingIn && !isRegistering) {
+           print('  Redirecting to /login'); // Added logging
           return '/login';
         }
-        // If the user is authenticated and is on the login page, redirect to home
-        if (isAuthenticated && isLoggingIn) {
+        // If the user is authenticated and is on the login or register page, redirect to home
+        if (isAuthenticated && (isLoggingIn || isRegistering)) {
+           print('  Redirecting to /'); // Added logging
           return '/';
         }
 
         // No redirect needed
+         print('  No redirect needed'); // Added logging
         return null;
       },
        refreshListenable: authProvider, // Listen to auth state changes
