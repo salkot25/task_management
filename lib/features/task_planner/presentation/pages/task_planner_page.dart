@@ -24,8 +24,21 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
   late DateTime _focusedMonth;
   late AnimationController _blinkAnimationController;
   late Animation<double> _blinkAnimation;
-  late Animation<double> _shakeAnimation;
-  late Animation<double> _shadowAnimation;
+  late AnimationController _progressAnimationController;
+  late Animation<double> _progressAnimation;
+
+  // Indonesian date formatters
+  final DateFormat _indonesianDateFormat = DateFormat(
+    'EEEE, d MMMM yyyy',
+    'id_ID',
+  );
+  final DateFormat _indonesianShortDateFormat = DateFormat(
+    'd MMM yyyy',
+    'id_ID',
+  );
+  final DateFormat _indonesianMonthFormat = DateFormat('MMMM', 'id_ID');
+  final DateFormat _indonesianYearFormat = DateFormat('yyyy', 'id_ID');
+  final DateFormat _indonesianDayFormat = DateFormat('d MMM', 'id_ID');
 
   @override
   void initState() {
@@ -45,24 +58,24 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       ),
     );
 
-    // Shake animation for vibration effect
-    _shakeAnimation = Tween<double>(begin: -2.0, end: 2.0).animate(
-      CurvedAnimation(
-        parent: _blinkAnimationController,
-        curve: Curves.elasticInOut,
-      ),
+    // Initialize progress animation
+    _progressAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
     );
 
-    // Shadow animation for pulsing effect
-    _shadowAnimation = Tween<double>(begin: 8.0, end: 20.0).animate(
+    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
-        parent: _blinkAnimationController,
-        curve: Curves.easeInOut,
+        parent: _progressAnimationController,
+        curve: Curves.easeOutCubic,
       ),
     );
 
     // Start the blinking animation
     _blinkAnimationController.repeat(reverse: true);
+
+    // Start progress animation
+    _progressAnimationController.forward();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -92,6 +105,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       );
       _titleController.clear();
       _descriptionController.clear();
+
+      // Restart progress animation when task is added
+      _restartProgressAnimation();
+
       if (mounted) {
         setState(() {
           // Keep the selected date as is after adding a task for it
@@ -111,7 +128,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             borderRadius: BorderRadius.circular(AppSpacing.md),
           ),
           title: Text(
-            'Add New Task',
+            'Tambah Tugas Baru',
             style: AppTypography.headlineSmall.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -125,13 +142,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   TextFormField(
                     controller: _titleController,
                     decoration: AppComponents.inputDecoration(
-                      labelText: 'Task Title',
-                      hintText: 'Enter task title',
+                      labelText: 'Judul Tugas',
+                      hintText: 'Masukkan judul tugas',
                       prefixIcon: const Icon(Icons.task_outlined),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a title';
+                        return 'Harap masukkan judul tugas';
                       }
                       return null;
                     },
@@ -140,8 +157,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   TextFormField(
                     controller: _descriptionController,
                     decoration: AppComponents.inputDecoration(
-                      labelText: 'Description (Optional)',
-                      hintText: 'Add task description',
+                      labelText: 'Deskripsi (Opsional)',
+                      hintText: 'Tambahkan deskripsi tugas',
                       prefixIcon: const Icon(Icons.description_outlined),
                     ),
                     maxLines: 3,
@@ -160,13 +177,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                         color: Theme.of(context).colorScheme.primary,
                       ),
                       title: Text(
-                        'Due Date',
+                        'Tanggal Jatuh Tempo',
                         style: AppTypography.labelMedium.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       subtitle: Text(
-                        DateFormat('EEE, MMM d, yyyy').format(_selectedDate),
+                        _indonesianDateFormat.format(_selectedDate),
                         style: AppTypography.bodyMedium.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
@@ -189,7 +206,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               },
               style: AppComponents.textButtonStyle(),
               child: Text(
-                'Cancel',
+                'Batal',
                 style: AppTypography.linkText.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -198,7 +215,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             ElevatedButton(
               onPressed: () => _addTask(dialogContext),
               style: AppComponents.primaryButtonStyle(),
-              child: Text('Add Task', style: AppTypography.buttonPrimary),
+              child: Text('Tambah Tugas', style: AppTypography.buttonPrimary),
             ),
           ],
         );
@@ -213,6 +230,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         return TaskDetailDialog(task: task); // Use the custom dialog
       },
     );
+  }
+
+  // Helper method to restart progress animation
+  void _restartProgressAnimation() {
+    _progressAnimationController.reset();
+    _progressAnimationController.forward();
   }
 
   // Helper to get the number of days in a month
@@ -236,6 +259,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     _titleController.dispose();
     _descriptionController.dispose();
     _blinkAnimationController.dispose();
+    _progressAnimationController.dispose();
     super.dispose();
   }
 
@@ -243,7 +267,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
   // PROFESSIONAL UI COMPONENTS
   // ==========================================
 
-  /// Professional Task Statistics Header
+  /// Minimalist Task Statistics Header with Professional Layout
   Widget _buildTaskStatsHeader() {
     return Consumer<TaskProvider>(
       builder: (context, taskProvider, child) {
@@ -262,230 +286,448 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           return task.dueDate.isBefore(today) && !task.isCompleted;
         }).length;
 
-        return Row(
-          children: [
-            Expanded(
-              child: _buildModernStatCard(
-                icon: Icons.today_outlined,
-                value: '$completedToday / $totalToday',
-                label: 'Today',
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _buildModernStatCard(
-                icon: Icons.warning_outlined,
-                value: overdueTasks.toString(),
-                label: 'Overdue',
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFE53E3E), Color(0xFFFF6B6B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+        final allTasks = taskProvider.tasks.length;
+        final completedAllTasks = taskProvider.tasks
+            .where((task) => task.isCompleted)
+            .length;
 
-  /// Modern Statistics Card Design
-  Widget _buildModernStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-    required Gradient gradient,
-  }) {
-    return Container(
-      height: 140,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppComponents.largeRadius),
-        gradient: gradient,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppComponents.largeRadius),
-        child: Container(
-          padding: AppSpacing.cardPadding,
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppComponents.largeRadius),
-            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 0,
+              ),
+            ],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Icon with background
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
-                  borderRadius: BorderRadius.circular(
-                    AppComponents.smallRadius,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+              // Main Progress Indicator
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Progres Tugas',
+                          style: AppTypography.labelMedium.copyWith(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '$completedAllTasks',
+                              style: AppTypography.headlineLarge.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.w700,
+                                height: 1.0,
+                              ),
+                            ),
+                            Text(
+                              ' / $allTasks',
+                              style: AppTypography.titleMedium.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        // Enhanced Progress Bar with Animation
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceVariant.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: AnimatedBuilder(
+                              animation: _progressAnimation,
+                              builder: (context, child) {
+                                final targetProgress = allTasks > 0
+                                    ? completedAllTasks / allTasks
+                                    : 0;
+                                final animatedProgress =
+                                    targetProgress * _progressAnimation.value;
+
+                                return LinearProgressIndicator(
+                                  value: animatedProgress,
+                                  backgroundColor: Colors.transparent,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    allTasks > 0 && completedAllTasks > 0
+                                        ? (completedAllTasks == allTasks
+                                              ? AppColors.successColor
+                                              : AppColors.primaryColor)
+                                        : Theme.of(
+                                            context,
+                                          ).colorScheme.surfaceVariant,
+                                  ),
+                                  minHeight: 8,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Icon(icon, size: 18, color: Colors.white),
+                  ),
+                  const SizedBox(width: AppSpacing.xl),
+                  // Enhanced Circular Progress with Animation
+                  SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: Stack(
+                      children: [
+                        // Background circle
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceVariant.withOpacity(0.3),
+                          ),
+                        ),
+                        // Animated Progress circle
+                        SizedBox(
+                          width: 64,
+                          height: 64,
+                          child: AnimatedBuilder(
+                            animation: _progressAnimation,
+                            builder: (context, child) {
+                              final targetProgress = allTasks > 0
+                                  ? completedAllTasks / allTasks
+                                  : 0;
+                              final animatedProgress =
+                                  targetProgress * _progressAnimation.value;
+
+                              return CircularProgressIndicator(
+                                value: animatedProgress,
+                                strokeWidth: 4,
+                                backgroundColor: Colors.transparent,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  allTasks > 0 && completedAllTasks > 0
+                                      ? (completedAllTasks == allTasks
+                                            ? AppColors.successColor
+                                            : AppColors.primaryColor)
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.surfaceVariant,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        // Percentage text
+                        Center(
+                          child: AnimatedBuilder(
+                            animation: _progressAnimation,
+                            builder: (context, child) {
+                              final targetPercentage = allTasks > 0
+                                  ? ((completedAllTasks / allTasks) * 100)
+                                        .round()
+                                  : 0;
+                              final animatedPercentage =
+                                  (targetPercentage * _progressAnimation.value)
+                                      .round();
+
+                              return Text(
+                                '${animatedPercentage}%',
+                                style: AppTypography.labelMedium.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
 
-              // Content section with fixed spacing
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: AppSpacing.lg),
+
+              // Stats Grid
+              Row(
                 children: [
-                  // Value with enhanced typography
-                  Text(
-                    value,
-                    style: AppTypography.headlineLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 24,
-                      height: 1.0,
-                      letterSpacing: -0.5,
+                  Expanded(
+                    child: _buildMinimalistStatItem(
+                      icon: Icons.today_rounded,
+                      value: '$completedToday / $totalToday',
+                      label: 'Hari Ini',
+                      color: AppColors.primaryColor,
+                      isActive: totalToday > 0,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  // Label with improved styling
-                  Text(
-                    label,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                      letterSpacing: 0.5,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  // Small progress indicator line
                   Container(
-                    height: 3,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(1.5),
+                    width: 1,
+                    height: 40,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.2),
+                  ),
+                  Expanded(
+                    child: _buildMinimalistStatItem(
+                      icon: Icons.warning_rounded,
+                      value: overdueTasks.toString(),
+                      label: 'Terlambat',
+                      color: AppColors.errorColor,
+                      isActive: overdueTasks > 0,
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(1.5),
-                      ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.2),
+                  ),
+                  Expanded(
+                    child: _buildMinimalistStatItem(
+                      icon: Icons.check_circle_rounded,
+                      value: completedAllTasks.toString(),
+                      label: 'Selesai',
+                      color: AppColors.successColor,
+                      isActive: completedAllTasks > 0,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  /// Minimalist Statistics Item Design
+  Widget _buildMinimalistStatItem({
+    required IconData icon,
+    required String value,
+    required String label,
+    required Color color,
+    bool isActive = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.md,
+        horizontal: AppSpacing.sm,
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: isActive
+                  ? color.withOpacity(0.1)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.surfaceVariant.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: isActive
+                  ? color
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            value,
+            style: AppTypography.titleMedium.copyWith(
+              color: isActive
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            label,
+            style: AppTypography.labelSmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  /// Modern Professional Calendar Design
+  /// Modern Professional Calendar Design with Minimalist Approach
   Widget _buildProfessionalCalendar() {
     final int daysInMonth = _daysInMonth(_focusedMonth);
     final int firstWeekday = _firstWeekday(_focusedMonth);
+    // Senin=1 needs 0 empty cells, Selasa=2 needs 1 empty cell, etc.
     final int emptyCells = firstWeekday - 1;
 
     return Consumer<TaskProvider>(
       builder: (context, taskProvider, child) {
         return Container(
-          padding: AppSpacing.cardPadding,
-          decoration: AppComponents.cardDecoration(),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppComponents.largeRadius),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
           child: Column(
             children: [
-              // Calendar Header with Navigation
+              // Minimalist Calendar Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.chevron_left,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceVariant.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _focusedMonth = DateTime(
-                          _focusedMonth.year,
-                          _focusedMonth.month - 1,
-                        );
-                      });
-                    },
-                    style: AppComponents.textButtonStyle(),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.chevron_left_rounded,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _focusedMonth = DateTime(
+                            _focusedMonth.year,
+                            _focusedMonth.month - 1,
+                          );
+                        });
+                      },
+                      style: IconButton.styleFrom(
+                        padding: const EdgeInsets.all(8),
+                        minimumSize: const Size(36, 36),
+                      ),
+                    ),
                   ),
-                  Text(
-                    DateFormat('MMMM yyyy').format(_focusedMonth),
-                    style: AppTypography.headlineSmall.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                  Column(
+                    children: [
+                      Text(
+                        _indonesianMonthFormat.format(_focusedMonth),
+                        style: AppTypography.headlineSmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        _indonesianYearFormat.format(_focusedMonth),
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceVariant.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _focusedMonth = DateTime(
-                          _focusedMonth.year,
-                          _focusedMonth.month + 1,
-                        );
-                      });
-                    },
-                    style: AppComponents.textButtonStyle(),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.chevron_right_rounded,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _focusedMonth = DateTime(
+                            _focusedMonth.year,
+                            _focusedMonth.month + 1,
+                          );
+                        });
+                      },
+                      style: IconButton.styleFrom(
+                        padding: const EdgeInsets.all(8),
+                        minimumSize: const Size(36, 36),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.xl),
 
-              // Weekday Headers
+              // Clean Weekday Headers (Indonesian) - Corrected order
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-                    .map(
-                      (day) => Container(
-                        width: 32,
-                        height: 32,
-                        alignment: Alignment.center,
-                        child: Text(
-                          day,
-                          style: AppTypography.labelMedium.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.bold,
+                children:
+                    [
+                          'Sen', // Senin (Monday)
+                          'Sel', // Selasa (Tuesday)
+                          'Rab', // Rabu (Wednesday)
+                          'Kam', // Kamis (Thursday)
+                          'Jum', // Jumat (Friday)
+                          'Sab', // Sabtu (Saturday)
+                          'Min', // Minggu (Sunday)
+                        ] // Senin, Selasa, Rabu, Kamis, Jumat, Sabtu, Minggu
+                        .map(
+                          (day) => Container(
+                            width: 36,
+                            height: 28,
+                            alignment: Alignment.center,
+                            child: Text(
+                              day,
+                              style: AppTypography.labelMedium.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                        )
+                        .toList(),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.md),
 
-              // Calendar Grid
+              // Minimalist Calendar Grid
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -508,7 +750,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     day,
                   );
 
-                  return _buildCalendarDay(currentDate, taskProvider);
+                  return _buildMinimalistCalendarDay(currentDate, taskProvider);
                 },
               ),
             ],
@@ -518,8 +760,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     );
   }
 
-  /// Professional Calendar Day Cell
-  Widget _buildCalendarDay(DateTime date, TaskProvider taskProvider) {
+  /// Minimalist Calendar Day Cell with Clean Design
+  Widget _buildMinimalistCalendarDay(DateTime date, TaskProvider taskProvider) {
     final bool isSelected =
         date.year == _selectedDate.year &&
         date.month == _selectedDate.month &&
@@ -543,37 +785,34 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       (task) => !task.isCompleted && task.dueDate.isBefore(DateTime.now()),
     );
 
-    // Determine colors based on task status
+    // Clean color system
     Color? backgroundColor;
     Color? borderColor;
     Color textColor = Theme.of(context).colorScheme.onSurface;
 
     if (isSelected) {
-      // Use error color for selected dates with overdue tasks
-      if (hasOverdue) {
-        backgroundColor = AppColors.errorColor;
-        textColor = AppColors.whiteColor;
-        borderColor = AppColors.errorColor;
-      } else {
-        backgroundColor = AppColors.primaryColor;
-        textColor = AppColors.whiteColor;
-      }
+      backgroundColor = AppColors.primaryColor;
+      textColor = AppColors.whiteColor;
+      borderColor = AppColors.primaryColor;
     } else if (hasOverdue) {
-      backgroundColor = AppColors.errorColor.withOpacity(0.1);
-      borderColor = AppColors.errorColor;
+      backgroundColor = AppColors.errorColor.withOpacity(0.08);
+      borderColor = AppColors.errorColor.withOpacity(0.3);
+      textColor = AppColors.errorColor;
     } else if (totalTasks > 0 && completedTasks == totalTasks) {
-      backgroundColor = AppColors.successColor.withOpacity(0.1);
-      borderColor = AppColors.successColor;
+      backgroundColor = AppColors.successColor.withOpacity(0.08);
+      borderColor = AppColors.successColor.withOpacity(0.3);
+      textColor = AppColors.successColor;
     } else if (totalTasks > 0) {
-      backgroundColor = AppColors.warningColor.withOpacity(0.1);
-      borderColor = AppColors.warningColor;
+      backgroundColor = AppColors.primaryColor.withOpacity(0.08);
+      borderColor = AppColors.primaryColor.withOpacity(0.3);
+      textColor = AppColors.primaryColor;
     }
 
     if (isToday && !isSelected) {
-      borderColor = AppColors.primaryColor;
+      borderColor = AppColors.primaryColor.withOpacity(0.6);
     }
 
-    // Build the calendar day widget with optional blink animation for overdue
+    // Build the minimalist calendar day widget
     Widget calendarDayWidget = GestureDetector(
       onTap: () {
         setState(() {
@@ -581,12 +820,14 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         });
       },
       child: Container(
+        width: 36,
+        height: 36,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: borderColor ?? AppColors.greyExtraLightColor,
-            width: borderColor != null ? 2 : 1,
+            color: borderColor ?? Colors.transparent,
+            width: borderColor != null ? 1.5 : 0,
           ),
         ),
         child: Stack(
@@ -597,24 +838,28 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 style: AppTypography.bodyMedium.copyWith(
                   color: textColor,
                   fontWeight: isSelected || isToday
-                      ? FontWeight.bold
-                      : FontWeight.normal,
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  fontSize: 14,
                 ),
               ),
             ),
+            // Task indicator dot
             if (totalTasks > 0)
               Positioned(
-                top: 2,
-                right: 2,
+                top: 4,
+                right: 4,
                 child: Container(
-                  width: 8,
-                  height: 8,
+                  width: 6,
+                  height: 6,
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.whiteColor
                         : (hasOverdue
                               ? AppColors.errorColor
-                              : AppColors.primaryColor),
+                              : (completedTasks == totalTasks
+                                    ? AppColors.successColor
+                                    : AppColors.primaryColor)),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -624,51 +869,26 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       ),
     );
 
-    // Add blinking animation for overdue tasks
-    if (hasOverdue) {
+    // Add subtle animation for overdue tasks
+    if (hasOverdue && !isSelected) {
       return AnimatedBuilder(
         animation: _blinkAnimationController,
         builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(_shakeAnimation.value, 0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppSpacing.sm),
-                boxShadow: [
-                  // Primary pulsing shadow
-                  BoxShadow(
-                    color: AppColors.errorColor.withOpacity(
-                      isSelected ? 0.6 : 0.8,
-                    ),
-                    blurRadius: _shadowAnimation.value,
-                    spreadRadius: _shadowAnimation.value * 0.3,
-                    offset: const Offset(0, 0),
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.errorColor.withOpacity(
+                    0.3 * _blinkAnimation.value,
                   ),
-                  // Secondary outer glow
-                  BoxShadow(
-                    color: AppColors.errorColor.withOpacity(
-                      isSelected ? 0.3 : 0.4,
-                    ),
-                    blurRadius: _shadowAnimation.value * 1.5,
-                    spreadRadius: _shadowAnimation.value * 0.5,
-                    offset: const Offset(0, 2),
-                  ),
-                  // Inner intense glow
-                  BoxShadow(
-                    color: AppColors.errorColor.withOpacity(
-                      isSelected ? 0.7 : 0.9,
-                    ),
-                    blurRadius: _shadowAnimation.value * 0.5,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 0),
-                  ),
-                ],
-              ),
-              child: Opacity(
-                opacity: isSelected ? 1.0 : _blinkAnimation.value,
-                child: calendarDayWidget,
-              ),
+                  blurRadius: 8 * _blinkAnimation.value,
+                  spreadRadius: 2 * _blinkAnimation.value,
+                  offset: const Offset(0, 0),
+                ),
+              ],
             ),
+            child: calendarDayWidget,
           );
         },
       );
@@ -705,7 +925,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           children: [
             // Section Title
             Text(
-              'Tasks Overview',
+              'Ringkasan Tugas',
               style: AppTypography.headlineMedium.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
@@ -719,8 +939,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             // Priority Sections
             if (overdueTasks.isNotEmpty) ...[
               _buildTaskSection(
-                title: 'Overdue Tasks',
-                subtitle: '${overdueTasks.length} tasks need attention',
+                title: 'Tugas Terlambat',
+                subtitle: '${overdueTasks.length} tugas memerlukan perhatian',
                 icon: Icons.warning_outlined,
                 color: AppColors.errorColor,
                 tasks: overdueTasks,
@@ -731,9 +951,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
 
             _buildTaskSection(
               title: _isSameDay(selectedDate, today)
-                  ? 'Today\'s Tasks'
-                  : 'Tasks for ${DateFormat('MMM d').format(selectedDate)}',
-              subtitle: '${selectedDateTasks.length} tasks scheduled',
+                  ? 'Tugas Hari Ini'
+                  : 'Tugas untuk ${_indonesianShortDateFormat.format(selectedDate)}',
+              subtitle: '${selectedDateTasks.length} tugas terjadwal',
               icon: Icons.today_outlined,
               color: AppColors.primaryColor,
               tasks: selectedDateTasks,
@@ -742,8 +962,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             if (upcomingTasks.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
               _buildTaskSection(
-                title: 'Upcoming This Week',
-                subtitle: '${upcomingTasks.length} tasks coming up',
+                title: 'Tugas Mendatang Minggu Ini',
+                subtitle: '${upcomingTasks.length} tugas akan datang',
                 icon: Icons.schedule_outlined,
                 color: AppColors.infoColor,
                 tasks: upcomingTasks,
@@ -766,24 +986,19 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
   }) {
     if (tasks.isEmpty) {
       return Container(
-        padding: AppSpacing.cardPadding,
+        padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppComponents.largeRadius),
-          gradient: LinearGradient(
-            colors: [
-              color.withOpacity(0.1),
-              color.withOpacity(0.05),
-              Colors.white.withOpacity(0.8),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            width: 1,
           ),
-          border: Border.all(color: color.withOpacity(0.2), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
               spreadRadius: 0,
             ),
           ],
@@ -794,15 +1009,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(
-                      AppComponents.smallRadius,
-                    ),
-                    border: Border.all(color: color.withOpacity(0.3), width: 1),
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                  child: Icon(icon, color: color, size: 24),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -811,14 +1023,15 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     children: [
                       Text(
                         title,
-                        style: AppTypography.titleMedium.copyWith(
-                          color: color,
-                          fontWeight: FontWeight.bold,
+                        style: AppTypography.titleLarge.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
-                        'No tasks scheduled',
-                        style: AppTypography.bodySmall.copyWith(
+                        'Tidak ada tugas terjadwal',
+                        style: AppTypography.bodyMedium.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -830,82 +1043,102 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
 
             const SizedBox(height: AppSpacing.xl),
 
-            // Success Illustration
+            // Minimalist Success Illustration
             Container(
-              width: 80,
-              height: 80,
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.successColor.withOpacity(0.9),
-                    AppColors.successColor.withOpacity(0.7),
+                    AppColors.successColor.withOpacity(0.1),
+                    AppColors.primaryColor.withOpacity(0.1),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.successColor.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                    spreadRadius: 2,
-                  ),
-                ],
               ),
-              child: const Icon(
-                Icons.celebration_outlined,
-                size: 40,
-                color: Colors.white,
+              child: Center(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.successColor.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 40,
+                    color: AppColors.successColor,
+                  ),
+                ),
               ),
             ),
 
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.xl),
 
             // Success Message
             Text(
-              '🎉 All Clear!',
-              style: AppTypography.headlineSmall.copyWith(
-                color: AppColors.successColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
+              'Semua Beres! 🎉',
+              style: AppTypography.headlineMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
               ),
             ),
 
             const SizedBox(height: AppSpacing.sm),
 
             Text(
-              'Great job! You\'re all caught up.',
-              style: AppTypography.bodyMedium.copyWith(
+              'Anda sudah menyelesaikan semua tugas. Saatnya istirahat atau merencanakan ke depan!',
+              style: AppTypography.bodyLarge.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 14,
+                height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
 
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.xl),
 
-            // Motivational Quote Card
+            // Action Suggestion
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(
-                  AppComponents.standardRadius,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primaryColor.withOpacity(0.05),
+                    AppColors.secondaryColor.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                border: Border.all(color: color.withOpacity(0.2), width: 1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primaryColor.withOpacity(0.1),
+                  width: 1,
+                ),
               ),
               child: Column(
                 children: [
-                  Icon(Icons.lightbulb_outline, color: color, size: 24),
+                  Icon(
+                    Icons.lightbulb_outline_rounded,
+                    color: AppColors.primaryColor,
+                    size: 28,
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    '"A clear mind leads to a productive day"',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontStyle: FontStyle.italic,
-                      fontSize: 13,
+                    'Tips Produktif',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Hari yang terorganisir dimulai dengan perencanaan yang jelas. Gunakan tombol + untuk menambahkan tugas selanjutnya!',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      height: 1.4,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -958,124 +1191,217 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     );
   }
 
-  /// Professional Task Card Design
+  /// Professional Task Card Design with Modern Aesthetic
   Widget _buildProfessionalTaskCard(Task task, [bool showPriority = false]) {
     final isOverdue =
         task.dueDate.isBefore(DateTime.now()) && !task.isCompleted;
     final isToday = _isSameDay(task.dueDate, DateTime.now());
 
-    Color priorityColor = AppColors.greyLightColor;
+    Color priorityColor = Theme.of(context).colorScheme.onSurfaceVariant;
     if (isOverdue) {
       priorityColor = AppColors.errorColor;
     } else if (isToday) {
-      priorityColor = AppColors.warningColor;
+      priorityColor = AppColors.primaryColor;
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: task.isCompleted
-            ? AppColors.greyExtraLightColor
+            ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3)
             : Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.sm),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: task.isCompleted
-              ? AppColors.greyLightColor
-              : priorityColor.withOpacity(0.3),
+              ? Colors.transparent
+              : (isOverdue
+                    ? AppColors.errorColor.withOpacity(0.2)
+                    : Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+          width: 1,
         ),
         boxShadow: task.isCompleted
-            ? null
+            ? []
             : [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+                  color: isOverdue
+                      ? AppColors.errorColor.withOpacity(0.08)
+                      : Theme.of(context).colorScheme.shadow.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 0,
                 ),
               ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Checkbox
-          Checkbox(
-            value: task.isCompleted,
-            onChanged: (bool? value) {
+          // Custom Checkbox with better design
+          GestureDetector(
+            onTap: () {
               Provider.of<TaskProvider>(
                 context,
                 listen: false,
               ).toggleTaskStatus(task.id);
             },
-            activeColor: AppColors.successColor,
-            side: BorderSide(color: priorityColor, width: 2),
+            child: Container(
+              width: 24,
+              height: 24,
+              margin: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                color: task.isCompleted
+                    ? AppColors.successColor
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: task.isCompleted
+                      ? AppColors.successColor
+                      : priorityColor.withOpacity(0.4),
+                  width: 2,
+                ),
+              ),
+              child: task.isCompleted
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: Colors.white,
+                    )
+                  : null,
+            ),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: AppSpacing.md),
 
           // Task Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Task Title
                 Text(
                   task.title,
-                  style: AppTypography.titleSmall.copyWith(
+                  style: AppTypography.titleMedium.copyWith(
                     decoration: task.isCompleted
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
                     color: task.isCompleted
-                        ? AppColors.greyColor
+                        ? Theme.of(context).colorScheme.onSurfaceVariant
                         : Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
                   ),
                 ),
+
+                // Task Description
                 if (task.description.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     task.description,
-                    style: AppTypography.bodySmall.copyWith(
+                    style: AppTypography.bodyMedium.copyWith(
                       color: task.isCompleted
-                          ? AppColors.greyColor
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant.withOpacity(0.7)
                           : Theme.of(context).colorScheme.onSurfaceVariant,
+                      height: 1.4,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-                const SizedBox(height: AppSpacing.xs),
+
+                const SizedBox(height: AppSpacing.md),
+
+                // Date and Status Row
                 Row(
                   children: [
-                    Icon(
-                      Icons.schedule_outlined,
-                      size: 14,
-                      color: priorityColor,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Flexible(
-                      child: Text(
-                        DateFormat('MMM d, yyyy').format(task.dueDate),
-                        style: AppTypography.bodySmall.copyWith(
-                          color: priorityColor,
-                          fontWeight: isOverdue
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    // Date with icon
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: priorityColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.calendar_today_rounded,
+                            size: 14,
+                            color: priorityColor,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            _indonesianDayFormat.format(task.dueDate),
+                            style: AppTypography.labelMedium.copyWith(
+                              color: priorityColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    if (isOverdue) ...[
+
+                    // Status Badge
+                    if (isOverdue && !task.isCompleted) ...[
                       const SizedBox(width: AppSpacing.sm),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                          vertical: 2,
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.errorColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(AppSpacing.xs),
+                          color: AppColors.errorColor,
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'OVERDUE',
+                          'Terlambat',
                           style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.errorColor,
-                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ] else if (isToday && !task.isCompleted) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'Hari Ini',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ] else if (task.isCompleted) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.successColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'Done',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.successColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
                           ),
                         ),
                       ),
@@ -1086,31 +1412,71 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             ),
           ),
 
-          // Actions
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.info_outline,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                onPressed: () => _showTaskDetailsDialog(task),
-                tooltip: 'Task Details',
-                style: AppComponents.textButtonStyle(),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete_outline, color: AppColors.errorColor),
-                onPressed: () {
+          // Actions Menu
+          PopupMenuButton<String>(
+            icon: Icon(
+              Icons.more_vert_rounded,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
+            onSelected: (value) {
+              switch (value) {
+                case 'details':
+                  _showTaskDetailsDialog(task);
+                  break;
+                case 'delete':
                   Provider.of<TaskProvider>(
                     context,
                     listen: false,
                   ).deleteTask(task.id);
-                },
-                tooltip: 'Delete Task',
-                style: AppComponents.textButtonStyle(),
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'details',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      size: 18,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'Detail',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline_rounded,
+                      color: AppColors.errorColor,
+                      size: 18,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'Hapus',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.errorColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 8,
+            color: Theme.of(context).colorScheme.surface,
           ),
         ],
       ),
@@ -1132,44 +1498,214 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: StandardAppBar(
         title: 'Task Planner',
-        subtitle: 'Organize your daily tasks',
+        subtitle: 'Organize your daily workflow',
         actions: [
-          ActionButton(
-            icon: Icons.today_outlined,
-            onPressed: () {
-              setState(() {
-                _selectedDate = DateTime.now();
-                _focusedMonth = DateTime.now();
-              });
-            },
-            tooltip: 'Today',
+          Container(
+            margin: const EdgeInsets.only(right: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceVariant.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ActionButton(
+              icon: Icons.today_rounded,
+              onPressed: () {
+                setState(() {
+                  _selectedDate = DateTime.now();
+                  _focusedMonth = DateTime.now();
+                });
+              },
+              tooltip: 'Go to Today',
+            ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: AppSpacing.getPagePadding(screenWidth),
+      body: Consumer<TaskProvider>(
+        builder: (context, taskProvider, child) {
+          // Show error message if there's an error
+          if (taskProvider.error != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(taskProvider.error!),
+                  backgroundColor: AppColors.errorColor,
+                  action: SnackBarAction(
+                    label: 'Dismiss',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      taskProvider.clearError();
+                    },
+                  ),
+                ),
+              );
+              taskProvider.clearError();
+            });
+          }
+
+          // Check authentication status
+          if (!taskProvider.isAuthenticated) {
+            return _buildAuthenticationRequired();
+          }
+
+          // Show loading state
+          if (taskProvider.isLoading && taskProvider.tasks.isEmpty) {
+            return _buildLoadingState();
+          }
+
+          return SingleChildScrollView(
+            padding: AppSpacing.getPagePadding(screenWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Professional Header with Stats
+                _buildTaskStatsHeader(),
+                const SizedBox(height: AppSpacing.lg),
+
+                // Modern Calendar Design
+                _buildProfessionalCalendar(),
+                const SizedBox(height: AppSpacing.xl),
+
+                // Smart Task Sections
+                _buildTaskSections(),
+              ],
+            ),
+          );
+        },
+      ),
+      floatingActionButton: Consumer<TaskProvider>(
+        builder: (context, taskProvider, child) {
+          if (!taskProvider.isAuthenticated) {
+            return const SizedBox.shrink();
+          }
+
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryColor.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: FloatingActionButton.extended(
+              onPressed: _showAddTaskDialog,
+              icon: const Icon(Icons.add_rounded, size: 22),
+              label: Text(
+                'Tambah Tugas',
+                style: AppTypography.buttonPrimary.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Widget for authentication required state
+  Widget _buildAuthenticationRequired() {
+    return Center(
+      child: Container(
+        margin: AppSpacing.getPagePadding(MediaQuery.of(context).size.width),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Professional Header with Stats
-            _buildTaskStatsHeader(),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Modern Calendar Design
-            _buildProfessionalCalendar(),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.warningColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.lock_outline_rounded,
+                size: 40,
+                color: AppColors.warningColor,
+              ),
+            ),
             const SizedBox(height: AppSpacing.xl),
-
-            // Smart Task Sections
-            _buildTaskSections(),
+            Text(
+              'Autentikasi Diperlukan',
+              style: AppTypography.headlineMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Harap masuk untuk mengakses perencana tugas dan mengelola tugas Anda.',
+              style: AppTypography.bodyLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            ElevatedButton.icon(
+              onPressed: () {
+                // Navigate to login page
+                Navigator.pushNamed(context, '/login');
+              },
+              icon: const Icon(Icons.login_rounded),
+              label: const Text('Masuk'),
+              style: AppComponents.primaryButtonStyle(),
+            ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddTaskDialog,
-        icon: const Icon(Icons.add_task),
-        label: Text('Add Task', style: AppTypography.buttonPrimary),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+    );
+  }
+
+  /// Widget for loading state
+  Widget _buildLoadingState() {
+    return Center(
+      child: Container(
+        margin: AppSpacing.getPagePadding(MediaQuery.of(context).size.width),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+              color: AppColors.primaryColor,
+              strokeWidth: 3,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Memuat tugas Anda...',
+              style: AppTypography.bodyLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -57,7 +57,7 @@ class TaskDetailDialog extends StatelessWidget {
                   ), // Calendar icon
                   const SizedBox(width: 8.0),
                   Text(
-                    'Due Date: ${DateFormat('MMM d, yyyy').format(task.dueDate)}',
+                    'Tanggal Jatuh Tempo: ${DateFormat('d MMM yyyy', 'id_ID').format(task.dueDate)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontStyle: FontStyle.italic,
                       color: Theme.of(
@@ -73,7 +73,7 @@ class TaskDetailDialog extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Description:',
+                      'Deskripsi:',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -97,7 +97,7 @@ class TaskDetailDialog extends StatelessWidget {
                     nav.NavigationHelper.safePopDialog(context);
                   },
                   child: Text(
-                    'Close',
+                    'Tutup',
                     style: TextStyle(
                       fontSize: 18,
                       color: AppColors.primaryColor,

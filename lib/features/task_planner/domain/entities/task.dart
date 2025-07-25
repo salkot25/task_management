@@ -1,4 +1,5 @@
-import 'dart:developer' as developer; // Import developer for logging
+import 'dart:developer' as developer;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Task {
   final String id;
@@ -6,6 +7,9 @@ class Task {
   final String description;
   final bool isCompleted;
   final DateTime dueDate;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final DateTime? completedAt;
 
   Task({
     required this.id,
@@ -13,6 +17,9 @@ class Task {
     this.description = '',
     this.isCompleted = false,
     required this.dueDate,
+    this.createdAt,
+    this.updatedAt,
+    this.completedAt,
   });
 
   Task copyWith({
@@ -21,6 +28,9 @@ class Task {
     String? description,
     bool? isCompleted,
     DateTime? dueDate,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? completedAt,
   }) {
     return Task(
       id: id ?? this.id,
@@ -28,47 +38,73 @@ class Task {
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
       dueDate: dueDate ?? this.dueDate,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      completedAt: completedAt ?? this.completedAt,
     );
   }
 
-  // Convert Task object to a Map for Firestore
+  /// Convert Task object to a Map for Firestore
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'title': title,
       'description': description,
       'isCompleted': isCompleted,
-      'dueDate': dueDate.toIso8601String(), // Convert DateTime to String
+      'dueDate': Timestamp.fromDate(dueDate),
+      if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
+      if (updatedAt != null) 'updatedAt': Timestamp.fromDate(updatedAt!),
+      if (completedAt != null) 'completedAt': Timestamp.fromDate(completedAt!),
     };
   }
 
-  // Create a Task object from a Firestore Map with error handling for dueDate
+  /// Create a Task object from a Firestore Map
   factory Task.fromMap(Map<String, dynamic> map) {
-    DateTime parsedDueDate;
     try {
-      // Try to parse the dueDate string. Handle potential null or invalid format.
-      final dueDateString = map['dueDate'];
-      if (dueDateString != null) {
-        parsedDueDate = DateTime.parse(dueDateString);
-      } else {
-        // Provide a default DateTime if dueDate is null
-        parsedDueDate = DateTime.now(); // Or handle as appropriate for your app
+      return Task(
+        id: map['id'] ?? '',
+        title: map['title'] ?? '',
+        description: map['description'] ?? '',
+        isCompleted: map['isCompleted'] ?? false,
+        dueDate: _parseRequiredDateTime(map['dueDate']),
+        createdAt: _parseDateTime(map['createdAt']),
+        updatedAt: _parseDateTime(map['updatedAt']),
+        completedAt: _parseDateTime(map['completedAt']),
+      );
+    } catch (e) {
+      developer.log(
+        'Error parsing Task from map: $e',
+        name: 'Task.fromMap',
+        error: e,
+      );
+      rethrow;
+    }
+  }
+
+  /// Helper method to parse DateTime from various formats (nullable)
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+
+    try {
+      if (value is Timestamp) {
+        return value.toDate();
+      } else if (value is String) {
+        return DateTime.parse(value);
+      } else if (value is DateTime) {
+        return value;
       }
     } catch (e) {
-      // Handle parsing errors, e.g., if the format is unexpected
       developer.log(
-        'Error parsing dueDate: $e. Using current DateTime.',
-        name: 'Task',
-      ); // Replaced print with logging
-      parsedDueDate = DateTime.now(); // Provide a default DateTime on error
+        'Error parsing DateTime: $e, value: $value',
+        name: 'Task._parseDateTime',
+      );
     }
 
-    return Task(
-      id: map['id'] ?? '',
-      title: map['title'] ?? '',
-      description: map['description'] ?? '',
-      isCompleted: map['isCompleted'] ?? false,
-      dueDate: parsedDueDate,
-    );
+    return null;
+  }
+
+  /// Helper method to parse required DateTime (falls back to current time)
+  static DateTime _parseRequiredDateTime(dynamic value) {
+    final parsed = _parseDateTime(value);
+    return parsed ?? DateTime.now();
   }
 }

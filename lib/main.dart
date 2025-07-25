@@ -14,6 +14,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Import Locale
+import 'package:intl/date_symbol_data_local.dart';
+
 // Import Auth Features
 import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart'
     as auth_remote_data_source;
@@ -49,6 +52,9 @@ import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Indonesian locale for date formatting
+  await initializeDateFormatting('id_ID', null);
 
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
