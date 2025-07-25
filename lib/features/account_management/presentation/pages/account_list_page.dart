@@ -142,7 +142,9 @@ class _AccountListPageState extends State<AccountListPage> {
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: BorderRadius.circular(AppSpacing.sm),
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
@@ -806,8 +808,12 @@ class _AccountListItemState extends State<AccountListItem> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-            Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.1),
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

@@ -1,0 +1,252 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions untuk validasi
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isValidEmail(email) {
+      return email is string && email.matches('.*@.*\\..*');
+    }
+    
+    function isValidTimestamp(ts) {
+      return ts is timestamp;
+    }
+    
+    function isValidString(field, minLength, maxLength) {
+      return field is string && 
+             field.size() >= minLength && 
+             field.size() <= maxLength;
+    }
+    
+    function isValidNumber(field, min, max) {
+      return field is number && 
+             field >= min && 
+             field <= max;
+    }
+    
+    // User profiles collection
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      allow create: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateUserProfile(resource.data);
+      
+      allow update: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateUserProfile(request.resource.data) &&
+                   request.resource.data.createdAt == resource.data.createdAt;
+      
+      function validateUserProfile(data) {
+        return data.keys().hasAll(['name', 'email', 'createdAt', 'updatedAt']) &&
+               isValidString(data.name, 1, 100) &&
+               isValidEmail(data.email) &&
+               isValidTimestamp(data.createdAt) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Optional fields validation
+               (!data.keys().hasAny(['photoUrl']) || isValidString(data.photoUrl, 1, 500)) &&
+               (!data.keys().hasAny(['phoneNumber']) || isValidString(data.phoneNumber, 8, 20)) &&
+               (!data.keys().hasAny(['bio']) || isValidString(data.bio, 0, 500));
+      }
+    }
+    
+    // Account management collection
+    match /users/{userId}/accounts/{accountId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      allow create: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateAccount(request.resource.data);
+      
+      allow update: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateAccount(request.resource.data) &&
+                   request.resource.data.createdAt == resource.data.createdAt;
+      
+      function validateAccount(data) {
+        return data.keys().hasAll(['name', 'type', 'balance', 'createdAt', 'updatedAt']) &&
+               isValidString(data.name, 1, 100) &&
+               data.type in ['bank', 'cash', 'credit_card', 'e_wallet', 'investment', 'other'] &&
+               isValidNumber(data.balance, -999999999, 999999999) &&
+               isValidTimestamp(data.createdAt) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Optional fields
+               (!data.keys().hasAny(['accountNumber']) || isValidString(data.accountNumber, 1, 50)) &&
+               (!data.keys().hasAny(['bankName']) || isValidString(data.bankName, 1, 100)) &&
+               (!data.keys().hasAny(['description']) || isValidString(data.description, 0, 255)) &&
+               (!data.keys().hasAny(['currency']) || data.currency in ['IDR', 'USD', 'EUR', 'SGD']) &&
+               (!data.keys().hasAny(['isActive']) || data.isActive is bool);
+      }
+    }
+    
+    // Tasks collection
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      allow create: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateTask(request.resource.data);
+      
+      allow update: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateTask(request.resource.data) &&
+                   request.resource.data.createdAt == resource.data.createdAt;
+      
+      function validateTask(data) {
+        return data.keys().hasAll(['title', 'description', 'isCompleted', 'createdAt', 'updatedAt']) &&
+               isValidString(data.title, 1, 200) &&
+               isValidString(data.description, 0, 1000) &&
+               data.isCompleted is bool &&
+               isValidTimestamp(data.createdAt) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Optional fields
+               (!data.keys().hasAny(['dueDate']) || isValidTimestamp(data.dueDate)) &&
+               (!data.keys().hasAny(['priority']) || data.priority in ['low', 'medium', 'high', 'urgent']) &&
+               (!data.keys().hasAny(['category']) || isValidString(data.category, 1, 50)) &&
+               (!data.keys().hasAny(['tags']) || (data.tags is list && data.tags.size() <= 10)) &&
+               (!data.keys().hasAny(['completedAt']) || isValidTimestamp(data.completedAt)) &&
+               // Validate tags if present
+               (!data.keys().hasAny(['tags']) || validateTags(data.tags));
+      }
+      
+      function validateTags(tags) {
+        return tags.size() <= 10 &&
+               tags.toSet().size() == tags.size(); // No duplicates
+      }
+    }
+    
+    // Transactions collection (Cashcard feature)
+    match /users/{userId}/transactions/{transactionId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      allow create: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateTransaction(request.resource.data);
+      
+      allow update: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateTransaction(request.resource.data) &&
+                   request.resource.data.createdAt == resource.data.createdAt;
+      
+      function validateTransaction(data) {
+        return data.keys().hasAll(['amount', 'type', 'description', 'date', 'createdAt', 'updatedAt']) &&
+               isValidNumber(data.amount, 0.01, 999999999) &&
+               data.type in ['income', 'expense'] &&
+               isValidString(data.description, 1, 255) &&
+               isValidTimestamp(data.date) &&
+               isValidTimestamp(data.createdAt) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Optional fields
+               (!data.keys().hasAny(['category']) || isValidString(data.category, 1, 50)) &&
+               (!data.keys().hasAny(['accountId']) || isValidString(data.accountId, 1, 100)) &&
+               (!data.keys().hasAny(['tags']) || (data.tags is list && data.tags.size() <= 5)) &&
+               (!data.keys().hasAny(['location']) || isValidString(data.location, 1, 100)) &&
+               (!data.keys().hasAny(['notes']) || isValidString(data.notes, 0, 500)) &&
+               (!data.keys().hasAny(['receiptUrl']) || isValidString(data.receiptUrl, 1, 500));
+      }
+    }
+    
+    // Budget categories collection
+    match /users/{userId}/budgets/{budgetId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      allow create: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateBudget(request.resource.data);
+      
+      allow update: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateBudget(request.resource.data) &&
+                   request.resource.data.createdAt == resource.data.createdAt;
+      
+      function validateBudget(data) {
+        return data.keys().hasAll(['name', 'budgetAmount', 'spentAmount', 'period', 'createdAt', 'updatedAt']) &&
+               isValidString(data.name, 1, 100) &&
+               isValidNumber(data.budgetAmount, 0, 999999999) &&
+               isValidNumber(data.spentAmount, 0, 999999999) &&
+               data.period in ['monthly', 'weekly', 'yearly', 'custom'] &&
+               isValidTimestamp(data.createdAt) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Optional fields
+               (!data.keys().hasAny(['startDate']) || isValidTimestamp(data.startDate)) &&
+               (!data.keys().hasAny(['endDate']) || isValidTimestamp(data.endDate)) &&
+               (!data.keys().hasAny(['color']) || isValidString(data.color, 6, 7)) && // hex color
+               (!data.keys().hasAny(['icon']) || isValidString(data.icon, 1, 50)) &&
+               (!data.keys().hasAny(['isActive']) || data.isActive is bool) &&
+               (!data.keys().hasAny(['alertThreshold']) || isValidNumber(data.alertThreshold, 0, 100));
+      }
+    }
+    
+    // Secure vault collection (for sensitive data)
+    match /users/{userId}/vault/{vaultId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      allow create: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateVaultItem(request.resource.data);
+      
+      allow update: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateVaultItem(request.resource.data) &&
+                   request.resource.data.createdAt == resource.data.createdAt;
+      
+      function validateVaultItem(data) {
+        return data.keys().hasAll(['title', 'type', 'encryptedData', 'createdAt', 'updatedAt']) &&
+               isValidString(data.title, 1, 100) &&
+               data.type in ['password', 'card', 'note', 'document', 'other'] &&
+               isValidString(data.encryptedData, 1, 10000) &&
+               isValidTimestamp(data.createdAt) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Optional fields
+               (!data.keys().hasAny(['category']) || isValidString(data.category, 1, 50)) &&
+               (!data.keys().hasAny(['tags']) || (data.tags is list && data.tags.size() <= 5)) &&
+               (!data.keys().hasAny(['isFavorite']) || data.isFavorite is bool) &&
+               (!data.keys().hasAny(['lastAccessedAt']) || isValidTimestamp(data.lastAccessedAt));
+      }
+    }
+    
+    // App settings collection
+    match /users/{userId}/settings/{settingId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      
+      allow create: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateSettings(request.resource.data);
+      
+      allow update: if isAuthenticated() && 
+                   isOwner(userId) && 
+                   validateSettings(request.resource.data);
+      
+      function validateSettings(data) {
+        return data.keys().hasAll(['key', 'value', 'updatedAt']) &&
+               isValidString(data.key, 1, 100) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Settings keys whitelist
+               data.key in [
+                 'theme_mode', 'language', 'currency_default', 
+                 'notification_enabled', 'biometric_enabled', 
+                 'backup_enabled', 'sync_frequency'
+               ];
+      }
+    }
+    
+    // Audit logs (read-only for users, write for server)
+    match /users/{userId}/audit_logs/{logId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      // Audit logs should be created by server/cloud functions only
+      allow write: if false;
+    }
+    
+    // Global deny rule for any other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
