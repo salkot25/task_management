@@ -1,6 +1,7 @@
 /// 🎨 Design System Export
 /// Centralized export file for all design system components
 /// This allows easy import of the entire design system with a single import
+library;
 
 // Core design system components
 export 'app_colors.dart';
