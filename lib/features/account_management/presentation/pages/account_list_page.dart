@@ -95,7 +95,16 @@ class _AccountListPageState extends State<AccountListPage> {
           } else if (provider.accounts.isEmpty) {
             return _buildEmptyState(context, provider, accountProvider);
           } else {
-            return _buildAccountsList(context, provider, screenWidth);
+            return Column(
+              children: [
+                // Security Overview Section
+                _buildSecurityOverview(context, provider),
+                // Enhanced Accounts List
+                Expanded(
+                  child: _buildAccountsList(context, provider, screenWidth),
+                ),
+              ],
+            );
           }
         },
       ),
@@ -134,44 +143,65 @@ class _AccountListPageState extends State<AccountListPage> {
     );
   }
 
-  /// Professional Search Field
+  /// Enhanced Search Field with Modern Design
   Widget _buildSearchField(
     BuildContext context,
     AccountProvider accountProvider,
   ) {
     return Container(
-      height: 40,
+      height: 44,
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(AppSpacing.sm),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(AppSpacing.md),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextField(
         controller: _searchController,
         decoration:
             AppComponents.inputDecoration(
               labelText: '',
-              hintText: 'Search websites...',
-              prefixIcon: Icon(
-                Icons.search_outlined,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                size: 20,
+              hintText: 'Search websites, usernames...',
+              prefixIcon: Container(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  Icons.search_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
               ),
             ).copyWith(
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
               ),
+              filled: false,
             ),
         style: AppTypography.bodyMedium.copyWith(
           color: Theme.of(context).colorScheme.onSurface,
+          fontWeight: FontWeight.w500,
         ),
         onChanged: (value) {
           accountProvider.setFilterWebsite(value);
@@ -272,6 +302,136 @@ class _AccountListPageState extends State<AccountListPage> {
     );
   }
 
+  /// Security Overview Dashboard
+  Widget _buildSecurityOverview(
+    BuildContext context,
+    AccountProvider provider,
+  ) {
+    final accounts = provider.accounts;
+    final totalAccounts = accounts.length;
+
+    // Calculate security metrics
+    int weakPasswords = 0;
+    int strongPasswords = 0;
+
+    for (final account in accounts) {
+      final strength = _calculatePasswordStrength(account.password);
+      if (strength <= 2) {
+        weakPasswords++;
+      } else if (strength >= 4) {
+        strongPasswords++;
+      }
+    }
+
+    return Container(
+      margin: AppSpacing.getPagePadding(
+        MediaQuery.of(context).size.width,
+      ).copyWith(top: AppSpacing.sm, bottom: AppSpacing.xs),
+      child: Row(
+        children: [
+          // Total Accounts Card
+          Expanded(
+            child: _buildOverviewCard(
+              context: context,
+              title: 'Total',
+              value: totalAccounts.toString(),
+              subtitle: 'Accounts',
+              icon: Icons.account_circle_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          // Strong Passwords Card
+          Expanded(
+            child: _buildOverviewCard(
+              context: context,
+              title: 'Strong',
+              value: strongPasswords.toString(),
+              subtitle: 'Passwords',
+              icon: Icons.security_outlined,
+              color: AppColors.successColor,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          // Weak Passwords Card
+          Expanded(
+            child: _buildOverviewCard(
+              context: context,
+              title: 'Weak',
+              value: weakPasswords.toString(),
+              subtitle: 'Need Update',
+              icon: Icons.warning_outlined,
+              color: AppColors.errorColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Overview Card Component
+  Widget _buildOverviewCard({
+    required BuildContext context,
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.md),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                title,
+                style: AppTypography.labelSmall.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: AppTypography.titleLarge.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            subtitle,
+            style: AppTypography.labelSmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Calculate Password Strength (same logic as in AccountListItem)
+  int _calculatePasswordStrength(String password) {
+    int strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.contains(RegExp(r'[A-Z]'))) strength++;
+    if (password.contains(RegExp(r'[a-z]'))) strength++;
+    if (password.contains(RegExp(r'[0-9]'))) strength++;
+    if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) strength++;
+    return strength;
+  }
+
   /// Professional Accounts List
   Widget _buildAccountsList(
     BuildContext context,
@@ -295,25 +455,47 @@ class _AccountListPageState extends State<AccountListPage> {
     );
   }
 
-  /// Secure Floating Action Button
+  /// Secure Floating Action Button with Enhanced Design
   Widget _buildSecureFloatingActionButton(BuildContext context) {
-    return FloatingActionButton.extended(
-      onPressed: () => _showAccountDetailDialog(),
-      icon: Icon(
-        Icons.add_outlined,
-        color: Theme.of(context).colorScheme.onPrimary,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.lg),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 2,
+          ),
+        ],
       ),
-      label: Text(
-        'Add Account',
-        style: AppTypography.buttonPrimary.copyWith(
-          color: Theme.of(context).colorScheme.onPrimary,
+      child: FloatingActionButton.extended(
+        onPressed: () => _showAccountDetailDialog(),
+        icon: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(
+            Icons.add_outlined,
+            color: Theme.of(context).colorScheme.onPrimary,
+            size: 20,
+          ),
         ),
-      ),
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      elevation: 4,
-      extendedPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
+        label: Text(
+          'Add Account',
+          style: AppTypography.buttonPrimary.copyWith(
+            color: Theme.of(context).colorScheme.onPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        elevation: 0,
+        extendedPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: AppSpacing.md,
+        ),
       ),
     );
   }
@@ -541,6 +723,24 @@ class _AccountListItemState extends State<AccountListItem> {
     return strength;
   }
 
+  /// Get Security Icon Based on Strength
+  IconData _getSecurityIcon(int strength) {
+    switch (strength) {
+      case 0:
+      case 1:
+        return Icons.dangerous_outlined;
+      case 2:
+        return Icons.warning_outlined;
+      case 3:
+        return Icons.shield_outlined;
+      case 4:
+      case 5:
+        return Icons.verified_outlined;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
   /// Get Password Strength Color
   Color _getPasswordStrengthColor(int strength) {
     switch (strength) {
@@ -597,108 +797,152 @@ class _AccountListItemState extends State<AccountListItem> {
           Container(
             padding: AppSpacing.cardPadding,
             decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.primaryContainer.withOpacity(0.3),
+              gradient: LinearGradient(
+                colors: [
+                  strengthColor.withOpacity(0.1),
+                  strengthColor.withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppSpacing.sm),
-                topRight: Radius.circular(AppSpacing.sm),
+                topLeft: Radius.circular(AppSpacing.md),
+                topRight: Radius.circular(AppSpacing.md),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: strengthColor.withOpacity(0.2),
+                  width: 1,
+                ),
               ),
             ),
             child: Row(
               children: [
+                // Enhanced Website Icon Container
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
+                    gradient: LinearGradient(
+                      colors: [
+                        strengthColor.withOpacity(0.2),
+                        strengthColor.withOpacity(0.1),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.md),
+                    border: Border.all(
+                      color: strengthColor.withOpacity(0.3),
+                      width: 1,
+                    ),
                   ),
                   child: Icon(
                     Icons.language_outlined,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
+                    color: strengthColor,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.lg),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Enhanced Website Title
                       Text(
                         widget.account.website,
-                        style: AppTypography.titleMedium.copyWith(
+                        style: AppTypography.titleLarge.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: AppSpacing.xs),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: strengthColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(
-                                AppSpacing.xs,
-                              ),
-                              border: Border.all(
-                                color: strengthColor.withOpacity(0.3),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.security_outlined,
-                                  size: 12,
-                                  color: strengthColor,
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                Text(
-                                  strengthLabel,
-                                  style: AppTypography.labelSmall.copyWith(
-                                    color: strengthColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+
+                      // Enhanced Security Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: strengthColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(AppSpacing.sm),
+                          border: Border.all(
+                            color: strengthColor.withOpacity(0.4),
+                            width: 1,
                           ),
-                        ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getSecurityIcon(passwordStrength),
+                              size: 14,
+                              color: strengthColor,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              strengthLabel,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: strengthColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              'Security',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: strengthColor.withOpacity(0.8),
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Quick Actions
+                // Enhanced Quick Actions
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.edit_outlined,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 20,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppSpacing.sm),
                       ),
-                      onPressed: widget.onEdit,
-                      tooltip: 'Edit account',
-                      style: AppComponents.textButtonStyle(),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 20,
+                        ),
+                        onPressed: widget.onEdit,
+                        tooltip: 'Edit account',
+                        style: AppComponents.textButtonStyle(),
+                      ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: AppColors.errorColor,
-                        size: 20,
+                    const SizedBox(width: AppSpacing.xs),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.errorColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppSpacing.sm),
                       ),
-                      onPressed: widget.onDelete,
-                      tooltip: 'Delete account',
-                      style: AppComponents.textButtonStyle(),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: AppColors.errorColor,
+                          size: 20,
+                        ),
+                        onPressed: widget.onDelete,
+                        tooltip: 'Delete account',
+                        style: AppComponents.textButtonStyle(),
+                      ),
                     ),
                   ],
                 ),
@@ -810,7 +1054,7 @@ class _AccountListItemState extends State<AccountListItem> {
           colors: [
             Theme.of(
               context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
             Theme.of(
               context,
             ).colorScheme.surfaceContainerHighest.withOpacity(0.1),
@@ -820,105 +1064,115 @@ class _AccountListItemState extends State<AccountListItem> {
         ),
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
-            blurRadius: 4,
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Compact Label Row
+            // Enhanced Label Row with Better Spacing
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
+                    ).colorScheme.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
                     icon,
-                    size: 12,
+                    size: 14,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.xs),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
-                  label,
+                  label.toUpperCase(),
                   style: AppTypography.labelSmall.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
 
-            // Value Row with Actions
+            // Enhanced Value Row with Better Typography
             Row(
               children: [
                 Expanded(
                   child: Text(
                     isPassword && !isVisible ? '•' * 8 : value,
-                    style: AppTypography.bodySmall.copyWith(
+                    style: AppTypography.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontFamily: isPassword ? 'monospace' : null,
                       fontWeight: FontWeight.w500,
+                      fontSize: 15,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
 
-                // Compact Action Buttons
+                // Enhanced Action Buttons with Better Spacing
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (isPassword && onToggleVisibility != null)
+                    if (isPassword && onToggleVisibility != null) ...[
                       GestureDetector(
                         onTap: onToggleVisibility,
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             color: Theme.of(
                               context,
                             ).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.2),
+                            ),
                           ),
                           child: Icon(
                             isVisible
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            size: 14,
+                            size: 16,
                             color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ),
-                    const SizedBox(width: 4),
+                      const SizedBox(width: AppSpacing.xs),
+                    ],
                     GestureDetector(
                       onTap: onCopy,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
+                          color: AppColors.successColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: AppColors.successColor.withOpacity(0.2),
+                          ),
                         ),
                         child: Icon(
                           Icons.copy_outlined,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.primary,
+                          size: 16,
+                          color: AppColors.successColor,
                         ),
                       ),
                     ),
