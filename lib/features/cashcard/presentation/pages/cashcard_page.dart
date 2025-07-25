@@ -7,6 +7,9 @@ import 'package:myapp/utils/design_system/app_colors.dart';
 import 'package:myapp/utils/design_system/app_spacing.dart';
 import 'package:myapp/utils/design_system/app_typography.dart';
 import 'package:myapp/utils/design_system/app_components.dart';
+import 'package:myapp/features/cashcard/presentation/widgets/financial_charts.dart';
+import 'package:myapp/features/cashcard/presentation/widgets/budget_management.dart';
+import 'package:myapp/features/cashcard/presentation/widgets/export_functions.dart';
 
 class CashcardPage extends StatefulWidget {
   const CashcardPage({super.key});
@@ -15,11 +18,15 @@ class CashcardPage extends StatefulWidget {
   State<CashcardPage> createState() => _CashcardPageState();
 }
 
-class _CashcardPageState extends State<CashcardPage> {
+class _CashcardPageState extends State<CashcardPage>
+    with TickerProviderStateMixin {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   // Removed _selectedType, will use provider instead
   DateTime _selectedDate = DateTime.now();
+
+  // Tab Controller for advanced features
+  late TabController _tabController;
 
   // Added for the month filter dropdown
   final List<String> _months =
@@ -35,6 +42,7 @@ class _CashcardPageState extends State<CashcardPage> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
     _years = _getYearsList(); // Initialize _years in initState
     // Initialize selected month and year from the provider
     final cashcardProvider = Provider.of<CashcardProvider>(
@@ -53,6 +61,14 @@ class _CashcardPageState extends State<CashcardPage> {
               .selectedMonth]; // Use the provider's month (1-based index + 1 for 'All Time')
       _selectedYear = cashcardProvider.selectedYear;
     }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _descriptionController.dispose();
+    _amountController.dispose();
+    super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -925,13 +941,6 @@ class _CashcardPageState extends State<CashcardPage> {
   }
 
   @override
-  void dispose() {
-    _descriptionController.dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final cashcardProvider = Provider.of<CashcardProvider>(context);
     final transactions = cashcardProvider.transactions;
@@ -1079,46 +1088,50 @@ class _CashcardPageState extends State<CashcardPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Displaying Income, Expense, and Balance in a single credit card like widget
-              _buildPremiumFinancialCard(
-                context,
-                cashcardProvider.balance,
-                cashcardProvider.totalIncome,
-                cashcardProvider.totalExpense,
+      body: Column(
+        children: [
+          // Tab Bar
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: AppColors.primaryColor,
+              unselectedLabelColor: AppColors.greyColor,
+              indicatorColor: AppColors.primaryColor,
+              indicatorWeight: 3,
+              labelStyle: AppTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
               ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Financial Insights Section
-              _buildFinancialInsights(cashcardProvider),
-              const SizedBox(height: AppSpacing.md),
-
-              // Transaction Period Header
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Text(
-                  'Transactions (${cashcardProvider.showAllTime ? 'All Time' : '$_selectedMonth $_selectedYear'})',
-                  style: AppTypography.titleMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              // Professional Transaction List
-              _buildProfessionalTransactionList(transactions),
-
-              // Bottom spacing for FAB
-              const SizedBox(height: AppSpacing.xxxl),
-            ],
+              unselectedLabelStyle: AppTypography.bodyMedium,
+              tabs: const [
+                Tab(icon: Icon(Icons.dashboard), text: 'Overview'),
+                Tab(icon: Icon(Icons.bar_chart), text: 'Analytics'),
+                Tab(icon: Icon(Icons.account_balance_wallet), text: 'Budget'),
+                Tab(icon: Icon(Icons.file_download), text: 'Export'),
+              ],
+            ),
           ),
-        ),
+
+          // Tab Bar View
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Overview Tab
+                _buildOverviewTab(cashcardProvider, transactions),
+
+                // Analytics Tab
+                _buildAnalyticsTab(cashcardProvider),
+
+                // Budget Tab
+                _buildBudgetTab(cashcardProvider),
+
+                // Export Tab
+                _buildExportTab(cashcardProvider),
+              ],
+            ),
+          ),
+        ],
       ),
       floatingActionButton: Container(
         decoration: BoxDecoration(
@@ -1144,6 +1157,96 @@ class _CashcardPageState extends State<CashcardPage> {
               fontWeight: FontWeight.w600,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // Tab Content Methods
+  Widget _buildOverviewTab(
+    CashcardProvider cashcardProvider,
+    List<Transaction> transactions,
+  ) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Displaying Income, Expense, and Balance in a single credit card like widget
+            _buildPremiumFinancialCard(
+              context,
+              cashcardProvider.balance,
+              cashcardProvider.totalIncome,
+              cashcardProvider.totalExpense,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Financial Insights Section
+            _buildFinancialInsights(cashcardProvider),
+            const SizedBox(height: AppSpacing.md),
+
+            // Transaction Period Header
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Text(
+                'Transactions (${cashcardProvider.showAllTime ? 'All Time' : '$_selectedMonth $_selectedYear'})',
+                style: AppTypography.titleMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+
+            // Professional Transaction List
+            _buildProfessionalTransactionList(transactions),
+
+            // Bottom spacing for FAB
+            const SizedBox(height: AppSpacing.xxxl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnalyticsTab(CashcardProvider cashcardProvider) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: FinancialCharts(
+        transactions: cashcardProvider.transactions,
+        totalIncome: cashcardProvider.totalIncome,
+        totalExpense: cashcardProvider.totalExpense,
+      ),
+    );
+  }
+
+  Widget _buildBudgetTab(CashcardProvider cashcardProvider) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.md),
+        child: BudgetManagement(
+          categories: cashcardProvider.budgetCategories,
+          onAddCategory: (category) =>
+              cashcardProvider.addBudgetCategory(category),
+          onUpdateBudget: (category, amount) =>
+              cashcardProvider.updateBudgetCategory(category, amount),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExportTab(CashcardProvider cashcardProvider) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.md),
+        child: ExportFunctions(
+          transactions: cashcardProvider.transactions,
+          totalIncome: cashcardProvider.totalIncome,
+          totalExpense: cashcardProvider.totalExpense,
+          balance: cashcardProvider.balance,
         ),
       ),
     );

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/features/cashcard/domain/entities/transaction.dart';
 import 'package:myapp/features/cashcard/domain/repositories/transaction_repository.dart';
+import 'package:myapp/features/cashcard/presentation/widgets/budget_management.dart';
 
 class CashcardProvider with ChangeNotifier {
   final TransactionRepository repository;
   List<Transaction> _transactions = [];
+  final List<BudgetCategory> _budgetCategories = [];
 
   // Added for filtering
   int _selectedMonth = DateTime.now().month;
@@ -36,6 +38,8 @@ class CashcardProvider with ChangeNotifier {
   int get selectedMonth => _selectedMonth;
   int get selectedYear => _selectedYear;
   bool get showAllTime => _showAllTime; // Getter for the new flag
+
+  List<BudgetCategory> get budgetCategories => _budgetCategories;
 
   // Getter for the selected transaction type in the modal
   TransactionType get selectedTransactionType => _selectedTransactionType;
@@ -70,6 +74,8 @@ class CashcardProvider with ChangeNotifier {
       _transactions = newTransactions;
       // Sort transactions by date in descending order
       _transactions.sort((a, b) => b.date.compareTo(a.date));
+      // Update budget spending when transactions change
+      _updateBudgetSpending();
       notifyListeners();
     });
   }
@@ -102,6 +108,91 @@ class CashcardProvider with ChangeNotifier {
   void setSelectedTransactionType(TransactionType type) {
     _selectedTransactionType = type;
     notifyListeners();
+  }
+
+  // Budget Management Methods
+  void addBudgetCategory(BudgetCategory category) {
+    _budgetCategories.add(category);
+    notifyListeners();
+  }
+
+  void updateBudgetCategory(BudgetCategory category, double newBudgetAmount) {
+    final index = _budgetCategories.indexWhere((c) => c.name == category.name);
+    if (index != -1) {
+      final updatedCategory = BudgetCategory(
+        name: category.name,
+        budgetAmount: newBudgetAmount,
+        spentAmount: category.spentAmount,
+        color: category.color,
+        icon: category.icon,
+      );
+      _budgetCategories[index] = updatedCategory;
+      notifyListeners();
+    }
+  }
+
+  void removeBudgetCategory(String categoryName) {
+    _budgetCategories.removeWhere((category) => category.name == categoryName);
+    notifyListeners();
+  }
+
+  void _updateBudgetSpending() {
+    for (int i = 0; i < _budgetCategories.length; i++) {
+      final category = _budgetCategories[i];
+      final categorySpending = _calculateCategorySpending(category.name);
+
+      _budgetCategories[i] = BudgetCategory(
+        name: category.name,
+        budgetAmount: category.budgetAmount,
+        spentAmount: categorySpending,
+        color: category.color,
+        icon: category.icon,
+      );
+    }
+  }
+
+  double _calculateCategorySpending(String categoryName) {
+    return _transactions
+        .where(
+          (transaction) =>
+              transaction.type == TransactionType.expense &&
+              _getCategoryFromDescription(transaction.description) ==
+                  categoryName,
+        )
+        .fold(0.0, (sum, transaction) => sum + transaction.amount);
+  }
+
+  String _getCategoryFromDescription(String description) {
+    final lowerDesc = description.toLowerCase();
+
+    if (lowerDesc.contains('food') ||
+        lowerDesc.contains('makan') ||
+        lowerDesc.contains('lunch') ||
+        lowerDesc.contains('dinner')) {
+      return 'Food';
+    } else if (lowerDesc.contains('transport') ||
+        lowerDesc.contains('gas') ||
+        lowerDesc.contains('fuel') ||
+        lowerDesc.contains('bensin')) {
+      return 'Transport';
+    } else if (lowerDesc.contains('shop') ||
+        lowerDesc.contains('buy') ||
+        lowerDesc.contains('beli') ||
+        lowerDesc.contains('belanja')) {
+      return 'Shopping';
+    } else if (lowerDesc.contains('health') ||
+        lowerDesc.contains('medical') ||
+        lowerDesc.contains('hospital') ||
+        lowerDesc.contains('dokter')) {
+      return 'Health';
+    } else if (lowerDesc.contains('entertainment') ||
+        lowerDesc.contains('movie') ||
+        lowerDesc.contains('game') ||
+        lowerDesc.contains('hiburan')) {
+      return 'Entertainment';
+    } else {
+      return 'Others';
+    }
   }
 
   // You might want a method to clear the filter later
