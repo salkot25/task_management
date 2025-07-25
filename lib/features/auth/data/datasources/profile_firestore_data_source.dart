@@ -25,6 +25,12 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
         'email': profile.email, // Added email
         'whatsapp': profile.whatsapp, // Added whatsapp
         'profilePictureUrl': profile.profilePictureUrl,
+        'role': profile.role, // Added role
+        'createdAt':
+            profile.createdAt?.millisecondsSinceEpoch, // Added createdAt
+        'lastSignInAt':
+            profile.lastSignInAt?.millisecondsSinceEpoch, // Added lastSignInAt
+        'isEmailVerified': profile.isEmailVerified, // Added isEmailVerified
       });
     } on PlatformException catch (e) {
       throw FirestoreException(e.message ?? 'Failed to create profile');
@@ -48,6 +54,14 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
           email: data['email'], // Added email
           whatsapp: data['whatsapp'], // Added whatsapp
           profilePictureUrl: data['profilePictureUrl'],
+          role: data['role'], // Added role
+          createdAt: data['createdAt'] != null
+              ? DateTime.fromMillisecondsSinceEpoch(data['createdAt'])
+              : null, // Added createdAt
+          lastSignInAt: data['lastSignInAt'] != null
+              ? DateTime.fromMillisecondsSinceEpoch(data['lastSignInAt'])
+              : null, // Added lastSignInAt
+          isEmailVerified: data['isEmailVerified'], // Added isEmailVerified
         );
       }
       return null;
@@ -69,6 +83,10 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
         'email': profile.email, // Added email
         'whatsapp': profile.whatsapp, // Added whatsapp
         'profilePictureUrl': profile.profilePictureUrl,
+        'role': profile.role, // Added role
+        'lastSignInAt': DateTime.now()
+            .millisecondsSinceEpoch, // Update lastSignInAt on profile update
+        'isEmailVerified': profile.isEmailVerified, // Added isEmailVerified
       });
     } on PlatformException catch (e) {
       throw FirestoreException(e.message ?? 'Failed to update profile');

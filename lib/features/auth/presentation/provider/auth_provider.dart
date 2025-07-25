@@ -67,6 +67,16 @@ class AuthProvider extends ChangeNotifier {
     );
     if (_user != null) {
       await _getProfile(_user!.uid); // Fetch profile after successful sign in
+
+      // Update last sign in time and email verification status
+      if (_profile != null) {
+        final updatedProfile = _profile!.copyWith(
+          lastSignInAt: DateTime.now(),
+          isEmailVerified:
+              _user!.email != null, // Get from Firebase Auth if available
+        );
+        await updateProfile(updatedProfile);
+      }
     }
     notifyListeners();
     return _user != null;
@@ -89,7 +99,15 @@ class AuthProvider extends ChangeNotifier {
     );
     if (_user != null) {
       await _createProfile(
-        Profile(uid: _user!.uid, name: _user!.email ?? ''),
+        Profile(
+          uid: _user!.uid,
+          name: _user!.email?.split('@').first ?? 'User',
+          email: _user!.email,
+          createdAt: DateTime.now(),
+          lastSignInAt: DateTime.now(),
+          isEmailVerified:
+              false, // Default to false, will be updated when verified
+        ),
       ); // Create profile after sign up
       await _getProfile(_user!.uid); // Fetch newly created profile
     }
@@ -144,6 +162,16 @@ class AuthProvider extends ChangeNotifier {
     );
     if (_user != null) {
       await _getProfile(_user!.uid); // Fetch profile after Google sign in
+
+      // Update last sign in time and email verification status
+      if (_profile != null) {
+        final updatedProfile = _profile!.copyWith(
+          lastSignInAt: DateTime.now(),
+          isEmailVerified:
+              _user!.email != null, // Google accounts are typically verified
+        );
+        await updateProfile(updatedProfile);
+      }
     }
     notifyListeners();
     return _user != null;
@@ -156,6 +184,21 @@ class AuthProvider extends ChangeNotifier {
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (_) => null,
     );
+    notifyListeners();
+  }
+
+  /// Public method to create a new profile
+  Future<void> createProfile(Profile profile) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await createProfileUseCase(profile);
+    result.fold(
+      (failure) => _errorMessage = _mapFailureToMessage(failure),
+      (_) => _profile = profile, // Set profile in state on success
+    );
+    _isLoading = false;
     notifyListeners();
   }
 

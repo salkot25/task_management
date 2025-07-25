@@ -14,17 +14,54 @@ class TaskPlannerPage extends StatefulWidget {
   _TaskPlannerPageState createState() => _TaskPlannerPageState();
 }
 
-class _TaskPlannerPageState extends State<TaskPlannerPage> {
+class _TaskPlannerPageState extends State<TaskPlannerPage>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   late DateTime _focusedMonth;
+  late AnimationController _blinkAnimationController;
+  late Animation<double> _blinkAnimation;
+  late Animation<double> _shakeAnimation;
+  late Animation<double> _shadowAnimation;
 
   @override
   void initState() {
     super.initState();
     _focusedMonth = DateTime.now();
+
+    // Initialize blink animation for overdue tasks
+    _blinkAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _blinkAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _blinkAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Shake animation for vibration effect
+    _shakeAnimation = Tween<double>(begin: -2.0, end: 2.0).animate(
+      CurvedAnimation(
+        parent: _blinkAnimationController,
+        curve: Curves.elasticInOut,
+      ),
+    );
+
+    // Shadow animation for pulsing effect
+    _shadowAnimation = Tween<double>(begin: 8.0, end: 20.0).animate(
+      CurvedAnimation(
+        parent: _blinkAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Start the blinking animation
+    _blinkAnimationController.repeat(reverse: true);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -197,6 +234,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _blinkAnimationController.dispose();
     super.dispose();
   }
 
@@ -223,106 +261,144 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
           return task.dueDate.isBefore(today) && !task.isCompleted;
         }).length;
 
-        return Container(
-          padding: AppSpacing.cardPadding,
-          decoration: AppComponents.cardDecoration().copyWith(
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primaryContainer,
-                Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        return Row(
+          children: [
+            Expanded(
+              child: _buildModernStatCard(
+                icon: Icons.today_outlined,
+                value: '$completedToday / $totalToday',
+                label: 'Today',
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Today\'s Progress',
-                style: AppTypography.headlineSmall.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _buildModernStatCard(
+                icon: Icons.warning_outlined,
+                value: overdueTasks.toString(),
+                label: 'Overdue',
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE53E3E), Color(0xFFFF6B6B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      icon: Icons.today_outlined,
-                      label: 'Today',
-                      value: '$completedToday / $totalToday',
-                      color: AppColors.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _buildStatCard(
-                      icon: Icons.warning_outlined,
-                      label: 'Overdue',
-                      value: overdueTasks.toString(),
-                      color: AppColors.errorColor,
-                    ),
-                  ),
-                ],
-              ),
-              if (totalToday > 0) ...[
-                const SizedBox(height: AppSpacing.md),
-                LinearProgressIndicator(
-                  value: completedToday / totalToday,
-                  backgroundColor: AppColors.greyExtraLightColor,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.successColor,
-                  ),
-                  borderRadius: BorderRadius.circular(AppSpacing.xs),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '${((completedToday / totalToday) * 100).round()}% completed today',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
-              ],
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
   }
 
-  /// Small Statistics Card
-  Widget _buildStatCard({
+  /// Modern Statistics Card Design
+  Widget _buildModernStatCard({
     required IconData icon,
-    required String label,
     required String value,
-    required Color color,
+    required String label,
+    required Gradient gradient,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      height: 140,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppSpacing.sm),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            value,
-            style: AppTypography.headlineSmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            label,
-            style: AppTypography.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+        borderRadius: BorderRadius.circular(AppComponents.largeRadius),
+        gradient: gradient,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+            spreadRadius: 0,
           ),
         ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppComponents.largeRadius),
+        child: Container(
+          padding: AppSpacing.cardPadding,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppComponents.largeRadius),
+            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Icon with background
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(
+                    AppComponents.smallRadius,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, size: 18, color: Colors.white),
+              ),
+
+              // Content section with fixed spacing
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Value with enhanced typography
+                  Text(
+                    value,
+                    style: AppTypography.headlineLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 24,
+                      height: 1.0,
+                      letterSpacing: -0.5,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  // Label with improved styling
+                  Text(
+                    label,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  // Small progress indicator line
+                  Container(
+                    height: 3,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(1.5),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(1.5),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -472,8 +548,15 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
     Color textColor = Theme.of(context).colorScheme.onSurface;
 
     if (isSelected) {
-      backgroundColor = AppColors.primaryColor;
-      textColor = AppColors.whiteColor;
+      // Use error color for selected dates with overdue tasks
+      if (hasOverdue) {
+        backgroundColor = AppColors.errorColor;
+        textColor = AppColors.whiteColor;
+        borderColor = AppColors.errorColor;
+      } else {
+        backgroundColor = AppColors.primaryColor;
+        textColor = AppColors.whiteColor;
+      }
     } else if (hasOverdue) {
       backgroundColor = AppColors.errorColor.withOpacity(0.1);
       borderColor = AppColors.errorColor;
@@ -489,7 +572,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
       borderColor = AppColors.primaryColor;
     }
 
-    return GestureDetector(
+    // Build the calendar day widget with optional blink animation for overdue
+    Widget calendarDayWidget = GestureDetector(
       onTap: () {
         setState(() {
           _selectedDate = date;
@@ -527,7 +611,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.whiteColor
-                        : AppColors.primaryColor,
+                        : (hasOverdue
+                              ? AppColors.errorColor
+                              : AppColors.primaryColor),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -536,6 +622,58 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
         ),
       ),
     );
+
+    // Add blinking animation for overdue tasks
+    if (hasOverdue) {
+      return AnimatedBuilder(
+        animation: _blinkAnimationController,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(_shakeAnimation.value, 0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSpacing.sm),
+                boxShadow: [
+                  // Primary pulsing shadow
+                  BoxShadow(
+                    color: AppColors.errorColor.withOpacity(
+                      isSelected ? 0.6 : 0.8,
+                    ),
+                    blurRadius: _shadowAnimation.value,
+                    spreadRadius: _shadowAnimation.value * 0.3,
+                    offset: const Offset(0, 0),
+                  ),
+                  // Secondary outer glow
+                  BoxShadow(
+                    color: AppColors.errorColor.withOpacity(
+                      isSelected ? 0.3 : 0.4,
+                    ),
+                    blurRadius: _shadowAnimation.value * 1.5,
+                    spreadRadius: _shadowAnimation.value * 0.5,
+                    offset: const Offset(0, 2),
+                  ),
+                  // Inner intense glow
+                  BoxShadow(
+                    color: AppColors.errorColor.withOpacity(
+                      isSelected ? 0.7 : 0.9,
+                    ),
+                    blurRadius: _shadowAnimation.value * 0.5,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 0),
+                  ),
+                ],
+              ),
+              child: Opacity(
+                opacity: isSelected ? 1.0 : _blinkAnimation.value,
+                child: calendarDayWidget,
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    return calendarDayWidget;
   }
 
   /// Smart Task Sections with Professional Layout
@@ -571,10 +709,14 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+
+            // Dynamic spacing based on content
+            SizedBox(
+              height: overdueTasks.isNotEmpty ? AppSpacing.lg : AppSpacing.md,
+            ),
 
             // Priority Sections
-            if (overdueTasks.isNotEmpty)
+            if (overdueTasks.isNotEmpty) ...[
               _buildTaskSection(
                 title: 'Overdue Tasks',
                 subtitle: '${overdueTasks.length} tasks need attention',
@@ -583,8 +725,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                 tasks: overdueTasks,
                 showPriority: true,
               ),
-
-            const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
+            ],
 
             _buildTaskSection(
               title: _isSameDay(selectedDate, today)
@@ -624,43 +766,149 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
     if (tasks.isEmpty) {
       return Container(
         padding: AppSpacing.cardPadding,
-        decoration: AppComponents.cardDecoration().copyWith(
-          color: color.withOpacity(0.05),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppComponents.largeRadius),
+          gradient: LinearGradient(
+            colors: [
+              color.withOpacity(0.1),
+              color.withOpacity(0.05),
+              Colors.white.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Column(
           children: [
+            // Header Section
             Row(
               children: [
-                Icon(icon, color: color),
-                const SizedBox(width: AppSpacing.sm),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTypography.titleMedium.copyWith(color: color),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(
+                      AppComponents.smallRadius,
                     ),
-                    Text(
-                      'No tasks',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    border: Border.all(color: color.withOpacity(0.3), width: 1),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTypography.titleMedium.copyWith(
+                          color: color,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        'No tasks scheduled',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            Icon(
-              Icons.check_circle_outline,
-              size: 48,
-              color: AppColors.greyLightColor,
+
+            const SizedBox(height: AppSpacing.xl),
+
+            // Success Illustration
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.successColor.withOpacity(0.9),
+                    AppColors.successColor.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.successColor.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.celebration_outlined,
+                size: 40,
+                color: Colors.white,
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            // Success Message
             Text(
-              'All clear!',
+              '🎉 All Clear!',
+              style: AppTypography.headlineSmall.copyWith(
+                color: AppColors.successColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.sm),
+
+            Text(
+              'Great job! You\'re all caught up.',
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.greyColor,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            // Motivational Quote Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(
+                  AppComponents.standardRadius,
+                ),
+                border: Border.all(color: color.withOpacity(0.2), width: 1),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.lightbulb_outline, color: color, size: 24),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    '"A clear mind leads to a productive day"',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontStyle: FontStyle.italic,
+                      fontSize: 13,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ],
