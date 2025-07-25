@@ -5,6 +5,7 @@ class Account extends Equatable {
   final String website;
   final String username;
   final String password;
+  final String? category;
   final String? userId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -14,6 +15,7 @@ class Account extends Equatable {
     required this.website,
     required this.username,
     required this.password,
+    this.category,
     this.userId,
     this.createdAt,
     this.updatedAt,
@@ -25,6 +27,7 @@ class Account extends Equatable {
     website,
     username,
     password,
+    category,
     userId,
     createdAt,
     updatedAt,
@@ -37,6 +40,7 @@ class Account extends Equatable {
       'website': website,
       'username': username,
       'password': password,
+      if (category != null) 'category': category,
       if (userId != null) 'userId': userId,
       if (createdAt != null) 'createdAt': createdAt,
       if (updatedAt != null) 'updatedAt': updatedAt,
@@ -50,6 +54,7 @@ class Account extends Equatable {
       website: map['website'] ?? '',
       username: map['username'] ?? '',
       password: map['password'] ?? '',
+      category: map['category'],
       userId: map['userId'],
       createdAt: map['createdAt']?.toDate(),
       updatedAt: map['updatedAt']?.toDate(),
@@ -62,6 +67,7 @@ class Account extends Equatable {
     String? website,
     String? username,
     String? password,
+    String? category,
     String? userId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -71,6 +77,7 @@ class Account extends Equatable {
       website: website ?? this.website,
       username: username ?? this.username,
       password: password ?? this.password,
+      category: category ?? this.category,
       userId: userId ?? this.userId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

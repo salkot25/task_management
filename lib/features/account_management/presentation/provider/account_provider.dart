@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:myapp/core/error/failures.dart';
 import 'package:myapp/features/account_management/domain/entities/account.dart';
 import 'package:myapp/features/account_management/domain/repositories/account_repository.dart';
+import 'package:myapp/features/account_management/presentation/widgets/advanced_search_bar.dart';
 import 'dart:async';
 import 'dart:developer' as developer;
 
@@ -11,41 +12,43 @@ class AccountProvider with ChangeNotifier {
   List<Account> _accounts = [];
   String _message = '';
   bool _isLoading = false;
-  String _filterWebsite = '';
+  SearchFilters _filters = const SearchFilters();
   StreamSubscription<List<Account>>? _accountsSubscription;
 
   AccountProvider({required this.accountRepository});
 
-  // Filtered list of accounts
+  // Filtered list of accounts using SearchFilters
   List<Account> get accounts {
-    if (_filterWebsite.isEmpty) {
-      return _accounts;
-    } else {
-      return _accounts
-          .where(
-            (account) =>
-                account.website.toLowerCase().contains(
-                  _filterWebsite.toLowerCase(),
-                ) ||
-                account.username.toLowerCase().contains(
-                  _filterWebsite.toLowerCase(),
-                ),
-          )
-          .toList();
-    }
+    return _accounts.applyFilters(_filters);
   }
 
   String get message => _message;
   bool get isLoading => _isLoading;
-  String get filterWebsite => _filterWebsite;
+  SearchFilters get filters => _filters;
 
-  // Method to set the website filter
-  void setFilterWebsite(String filter) {
-    _filterWebsite = filter;
+  // Method to update search filters
+  void updateFilters(SearchFilters newFilters) {
+    _filters = newFilters;
     notifyListeners();
   }
 
-  // Start listening to real-time updates
+  // Convenience method for simple website filter (backward compatibility)
+  void setFilterWebsite(String filter) {
+    _filters = _filters.copyWith(searchQuery: filter);
+    notifyListeners();
+  }
+
+  // Get available categories from current accounts
+  List<String> get availableCategories {
+    final categories = <String>{};
+    for (final account in _accounts) {
+      if (account.category != null && account.category!.isNotEmpty) {
+        categories.add(account.category!);
+      }
+    }
+    return categories.toList()..sort();
+  } // Start listening to real-time updates
+
   void startListening() {
     developer.log(
       'Starting to listen to account changes',

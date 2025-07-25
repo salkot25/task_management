@@ -25,6 +25,24 @@ class _AccountDetailDialogContentState
 
   bool _isEditing = false;
   bool _isPasswordVisible = false;
+  String? _selectedCategory;
+
+  // Predefined categories
+  final List<String> _predefinedCategories = [
+    'AP2T',
+    'ACMT',
+    'Email',
+    'Google',
+    'Banking',
+    'Social',
+    'Work',
+    'Shopping',
+    'Entertainment',
+    'Education',
+    'Health',
+    'Travel',
+    'Other',
+  ];
 
   @override
   void initState() {
@@ -34,6 +52,7 @@ class _AccountDetailDialogContentState
       websiteController.text = widget.account!.website;
       usernameController.text = widget.account!.username;
       passwordController.text = widget.account!.password;
+      _selectedCategory = widget.account!.category;
     }
   }
 
@@ -53,6 +72,7 @@ class _AccountDetailDialogContentState
         website: websiteController.text.trim(),
         username: usernameController.text.trim(),
         password: passwordController.text,
+        category: _selectedCategory,
       );
 
       if (_isEditing) {
@@ -117,6 +137,29 @@ class _AccountDetailDialogContentState
                   return null;
                 },
                 keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 16.0),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: const Icon(Icons.category_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                hint: const Text('Select category (optional)'),
+                items: _predefinedCategories.map((category) {
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
               ),
               const SizedBox(height: 16.0),
               TextFormField(

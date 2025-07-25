@@ -8,6 +8,8 @@ import 'package:myapp/utils/design_system/design_system.dart';
 import 'package:myapp/features/account_management/presentation/widgets/account_detail_dialog_content.dart';
 // Import the standardized AppBar component
 import 'package:myapp/presentation/widgets/standard_app_bar.dart';
+// Import Advanced Search Bar
+import 'package:myapp/features/account_management/presentation/widgets/advanced_search_bar.dart';
 
 class AccountListPage extends StatefulWidget {
   const AccountListPage({super.key});
@@ -17,8 +19,7 @@ class AccountListPage extends StatefulWidget {
 }
 
 class _AccountListPageState extends State<AccountListPage> {
-  bool _isSearching = false; // State to manage search bar visibility
-  final TextEditingController _searchController = TextEditingController();
+  bool _isAdvancedSearchExpanded = false; // For advanced search toggle
 
   @override
   void initState() {
@@ -37,7 +38,6 @@ class _AccountListPageState extends State<AccountListPage> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -57,8 +57,10 @@ class _AccountListPageState extends State<AccountListPage> {
     // Check if the widget is still mounted before using context
     if (mounted) {
       // Clear the search filter when dialog is closed
-      Provider.of<AccountProvider>(context, listen: false).setFilterWebsite('');
-      _searchController.clear(); // Clear search text field as well
+      Provider.of<AccountProvider>(
+        context,
+        listen: false,
+      ).updateFilters(const SearchFilters());
       // No need to manually reload - real-time listener handles updates
     }
   }
@@ -70,149 +72,66 @@ class _AccountListPageState extends State<AccountListPage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: _isSearching
-          ? _buildSearchAppBar(context, accountProvider)
-          : StandardAppBar(
-              title: 'Secure Vault',
-              subtitle: 'Your encrypted password manager',
-              actions: [
-                ActionButton(
-                  icon: Icons.search_outlined,
-                  onPressed: () {
-                    setState(() {
-                      _isSearching = true;
-                    });
-                  },
-                  tooltip: 'Search accounts',
-                ),
-                ActionButton(
-                  icon: Icons.shield_outlined,
-                  onPressed: () => _showSecurityTips(context),
-                  tooltip: 'Security tips',
-                  color: AppColors.primaryColor,
-                ),
-              ],
-            ),
+      appBar: StandardAppBar(
+        title: 'Secure Vault',
+        subtitle: 'Your encrypted password manager',
+        actions: [
+          ActionButton(
+            icon: Icons.shield_outlined,
+            onPressed: () => _showSecurityTips(context),
+            tooltip: 'Security tips',
+            color: AppColors.primaryColor,
+          ),
+        ],
+      ),
       body: Consumer<AccountProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return _buildLoadingState();
-          } else if (provider.accounts.isEmpty) {
-            return _buildEmptyState(context, provider, accountProvider);
           } else {
             return Column(
               children: [
-                // Security Overview Section
-                _buildSecurityOverview(context, provider),
-                // Enhanced Accounts List
-                Expanded(
-                  child: _buildAccountsList(context, provider, screenWidth),
+                // Advanced Search Bar
+                AdvancedSearchBar(
+                  filters: provider.filters,
+                  onFiltersChanged: provider.updateFilters,
+                  availableCategories: provider.availableCategories,
+                  isExpanded: _isAdvancedSearchExpanded,
+                  onToggleExpanded: () {
+                    setState(() {
+                      _isAdvancedSearchExpanded = !_isAdvancedSearchExpanded;
+                    });
+                  },
                 ),
+
+                // Content based on filtered results
+                if (provider.accounts.isEmpty)
+                  Expanded(
+                    child: _buildEmptyState(context, provider, accountProvider),
+                  )
+                else
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // Security Overview Section - TEMPORARILY HIDDEN
+                        // _buildSecurityOverview(context, provider),
+                        // Enhanced Accounts List
+                        Expanded(
+                          child: _buildAccountsList(
+                            context,
+                            provider,
+                            screenWidth,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             );
           }
         },
       ),
       floatingActionButton: _buildSecureFloatingActionButton(context),
-    );
-  }
-
-  /// Search-focused AppBar when in search mode
-  PreferredSizeWidget _buildSearchAppBar(
-    BuildContext context,
-    AccountProvider accountProvider,
-  ) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () {
-          setState(() {
-            _isSearching = false;
-            accountProvider.setFilterWebsite('');
-            _searchController.clear();
-          });
-        },
-      ),
-      title: _buildSearchField(context, accountProvider),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          decoration: BoxDecoration(
-            color: AppColors.greyLightColor.withOpacity(0.3),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Enhanced Search Field with Modern Design
-  Widget _buildSearchField(
-    BuildContext context,
-    AccountProvider accountProvider,
-  ) {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
-            Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppSpacing.md),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: _searchController,
-        decoration:
-            AppComponents.inputDecoration(
-              labelText: '',
-              hintText: 'Search websites, usernames...',
-              prefixIcon: Container(
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  Icons.search_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 20,
-                ),
-              ),
-            ).copyWith(
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              filled: false,
-            ),
-        style: AppTypography.bodyMedium.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-          fontWeight: FontWeight.w500,
-        ),
-        onChanged: (value) {
-          accountProvider.setFilterWebsite(value);
-        },
-        autofocus: true,
-      ),
     );
   }
 
@@ -249,7 +168,7 @@ class _AccountListPageState extends State<AccountListPage> {
     AccountProvider provider,
     AccountProvider accountProvider,
   ) {
-    final bool hasFilter = accountProvider.filterWebsite.isNotEmpty;
+    final bool hasFilter = accountProvider.filters.hasActiveFilters;
 
     return Center(
       child: Padding(
@@ -283,7 +202,7 @@ class _AccountListPageState extends State<AccountListPage> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               hasFilter
-                  ? 'No accounts match "${accountProvider.filterWebsite}".\nTry a different search term.'
+                  ? 'No accounts match your search criteria.\nTry adjusting your filters.'
                   : 'Start building your secure password vault.\nAdd your first account to get started.',
               textAlign: TextAlign.center,
               style: AppTypography.bodyMedium.copyWith(
@@ -308,6 +227,7 @@ class _AccountListPageState extends State<AccountListPage> {
   }
 
   /// Security Overview Dashboard
+  // ignore: unused_element
   Widget _buildSecurityOverview(
     BuildContext context,
     AccountProvider provider,
@@ -728,24 +648,6 @@ class _AccountListItemState extends State<AccountListItem> {
     return strength;
   }
 
-  /// Get Security Icon Based on Strength
-  IconData _getSecurityIcon(int strength) {
-    switch (strength) {
-      case 0:
-      case 1:
-        return Icons.dangerous_outlined;
-      case 2:
-        return Icons.warning_outlined;
-      case 3:
-        return Icons.shield_outlined;
-      case 4:
-      case 5:
-        return Icons.verified_outlined;
-      default:
-        return Icons.help_outline;
-    }
-  }
-
   /// Get Password Strength Color
   Color _getPasswordStrengthColor(int strength) {
     switch (strength) {
@@ -790,404 +692,306 @@ class _AccountListItemState extends State<AccountListItem> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      decoration: AppComponents.cardDecoration().copyWith(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with Website and Security Badge
-          Container(
-            padding: AppSpacing.cardPadding,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  strengthColor.withOpacity(0.1),
-                  strengthColor.withOpacity(0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppSpacing.md),
-                topRight: Radius.circular(AppSpacing.md),
-              ),
-              border: Border(
-                bottom: BorderSide(
-                  color: strengthColor.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Simplified Header Row
+            Row(
               children: [
-                // Enhanced Website Icon Container
+                // Simple Website Icon
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        strengthColor.withOpacity(0.2),
-                        strengthColor.withOpacity(0.1),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(AppSpacing.md),
-                    border: Border.all(
-                      color: strengthColor.withOpacity(0.3),
-                      width: 1,
-                    ),
+                    color: strengthColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppSpacing.sm),
                   ),
                   child: Icon(
                     Icons.language_outlined,
                     color: strengthColor,
-                    size: 24,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.lg),
+                const SizedBox(width: AppSpacing.md),
+
+                // Website Name and Badges
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Enhanced Website Title
                       Text(
                         widget.account.website,
-                        style: AppTypography.titleLarge.copyWith(
+                        style: AppTypography.titleMedium.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: AppSpacing.xs),
 
-                      // Enhanced Security Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: strengthColor.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(AppSpacing.sm),
-                          border: Border.all(
-                            color: strengthColor.withOpacity(0.4),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _getSecurityIcon(passwordStrength),
-                              size: 14,
-                              color: strengthColor,
+                      // Simplified Badges Row
+                      Row(
+                        children: [
+                          // Security Badge (compact)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: 2,
                             ),
-                            const SizedBox(width: AppSpacing.xs),
-                            Text(
+                            decoration: BoxDecoration(
+                              color: strengthColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
                               strengthLabel,
                               style: AppTypography.labelSmall.copyWith(
                                 color: strengthColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.xs),
-                            Text(
-                              'Security',
-                              style: AppTypography.labelSmall.copyWith(
-                                color: strengthColor.withOpacity(0.8),
+                                fontWeight: FontWeight.w600,
                                 fontSize: 10,
                               ),
                             ),
+                          ),
+
+                          // Category Badge (if available)
+                          if (widget.account.category != null &&
+                              widget.account.category!.isNotEmpty) ...[
+                            const SizedBox(width: AppSpacing.xs),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                widget.account.category!,
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
                           ],
-                        ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                // Enhanced Quick Actions
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppSpacing.sm),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.edit_outlined,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 20,
-                        ),
-                        onPressed: widget.onEdit,
-                        tooltip: 'Edit account',
-                        style: AppComponents.textButtonStyle(),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.errorColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppSpacing.sm),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: AppColors.errorColor,
-                          size: 20,
-                        ),
-                        onPressed: widget.onDelete,
-                        tooltip: 'Delete account',
-                        style: AppComponents.textButtonStyle(),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
 
-          // Content Section
-          Padding(
-            padding: AppSpacing.cardPadding,
-            child: Column(
-              children: [
-                // Compact Credentials Row
-                Row(
-                  children: [
-                    // Username Field
-                    Expanded(
-                      child: _buildCompactCredentialField(
-                        context: context,
-                        label: 'Username',
-                        value: widget.account.username,
-                        icon: Icons.person_outlined,
-                        isPassword: false,
-                        onCopy: () => _copyToClipboard(
-                          context,
-                          widget.account.username,
-                          'Username',
-                        ),
+                // Action Buttons (minimal)
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: 20,
+                  ),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 16),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text('Edit'),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    // Password Field
-                    Expanded(
-                      child: _buildCompactCredentialField(
-                        context: context,
-                        label: 'Password',
-                        value: widget.account.password,
-                        icon: Icons.lock_outlined,
-                        isPassword: true,
-                        isVisible: _isPasswordVisible,
-                        onToggleVisibility: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                        onCopy: () => _copyToClipboard(
-                          context,
-                          widget.account.password,
-                          'Password',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Password Strength Indicator
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Text(
-                      'Password strength: ',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.greyExtraLightColor,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: passwordStrength / 5,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: strengthColor,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            size: 16,
+                            color: AppColors.errorColor,
                           ),
-                        ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            'Delete',
+                            style: TextStyle(color: AppColors.errorColor),
+                          ),
+                        ],
                       ),
                     ),
                   ],
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      widget.onEdit();
+                    } else if (value == 'delete') {
+                      widget.onDelete();
+                    }
+                  },
                 ),
               ],
             ),
-          ),
-        ],
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Simplified Credentials Section
+            Row(
+              children: [
+                // Username
+                Expanded(
+                  child: _buildMinimalCredentialField(
+                    context: context,
+                    label: 'Username',
+                    value: widget.account.username,
+                    icon: Icons.person_outlined,
+                    onCopy: () => _copyToClipboard(
+                      context,
+                      widget.account.username,
+                      'Username',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+
+                // Password
+                Expanded(
+                  child: _buildMinimalCredentialField(
+                    context: context,
+                    label: 'Password',
+                    value: widget.account.password,
+                    icon: Icons.lock_outlined,
+                    isPassword: true,
+                    isVisible: _isPasswordVisible,
+                    onToggleVisibility: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                    onCopy: () => _copyToClipboard(
+                      context,
+                      widget.account.password,
+                      'Password',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// Compact Credential Field with Modern Design
-  Widget _buildCompactCredentialField({
+  /// Minimal Credential Field for Simplified Design
+  Widget _buildMinimalCredentialField({
     required BuildContext context,
     required String label,
     required String value,
     required IconData icon,
-    required bool isPassword,
+    bool isPassword = false,
     bool isVisible = true,
     VoidCallback? onToggleVisibility,
     required VoidCallback onCopy,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
-            Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppSpacing.md),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.15),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Label with icon
+        Row(
           children: [
-            // Enhanced Label Row with Better Spacing
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  label.toUpperCase(),
-                  style: AppTypography.labelSmall.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ],
+            Icon(
+              icon,
+              size: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: AppSpacing.sm),
-
-            // Enhanced Value Row with Better Typography
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    isPassword && !isVisible ? '•' * 8 : value,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontFamily: isPassword ? 'monospace' : null,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-
-                // Enhanced Action Buttons with Better Spacing
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isPassword && onToggleVisibility != null) ...[
-                      GestureDetector(
-                        onTap: onToggleVisibility,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withOpacity(0.2),
-                            ),
-                          ),
-                          child: Icon(
-                            isVisible
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            size: 16,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                    ],
-                    GestureDetector(
-                      onTap: onCopy,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppColors.successColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: AppColors.successColor.withOpacity(0.2),
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.copy_outlined,
-                          size: 16,
-                          color: AppColors.successColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              label,
+              style: AppTypography.labelSmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: AppSpacing.xs),
+
+        // Value with actions
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(AppSpacing.sm),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  isPassword && !isVisible ? '•' * 8 : value,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontFamily: isPassword ? 'monospace' : null,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              // Action buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isPassword && onToggleVisibility != null) ...[
+                    GestureDetector(
+                      onTap: onToggleVisibility,
+                      child: Icon(
+                        isVisible
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                  ],
+                  GestureDetector(
+                    onTap: onCopy,
+                    child: Icon(
+                      Icons.copy_outlined,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
