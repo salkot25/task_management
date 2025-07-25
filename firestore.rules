@@ -57,32 +57,28 @@ service cloud.firestore {
       }
     }
     
-    // Account management collection
+    // Password Manager Accounts collection
     match /users/{userId}/accounts/{accountId} {
       allow read, write: if isAuthenticated() && isOwner(userId);
       
       allow create: if isAuthenticated() && 
                    isOwner(userId) && 
-                   validateAccount(request.resource.data);
+                   validatePasswordAccount(request.resource.data);
       
       allow update: if isAuthenticated() && 
                    isOwner(userId) && 
-                   validateAccount(request.resource.data) &&
+                   validatePasswordAccount(request.resource.data) &&
                    request.resource.data.createdAt == resource.data.createdAt;
       
-      function validateAccount(data) {
-        return data.keys().hasAll(['name', 'type', 'balance', 'createdAt', 'updatedAt']) &&
-               isValidString(data.name, 1, 100) &&
-               data.type in ['bank', 'cash', 'credit_card', 'e_wallet', 'investment', 'other'] &&
-               isValidNumber(data.balance, -999999999, 999999999) &&
+      function validatePasswordAccount(data) {
+        return data.keys().hasAll(['id', 'website', 'username', 'password', 'userId', 'createdAt', 'updatedAt']) &&
+               isValidString(data.id, 1, 100) &&
+               isValidString(data.website, 1, 200) &&
+               isValidString(data.username, 1, 100) &&
+               isValidString(data.password, 1, 500) &&
+               data.userId == userId &&
                isValidTimestamp(data.createdAt) &&
-               isValidTimestamp(data.updatedAt) &&
-               // Optional fields
-               (!data.keys().hasAny(['accountNumber']) || isValidString(data.accountNumber, 1, 50)) &&
-               (!data.keys().hasAny(['bankName']) || isValidString(data.bankName, 1, 100)) &&
-               (!data.keys().hasAny(['description']) || isValidString(data.description, 0, 255)) &&
-               (!data.keys().hasAny(['currency']) || data.currency in ['IDR', 'USD', 'EUR', 'SGD']) &&
-               (!data.keys().hasAny(['isActive']) || data.isActive is bool);
+               isValidTimestamp(data.updatedAt);
       }
     }
     

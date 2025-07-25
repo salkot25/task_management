@@ -25,7 +25,12 @@ class _AccountListPageState extends State<AccountListPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        Provider.of<AccountProvider>(context, listen: false).loadAccounts();
+        final accountProvider = Provider.of<AccountProvider>(
+          context,
+          listen: false,
+        );
+        // Start real-time listening instead of one-time load
+        accountProvider.startListening();
       }
     });
   }
@@ -54,7 +59,7 @@ class _AccountListPageState extends State<AccountListPage> {
       // Clear the search filter when dialog is closed
       Provider.of<AccountProvider>(context, listen: false).setFilterWebsite('');
       _searchController.clear(); // Clear search text field as well
-      Provider.of<AccountProvider>(context, listen: false).loadAccounts();
+      // No need to manually reload - real-time listener handles updates
     }
   }
 
