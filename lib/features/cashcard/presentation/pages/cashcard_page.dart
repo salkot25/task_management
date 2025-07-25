@@ -8,6 +8,7 @@ import 'package:myapp/utils/design_system/app_spacing.dart';
 import 'package:myapp/utils/design_system/app_typography.dart';
 import 'package:myapp/utils/design_system/app_components.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/financial_charts.dart';
+import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
 import 'package:myapp/features/cashcard/presentation/widgets/budget_management.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/export_functions.dart';
 import 'package:myapp/presentation/widgets/standard_app_bar.dart';
@@ -123,7 +124,7 @@ class _CashcardPageState extends State<CashcardPage>
         ).setSelectedTransactionType(TransactionType.expense);
 
         // Close the modal after adding the transaction
-        Navigator.pop(context);
+        nav.NavigationHelper.safePop(context);
       }
     }
   }
@@ -136,7 +137,7 @@ class _CashcardPageState extends State<CashcardPage>
 
   // Enhanced Add Transaction Modal
   void _showAddTransactionModal(BuildContext context) {
-    showModalBottomSheet(
+    nav.NavigationHelper.safeShowModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -175,7 +176,7 @@ class _CashcardPageState extends State<CashcardPage>
                     ),
                   ),
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => nav.NavigationHelper.safePop(context),
                     icon: const Icon(Icons.close),
                   ),
                 ],
@@ -517,6 +518,7 @@ class _CashcardPageState extends State<CashcardPage>
                         income,
                         Icons.trending_up,
                         AppColors.successLightColor,
+                        CrossAxisAlignment.start, // Income aligned to left
                       ),
                     ),
                     Container(width: 1, height: 40, color: Colors.white30),
@@ -526,6 +528,7 @@ class _CashcardPageState extends State<CashcardPage>
                         expense,
                         Icons.trending_down,
                         AppColors.errorLightColor,
+                        CrossAxisAlignment.end, // Expense aligned to right
                       ),
                     ),
                   ],
@@ -558,11 +561,15 @@ class _CashcardPageState extends State<CashcardPage>
     double amount,
     IconData icon,
     Color iconColor,
+    CrossAxisAlignment alignment,
   ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: alignment,
       children: [
         Row(
+          mainAxisAlignment: alignment == CrossAxisAlignment.end
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
           children: [
             Icon(icon, color: iconColor, size: 16),
             const SizedBox(width: AppSpacing.xs),
@@ -947,7 +954,7 @@ class _CashcardPageState extends State<CashcardPage>
     final transactions = cashcardProvider.transactions;
 
     return Scaffold(
-      backgroundColor: AppColors.greyExtraLightColor,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: StandardAppBar(
         title: 'Cashcard',
         subtitle: 'Manage your finances',

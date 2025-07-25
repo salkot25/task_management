@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:developer' as developer;
 
 // Import Authentication
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
@@ -35,7 +34,7 @@ class AppRouter {
           _handleRedirect(context, state, authProvider),
       refreshListenable: authProvider,
       initialLocation: '/tasks',
-      debugLogDiagnostics: true,
+      debugLogDiagnostics: false,
     );
   }
 
@@ -137,26 +136,13 @@ class AppRouter {
     final bool isAuthenticated = authProvider.user != null;
     final bool isAuthenticating = _isAuthRoute(state.uri.path);
 
-    developer.log(
-      'Route redirect check - Path: ${state.uri.path}, Authenticated: $isAuthenticated',
-      name: 'AppRouter',
-    );
-
     // Redirect unauthenticated users to login
     if (!isAuthenticated && !isAuthenticating) {
-      developer.log(
-        'Redirecting to login - user not authenticated',
-        name: 'AppRouter',
-      );
       return '/login';
     }
 
     // Redirect authenticated users away from auth pages
     if (isAuthenticated && isAuthenticating) {
-      developer.log(
-        'Redirecting to tasks - user already authenticated',
-        name: 'AppRouter',
-      );
       return '/tasks';
     }
 

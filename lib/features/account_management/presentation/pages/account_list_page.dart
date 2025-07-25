@@ -709,44 +709,51 @@ class _AccountListItemState extends State<AccountListItem> {
             padding: AppSpacing.cardPadding,
             child: Column(
               children: [
-                // Username Field
-                _buildCredentialField(
-                  context: context,
-                  label: 'Username',
-                  value: widget.account.username,
-                  icon: Icons.person_outlined,
-                  isPassword: false,
-                  onCopy: () => _copyToClipboard(
-                    context,
-                    widget.account.username,
-                    'Username',
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // Password Field
-                _buildCredentialField(
-                  context: context,
-                  label: 'Password',
-                  value: widget.account.password,
-                  icon: Icons.lock_outlined,
-                  isPassword: true,
-                  isVisible: _isPasswordVisible,
-                  onToggleVisibility: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
-                  onCopy: () => _copyToClipboard(
-                    context,
-                    widget.account.password,
-                    'Password',
-                  ),
+                // Compact Credentials Row
+                Row(
+                  children: [
+                    // Username Field
+                    Expanded(
+                      child: _buildCompactCredentialField(
+                        context: context,
+                        label: 'Username',
+                        value: widget.account.username,
+                        icon: Icons.person_outlined,
+                        isPassword: false,
+                        onCopy: () => _copyToClipboard(
+                          context,
+                          widget.account.username,
+                          'Username',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    // Password Field
+                    Expanded(
+                      child: _buildCompactCredentialField(
+                        context: context,
+                        label: 'Password',
+                        value: widget.account.password,
+                        icon: Icons.lock_outlined,
+                        isPassword: true,
+                        isVisible: _isPasswordVisible,
+                        onToggleVisibility: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                        onCopy: () => _copyToClipboard(
+                          context,
+                          widget.account.password,
+                          'Password',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
                 // Password Strength Indicator
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
                     Text(
@@ -784,8 +791,8 @@ class _AccountListItemState extends State<AccountListItem> {
     );
   }
 
-  /// Professional Credential Field
-  Widget _buildCredentialField({
+  /// Compact Credential Field with Modern Design
+  Widget _buildCompactCredentialField({
     required BuildContext context,
     required String label,
     required String value,
@@ -797,77 +804,117 @@ class _AccountListItemState extends State<AccountListItem> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(AppSpacing.sm),
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+            Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Label
+            // Compact Label Row
             Row(
               children: [
-                Icon(
-                  icon,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.xs),
                 Text(
                   label,
-                  style: AppTypography.labelMedium.copyWith(
+                  style: AppTypography.labelSmall.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.xs),
 
-            // Value and Actions
+            // Value Row with Actions
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    isPassword && !isVisible ? '•' * value.length : value,
-                    style: AppTypography.bodyMedium.copyWith(
+                    isPassword && !isVisible ? '•' * 8 : value,
+                    style: AppTypography.bodySmall.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontFamily: isPassword ? 'monospace' : null,
+                      fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
 
-                // Action Buttons
+                // Compact Action Buttons
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (isPassword && onToggleVisibility != null)
-                      IconButton(
-                        icon: Icon(
-                          isVisible
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          size: 18,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      GestureDetector(
+                        onTap: onToggleVisibility,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Icon(
+                            isVisible
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
-                        onPressed: onToggleVisibility,
-                        tooltip: isVisible ? 'Hide $label' : 'Show $label',
-                        style: AppComponents.textButtonStyle(),
                       ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.copy_outlined,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: onCopy,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Icon(
+                          Icons.copy_outlined,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
-                      onPressed: onCopy,
-                      tooltip: 'Copy $label',
-                      style: AppComponents.textButtonStyle(),
                     ),
                   ],
                 ),

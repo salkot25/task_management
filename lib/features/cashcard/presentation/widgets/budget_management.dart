@@ -1,9 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/utils/design_system/app_colors.dart';
 import 'package:myapp/utils/design_system/app_spacing.dart';
 import 'package:myapp/utils/design_system/app_typography.dart';
 import 'package:myapp/utils/design_system/app_components.dart';
+import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
+
+// Input formatter for thousands separator
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    String text = newValue.text.replaceAll(',', '');
+    if (text.isEmpty) return newValue;
+
+    try {
+      int value = int.parse(text);
+      String formatted = NumberFormat('#,###', 'id').format(value);
+
+      return TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    } catch (e) {
+      return oldValue;
+    }
+  }
+}
 
 class BudgetCategory {
   final String name;
@@ -526,40 +556,117 @@ class _BudgetManagementState extends State<BudgetManagement> {
     _categoryController.clear();
     _budgetController.clear();
 
-    showDialog(
+    nav.NavigationHelper.safeShowDialog(
       context: context,
+      dialogId: 'add_budget_dialog',
       builder: (context) => AlertDialog(
-        title: const Text('Add Budget Category'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        title: Row(
           children: [
-            TextField(
-              controller: _categoryController,
-              decoration: const InputDecoration(
-                labelText: 'Category Name',
-                hintText: 'e.g., Food, Transport, Entertainment',
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: _budgetController,
-              decoration: const InputDecoration(
-                labelText: 'Budget Amount',
-                hintText: 'e.g., 1000000',
-                prefixText: 'Rp ',
-              ),
-              keyboardType: TextInputType.number,
-            ),
+            Icon(Icons.add_circle, color: AppColors.primaryColor, size: 24),
+            const SizedBox(width: AppSpacing.sm),
+            const Text('Add Budget Category'),
           ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Create a new budget category to track your spending',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.greyColor,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              TextField(
+                controller: _categoryController,
+                textCapitalization: TextCapitalization.words,
+                decoration: InputDecoration(
+                  labelText: 'Category Name *',
+                  hintText: 'e.g., Food, Transport, Entertainment',
+                  prefixIcon: Icon(
+                    Icons.category,
+                    color: AppColors.primaryColor,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppComponents.smallRadius,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppComponents.smallRadius,
+                    ),
+                    borderSide: BorderSide(
+                      color: AppColors.primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                onChanged: (value) {
+                  // Real-time validation feedback can be added here
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: _budgetController,
+                decoration: InputDecoration(
+                  labelText: 'Budget Amount *',
+                  hintText: 'e.g., 1,000,000',
+                  prefixIcon: Icon(
+                    Icons.attach_money,
+                    color: AppColors.primaryColor,
+                  ),
+                  prefixText: 'Rp ',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppComponents.smallRadius,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppComponents.smallRadius,
+                    ),
+                    borderSide: BorderSide(
+                      color: AppColors.primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  ThousandsSeparatorInputFormatter(),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                '* Required fields',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.greyColor,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => nav.NavigationHelper.safePopDialog(context),
+            child: Text('Cancel', style: TextStyle(color: AppColors.greyColor)),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: _addBudgetCategory,
-            child: const Text('Add'),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Add Category'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppComponents.smallRadius),
+              ),
+            ),
           ),
         ],
       ),
@@ -567,28 +674,116 @@ class _BudgetManagementState extends State<BudgetManagement> {
   }
 
   void _showEditBudgetDialog(BudgetCategory category) {
-    _budgetController.text = category.budgetAmount.toString();
+    _budgetController.text = NumberFormat(
+      '#,###',
+      'id',
+    ).format(category.budgetAmount);
 
-    showDialog(
+    nav.NavigationHelper.safeShowDialog(
       context: context,
+      dialogId: 'edit_budget_dialog_${category.name}',
       builder: (context) => AlertDialog(
-        title: Text('Edit ${category.name} Budget'),
-        content: TextField(
-          controller: _budgetController,
-          decoration: const InputDecoration(
-            labelText: 'Budget Amount',
-            prefixText: 'Rp ',
-          ),
-          keyboardType: TextInputType.number,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: category.color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(category.icon, color: category.color, size: 20),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(child: Text('Edit ${category.name} Budget')),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Update the budget amount for ${category.name}',
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.greyColor,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Current spending info
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.greyExtraLightColor,
+                borderRadius: BorderRadius.circular(AppComponents.smallRadius),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Current Spent:', style: AppTypography.bodySmall),
+                  Text(
+                    NumberFormat.currency(
+                      locale: 'id',
+                      symbol: 'Rp ',
+                      decimalDigits: 0,
+                    ).format(category.spentAmount),
+                    style: AppTypography.bodySmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: category.isOverBudget
+                          ? AppColors.errorColor
+                          : AppColors.successColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+              controller: _budgetController,
+              decoration: InputDecoration(
+                labelText: 'New Budget Amount *',
+                prefixIcon: Icon(
+                  Icons.attach_money,
+                  color: AppColors.primaryColor,
+                ),
+                prefixText: 'Rp ',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppComponents.smallRadius,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppComponents.smallRadius,
+                  ),
+                  borderSide: BorderSide(
+                    color: AppColors.primaryColor,
+                    width: 2,
+                  ),
+                ),
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                ThousandsSeparatorInputFormatter(),
+              ],
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => nav.NavigationHelper.safePopDialog(context),
+            child: Text('Cancel', style: TextStyle(color: AppColors.greyColor)),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () => _updateBudgetCategory(category),
-            child: const Text('Update'),
+            icon: const Icon(Icons.update, size: 18),
+            label: const Text('Update'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppComponents.smallRadius),
+              ),
+            ),
           ),
         ],
       ),
@@ -598,7 +793,9 @@ class _BudgetManagementState extends State<BudgetManagement> {
   void _addBudgetCategory() {
     if (_categoryController.text.isNotEmpty &&
         _budgetController.text.isNotEmpty) {
-      final budgetAmount = double.tryParse(_budgetController.text);
+      // Remove commas from formatted number
+      final cleanBudgetText = _budgetController.text.replaceAll(',', '');
+      final budgetAmount = double.tryParse(cleanBudgetText);
       if (budgetAmount != null && budgetAmount > 0) {
         final newCategory = BudgetCategory(
           name: _categoryController.text,
@@ -609,16 +806,18 @@ class _BudgetManagementState extends State<BudgetManagement> {
         );
 
         widget.onAddCategory(newCategory);
-        Navigator.pop(context);
+        nav.NavigationHelper.safePopDialog(context);
       }
     }
   }
 
   void _updateBudgetCategory(BudgetCategory category) {
-    final budgetAmount = double.tryParse(_budgetController.text);
+    // Remove commas from formatted number
+    final cleanBudgetText = _budgetController.text.replaceAll(',', '');
+    final budgetAmount = double.tryParse(cleanBudgetText);
     if (budgetAmount != null && budgetAmount > 0) {
       widget.onUpdateBudget(category, budgetAmount);
-      Navigator.pop(context);
+      nav.NavigationHelper.safePopDialog(context);
     }
   }
 

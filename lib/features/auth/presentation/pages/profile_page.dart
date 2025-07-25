@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
 import 'package:myapp/features/auth/domain/entities/profile.dart';
-import 'dart:developer' as developer;
 import 'package:intl/intl.dart';
 import 'package:myapp/presentation/widgets/standard_app_bar.dart';
 import 'package:myapp/utils/design_system/design_system.dart';
@@ -26,32 +25,23 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    developer.log('ProfilePage initState', name: 'ProfilePage');
     _initializeProfileData();
   }
 
   @override
   void dispose() {
-    developer.log('ProfilePage dispose', name: 'ProfilePage');
     super.dispose();
   }
 
   /// Initialize profile data with comprehensive error handling
   Future<void> _initializeProfileData() async {
-    developer.log('_initializeProfileData called', name: 'ProfilePage');
     if (!mounted) return;
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      developer.log(
-        'Auth Provider - User: ${authProvider.user?.uid}, Profile: ${authProvider.profile?.uid}',
-        name: 'ProfilePage',
-      );
-
       // Check if user is authenticated
       if (authProvider.user == null) {
-        developer.log('No authenticated user found', name: 'ProfilePage');
         setState(() {
           _lastError = 'User not authenticated';
         });
@@ -64,44 +54,25 @@ class _ProfilePageState extends State<ProfilePage> {
       });
 
       // Load profile data from backend
-      developer.log(
-        'Loading profile for user: ${authProvider.user!.uid}',
-        name: 'ProfilePage',
-      );
       await authProvider.getCurrentUserProfile();
-
-      developer.log(
-        'Profile loaded: ${authProvider.profile?.uid}, Error: ${authProvider.errorMessage}',
-        name: 'ProfilePage',
-      );
 
       // Check for any errors after loading
       if (authProvider.errorMessage != null) {
         setState(() {
           _lastError = authProvider.errorMessage;
         });
-        developer.log(
-          'Profile loading error: ${authProvider.errorMessage}',
-          name: 'ProfilePage',
-        );
       } else if (authProvider.profile == null) {
         // Profile doesn't exist - this might be a new user
         setState(() {
           _lastError =
               'Profile not found. This might be a new account that needs profile setup.';
         });
-        developer.log(
-          'Profile not found for user: ${authProvider.user!.uid}',
-          name: 'ProfilePage',
-        );
       } else {
         setState(() {
           _lastError = null;
         });
-        developer.log('Profile loaded successfully', name: 'ProfilePage');
       }
     } catch (e) {
-      developer.log('Error initializing profile data: $e', name: 'ProfilePage');
       setState(() {
         _lastError = 'Failed to load profile data: ${e.toString()}';
       });
@@ -110,7 +81,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   /// Refresh profile data with user feedback
   Future<void> _refreshProfileData() async {
-    developer.log('_refreshProfileData called', name: 'ProfilePage');
     if (!mounted || _isRefreshing) return;
 
     setState(() {
@@ -138,7 +108,6 @@ class _ProfilePageState extends State<ProfilePage> {
         _showSuccessSnackBar('Profile refreshed successfully');
       }
     } catch (e) {
-      developer.log('Error refreshing profile: $e', name: 'ProfilePage');
       setState(() {
         _lastError = e.toString();
       });
@@ -198,8 +167,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   /// Handle profile edit with backend integration
   Future<void> _showEditProfileDialog(Profile profile) async {
-    developer.log('_showEditProfileDialog called', name: 'ProfilePage');
-
     try {
       final result = await showDialog<Profile>(
         context: context,
@@ -213,18 +180,12 @@ class _ProfilePageState extends State<ProfilePage> {
         await _refreshProfileData();
       }
     } catch (e) {
-      developer.log(
-        'Error showing edit profile dialog: $e',
-        name: 'ProfilePage',
-      );
       _showErrorSnackBar('Failed to open edit dialog');
     }
   }
 
   /// Enhanced logout with user confirmation and proper cleanup
   Future<void> _logout() async {
-    developer.log('_logout called', name: 'ProfilePage');
-
     // Show confirmation dialog
     final confirmed = await _showLogoutConfirmationDialog();
     if (!confirmed || !mounted) return;
@@ -240,7 +201,6 @@ class _ProfilePageState extends State<ProfilePage> {
         // Navigation will be handled by auth state listener
       }
     } catch (e) {
-      developer.log('Error during logout: $e', name: 'ProfilePage');
       _showErrorSnackBar('Failed to logout');
     }
   }
@@ -329,11 +289,6 @@ class _ProfilePageState extends State<ProfilePage> {
         final isLoading = authProvider.isLoading || _isRefreshing;
         final hasError =
             _lastError != null || authProvider.errorMessage != null;
-
-        developer.log(
-          'ProfilePage build - Loading: $isLoading, Profile: ${profile?.uid}, Error: $hasError, LastError: $_lastError, AuthError: ${authProvider.errorMessage}',
-          name: 'ProfilePage',
-        );
 
         return Scaffold(
           appBar: StandardAppBar(
@@ -558,7 +513,6 @@ class _ProfilePageState extends State<ProfilePage> {
         await _refreshProfileData();
       }
     } catch (e) {
-      developer.log('Error creating new profile: $e', name: 'ProfilePage');
       _showErrorSnackBar('Failed to create profile');
     }
   }

@@ -6,6 +6,7 @@ import 'package:myapp/utils/design_system/design_system.dart';
 import '../../domain/entities/task.dart'; // Corrected import path for Task entity
 import '../widgets/task_detail_dialog.dart'; // Import the custom dialog
 import 'package:myapp/presentation/widgets/standard_app_bar.dart';
+import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
 
 class TaskPlannerPage extends StatefulWidget {
   const TaskPlannerPage({super.key});
@@ -96,12 +97,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           // Keep the selected date as is after adding a task for it
         });
       }
-      Navigator.of(dialogContext).pop();
+      nav.NavigationHelper.safePopDialog(dialogContext);
     }
   }
 
   void _showAddTaskDialog() {
-    showDialog(
+    nav.NavigationHelper.safeShowDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
@@ -184,7 +185,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop();
+                nav.NavigationHelper.safePopDialog(dialogContext);
               },
               style: AppComponents.textButtonStyle(),
               child: Text(
@@ -206,7 +207,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
   }
 
   void _showTaskDetailsDialog(Task task) {
-    showDialog(
+    nav.NavigationHelper.safeShowDialog(
       context: context,
       builder: (BuildContext context) {
         return TaskDetailDialog(task: task); // Use the custom dialog

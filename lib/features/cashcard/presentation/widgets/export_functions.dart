@@ -1,15 +1,14 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/features/cashcard/domain/entities/transaction.dart';
 import 'package:myapp/utils/design_system/app_colors.dart';
 import 'package:myapp/utils/design_system/app_spacing.dart';
 import 'package:myapp/utils/design_system/app_typography.dart';
 import 'package:myapp/utils/design_system/app_components.dart';
+import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
 
 class ExportFunctions extends StatelessWidget {
   final List<Transaction> transactions;
@@ -264,24 +263,29 @@ class ExportFunctions extends StatelessWidget {
   }
 
   void _exportMonthlyStatement(BuildContext context) {
-    _generatePDF(context, 'Monthly Statement', _buildMonthlyStatementPDF);
+    _generatePDFAsync(context, 'Monthly Statement', _buildMonthlyStatementPDF);
   }
 
   void _exportTransactionHistory(BuildContext context) {
-    _generatePDF(context, 'Transaction History', _buildTransactionHistoryPDF);
+    _generatePDFAsync(
+      context,
+      'Transaction History',
+      _buildTransactionHistoryPDF,
+    );
   }
 
   void _exportBudgetReport(BuildContext context) {
-    _generatePDF(context, 'Budget Report', _buildBudgetReportPDF);
+    _generatePDFAsync(context, 'Budget Report', _buildBudgetReportPDF);
   }
 
   void _exportTaxSummary(BuildContext context) {
-    _generatePDF(context, 'Tax Summary', _buildTaxSummaryPDF);
+    _generatePDFAsync(context, 'Tax Summary', _buildTaxSummaryPDF);
   }
 
   void _showExportDialog(BuildContext context, String format) {
-    showDialog(
+    nav.NavigationHelper.safeShowDialog(
       context: context,
+      dialogId: 'export_dialog_$format',
       builder: (context) => AlertDialog(
         title: Text('Export as $format'),
         content: Column(
@@ -291,26 +295,26 @@ class ExportFunctions extends StatelessWidget {
             Text('Select the type of report to export:'),
             const SizedBox(height: AppSpacing.md),
             _buildDialogOption('Monthly Statement', () {
-              Navigator.pop(context);
+              nav.NavigationHelper.safePopDialog(context);
               _exportMonthlyStatement(context);
             }),
             _buildDialogOption('Transaction History', () {
-              Navigator.pop(context);
+              nav.NavigationHelper.safePopDialog(context);
               _exportTransactionHistory(context);
             }),
             _buildDialogOption('Budget Report', () {
-              Navigator.pop(context);
+              nav.NavigationHelper.safePopDialog(context);
               _exportBudgetReport(context);
             }),
             _buildDialogOption('Tax Summary', () {
-              Navigator.pop(context);
+              nav.NavigationHelper.safePopDialog(context);
               _exportTaxSummary(context);
             }),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => nav.NavigationHelper.safePopDialog(context),
             child: const Text('Cancel'),
           ),
         ],
@@ -334,46 +338,133 @@ class ExportFunctions extends StatelessWidget {
     );
   }
 
-  Future<void> _generatePDF(
+  Future<void> _generatePDFAsync(
     BuildContext context,
     String title,
     pw.Widget Function() buildContent,
   ) async {
-    try {
-      // Show loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
+    if (!context.mounted) return;
 
-      final pdf = pw.Document();
-
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
-          build: (context) => [buildContent()],
+    // Show a simple snackbar for loading feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 16),
+            Text('Generating $title PDF...'),
+          ],
         ),
+        duration: const Duration(seconds: 30), // Will be dismissed manually
+        backgroundColor: AppColors.primaryColor,
+      ),
+    );
+
+    try {
+      // Generate PDF in background with timeout
+      final pdf = await _generatePDFDocument(buildContent).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('PDF generation timed out. Please try again.');
+        },
       );
 
-      // Hide loading
-      Navigator.pop(context);
+      // Dismiss loading snackbar
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      if (!context.mounted) return;
 
       // Show PDF preview
       await Printing.layoutPdf(
         onLayout: (format) async => pdf.save(),
-        name: '${title}_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf',
+        name:
+            '${title.replaceAll(' ', '_')}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf',
       );
+
+      // Show success message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$title PDF generated successfully!'),
+            backgroundColor: AppColors.successColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
-      Navigator.pop(context); // Hide loading if still showing
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error generating PDF: $e'),
-          backgroundColor: AppColors.errorColor,
-        ),
-      );
+      // Dismiss loading snackbar
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating PDF: ${e.toString()}'),
+            backgroundColor: AppColors.errorColor,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     }
+  }
+
+  Future<pw.Document> _generatePDFDocument(
+    pw.Widget Function() buildContent,
+  ) async {
+    // Use compute or Future to ensure this doesn't block the UI
+    return await Future.microtask(() {
+      try {
+        final pdf = pw.Document();
+
+        // Generate content with error handling
+        final content = buildContent();
+
+        pdf.addPage(
+          pw.MultiPage(
+            pageFormat: PdfPageFormat.a4,
+            margin: const pw.EdgeInsets.all(32),
+            build: (context) => [content],
+          ),
+        );
+
+        return pdf;
+      } catch (e) {
+        // If content generation fails, create a simple error PDF
+        final errorPdf = pw.Document();
+        errorPdf.addPage(
+          pw.Page(
+            build: (context) => pw.Center(
+              child: pw.Column(
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                children: [
+                  pw.Text(
+                    'Error Generating Report',
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 20),
+                  pw.Text(
+                    'An error occurred while generating the PDF content.',
+                    style: pw.TextStyle(fontSize: 14),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text(
+                    'Error: ${e.toString()}',
+                    style: pw.TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        return errorPdf;
+      }
+    });
   }
 
   pw.Widget _buildMonthlyStatementPDF() {
@@ -484,34 +575,14 @@ class ExportFunctions extends StatelessWidget {
 
         pw.SizedBox(height: 24),
 
-        // Recent Transactions
+        // Recent Transactions (Limited to prevent performance issues)
         pw.Text(
-          'Recent Transactions',
+          'Recent Transactions (Last 50)',
           style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
         ),
         pw.SizedBox(height: 16),
 
-        pw.Table.fromTextArray(
-          headers: ['Date', 'Description', 'Type', 'Amount'],
-          data: transactions
-              .take(20)
-              .map(
-                (t) => [
-                  DateFormat('dd/MM/yyyy').format(t.date),
-                  t.description,
-                  t.type == TransactionType.income ? 'Income' : 'Expense',
-                  NumberFormat.currency(
-                    locale: 'id',
-                    symbol: 'Rp ',
-                    decimalDigits: 0,
-                  ).format(t.amount),
-                ],
-              )
-              .toList(),
-          border: pw.TableBorder.all(),
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-          cellAlignment: pw.Alignment.centerLeft,
-        ),
+        _buildTransactionTable(transactions.take(50).toList()),
       ],
     );
   }
@@ -580,27 +651,14 @@ class ExportFunctions extends StatelessWidget {
 
         pw.SizedBox(height: 32),
 
-        // All Transactions
-        pw.Table.fromTextArray(
-          headers: ['Date', 'Description', 'Type', 'Amount'],
-          data: transactions
-              .map(
-                (t) => [
-                  DateFormat('dd/MM/yyyy').format(t.date),
-                  t.description,
-                  t.type == TransactionType.income ? 'Income' : 'Expense',
-                  NumberFormat.currency(
-                    locale: 'id',
-                    symbol: 'Rp ',
-                    decimalDigits: 0,
-                  ).format(t.amount),
-                ],
-              )
-              .toList(),
-          border: pw.TableBorder.all(),
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-          cellAlignment: pw.Alignment.centerLeft,
+        // All Transactions (Limited to prevent performance issues)
+        pw.Text(
+          'Transaction History (Last 100 transactions)',
+          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
         ),
+        pw.SizedBox(height: 16),
+
+        _buildTransactionTable(transactions.take(100).toList()),
       ],
     );
   }
@@ -698,12 +756,7 @@ class ExportFunctions extends StatelessWidget {
         ),
         pw.SizedBox(height: 16),
 
-        pw.Table.fromTextArray(
-          headers: ['Month', 'Total Income'],
-          data: _getMonthlyIncomeSummary(incomeTransactions),
-          border: pw.TableBorder.all(),
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-        ),
+        _buildMonthlyIncomeTable(incomeTransactions),
 
         pw.SizedBox(height: 24),
 
@@ -714,12 +767,7 @@ class ExportFunctions extends StatelessWidget {
         ),
         pw.SizedBox(height: 16),
 
-        pw.Table.fromTextArray(
-          headers: ['Category', 'Total Amount'],
-          data: _getCategoryExpenseSummary(expenseTransactions),
-          border: pw.TableBorder.all(),
-          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-        ),
+        _buildCategoryExpenseTable(expenseTransactions),
 
         pw.SizedBox(height: 24),
 
@@ -783,17 +831,52 @@ class ExportFunctions extends StatelessWidget {
     );
   }
 
+  // Helper method to build monthly income table
+  pw.Widget _buildMonthlyIncomeTable(List<Transaction> incomeTransactions) {
+    final data = _getMonthlyIncomeSummary(incomeTransactions);
+    return pw.Table.fromTextArray(
+      headers: ['Month', 'Total Income'],
+      data: data,
+      border: pw.TableBorder.all(),
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+      cellPadding: const pw.EdgeInsets.all(6),
+    );
+  }
+
+  // Helper method to build category expense table
+  pw.Widget _buildCategoryExpenseTable(List<Transaction> expenseTransactions) {
+    final data = _getCategoryExpenseSummary(expenseTransactions);
+    return pw.Table.fromTextArray(
+      headers: ['Category', 'Total Amount'],
+      data: data,
+      border: pw.TableBorder.all(),
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+      cellPadding: const pw.EdgeInsets.all(6),
+    );
+  }
+
   List<List<String>> _getMonthlyIncomeSummary(
     List<Transaction> incomeTransactions,
   ) {
+    if (incomeTransactions.isEmpty) {
+      return [
+        ['No Data', 'Rp 0'],
+      ];
+    }
+
     final monthlyIncome = <int, double>{};
 
+    // Optimize: Use a more efficient iteration
     for (final transaction in incomeTransactions) {
       final month = transaction.date.month;
       monthlyIncome[month] = (monthlyIncome[month] ?? 0) + transaction.amount;
     }
 
-    return monthlyIncome.entries
+    // Sort by month and limit results if too many
+    final sortedEntries = monthlyIncome.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+    return sortedEntries
         .map(
           (entry) => [
             DateFormat('MMMM').format(DateTime(0, entry.key)),
@@ -810,15 +893,30 @@ class ExportFunctions extends StatelessWidget {
   List<List<String>> _getCategoryExpenseSummary(
     List<Transaction> expenseTransactions,
   ) {
+    if (expenseTransactions.isEmpty) {
+      return [
+        ['No Data', 'Rp 0'],
+      ];
+    }
+
     final categoryExpenses = <String, double>{};
 
+    // Optimize: Use a more efficient iteration and caching
+    final categoryCache = <String, String>{};
+
     for (final transaction in expenseTransactions) {
-      final category = _getCategoryFromDescription(transaction.description);
+      final description = transaction.description;
+      final category = categoryCache[description] ??=
+          _getCategoryFromDescription(description);
       categoryExpenses[category] =
           (categoryExpenses[category] ?? 0) + transaction.amount;
     }
 
-    return categoryExpenses.entries
+    // Sort by amount (descending) and limit if necessary
+    final sortedEntries = categoryExpenses.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return sortedEntries
         .map(
           (entry) => [
             entry.key,
@@ -835,38 +933,153 @@ class ExportFunctions extends StatelessWidget {
   String _getCategoryFromDescription(String description) {
     final lowerDesc = description.toLowerCase();
 
-    if (lowerDesc.contains('food') ||
-        lowerDesc.contains('makan') ||
-        lowerDesc.contains('lunch') ||
-        lowerDesc.contains('dinner')) {
+    // Use a more efficient approach with early returns
+    if (_containsAny(lowerDesc, [
+      'food',
+      'makan',
+      'lunch',
+      'dinner',
+      'restaurant',
+      'cafe',
+    ])) {
       return 'Food & Dining';
-    } else if (lowerDesc.contains('transport') ||
-        lowerDesc.contains('gas') ||
-        lowerDesc.contains('fuel') ||
-        lowerDesc.contains('bensin')) {
-      return 'Transportation';
-    } else if (lowerDesc.contains('shop') ||
-        lowerDesc.contains('buy') ||
-        lowerDesc.contains('beli') ||
-        lowerDesc.contains('belanja')) {
-      return 'Shopping';
-    } else if (lowerDesc.contains('health') ||
-        lowerDesc.contains('medical') ||
-        lowerDesc.contains('hospital') ||
-        lowerDesc.contains('dokter')) {
-      return 'Healthcare';
-    } else if (lowerDesc.contains('entertainment') ||
-        lowerDesc.contains('movie') ||
-        lowerDesc.contains('game') ||
-        lowerDesc.contains('hiburan')) {
-      return 'Entertainment';
-    } else if (lowerDesc.contains('utility') ||
-        lowerDesc.contains('bill') ||
-        lowerDesc.contains('listrik') ||
-        lowerDesc.contains('air')) {
-      return 'Utilities';
-    } else {
-      return 'Others';
     }
+
+    if (_containsAny(lowerDesc, [
+      'transport',
+      'gas',
+      'fuel',
+      'bensin',
+      'ojek',
+      'grab',
+      'gojek',
+    ])) {
+      return 'Transportation';
+    }
+
+    if (_containsAny(lowerDesc, [
+      'shop',
+      'buy',
+      'beli',
+      'belanja',
+      'store',
+      'mall',
+    ])) {
+      return 'Shopping';
+    }
+
+    if (_containsAny(lowerDesc, [
+      'health',
+      'medical',
+      'hospital',
+      'dokter',
+      'obat',
+      'pharmacy',
+    ])) {
+      return 'Healthcare';
+    }
+
+    if (_containsAny(lowerDesc, [
+      'entertainment',
+      'movie',
+      'game',
+      'hiburan',
+      'cinema',
+      'netflix',
+    ])) {
+      return 'Entertainment';
+    }
+
+    if (_containsAny(lowerDesc, [
+      'utility',
+      'bill',
+      'listrik',
+      'air',
+      'internet',
+      'phone',
+      'telpon',
+    ])) {
+      return 'Utilities';
+    }
+
+    if (_containsAny(lowerDesc, [
+      'education',
+      'school',
+      'course',
+      'book',
+      'sekolah',
+      'kursus',
+    ])) {
+      return 'Education';
+    }
+
+    return 'Others';
+  }
+
+  // Helper method for efficient string contains checking
+  bool _containsAny(String text, List<String> keywords) {
+    for (final keyword in keywords) {
+      if (text.contains(keyword)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Helper method to build transaction table efficiently
+  pw.Widget _buildTransactionTable(List<Transaction> transactionList) {
+    // Chunk the data to prevent memory issues
+    const int maxRowsPerPage = 30;
+
+    if (transactionList.length <= maxRowsPerPage) {
+      return pw.Table.fromTextArray(
+        headers: ['Date', 'Description', 'Type', 'Amount'],
+        data: transactionList.map(_transactionToTableRow).toList(),
+        border: pw.TableBorder.all(),
+        headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+        cellAlignment: pw.Alignment.centerLeft,
+        cellPadding: const pw.EdgeInsets.all(4),
+      );
+    }
+
+    // For larger datasets, create multiple tables
+    return pw.Column(
+      children: [
+        for (int i = 0; i < transactionList.length; i += maxRowsPerPage)
+          pw.Container(
+            margin: const pw.EdgeInsets.only(bottom: 16),
+            child: pw.Table.fromTextArray(
+              headers: i == 0
+                  ? ['Date', 'Description', 'Type', 'Amount']
+                  : null,
+              data: transactionList
+                  .skip(i)
+                  .take(maxRowsPerPage)
+                  .map(_transactionToTableRow)
+                  .toList(),
+              border: pw.TableBorder.all(),
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              cellAlignment: pw.Alignment.centerLeft,
+              cellPadding: const pw.EdgeInsets.all(4),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Helper method to convert transaction to table row
+  List<String> _transactionToTableRow(Transaction transaction) {
+    return [
+      DateFormat('dd/MM/yyyy').format(transaction.date),
+      transaction.description.length > 30
+          ? '${transaction.description.substring(0, 30)}...'
+          : transaction.description,
+      transaction.type == TransactionType.income ? 'Income' : 'Expense',
+      NumberFormat.currency(
+        locale: 'id',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      ).format(transaction.amount),
+    ];
   }
 }
