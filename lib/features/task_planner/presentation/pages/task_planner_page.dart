@@ -5,6 +5,7 @@ import '../provider/task_provider.dart';
 import 'package:myapp/utils/design_system/design_system.dart';
 import '../../domain/entities/task.dart'; // Corrected import path for Task entity
 import '../widgets/task_detail_dialog.dart'; // Import the custom dialog
+import 'package:myapp/presentation/widgets/standard_app_bar.dart';
 
 class TaskPlannerPage extends StatefulWidget {
   const TaskPlannerPage({super.key});
@@ -798,13 +799,16 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
                       color: priorityColor,
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      DateFormat('MMM d, yyyy').format(task.dueDate),
-                      style: AppTypography.bodySmall.copyWith(
-                        color: priorityColor,
-                        fontWeight: isOverdue
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                    Flexible(
+                      child: Text(
+                        DateFormat('MMM d, yyyy').format(task.dueDate),
+                        style: AppTypography.bodySmall.copyWith(
+                          color: priorityColor,
+                          fontWeight: isOverdue
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (isOverdue) ...[
@@ -877,21 +881,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          'Task Planner',
-          style: AppTypography.headlineMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
+      appBar: StandardAppBar(
+        title: 'Task Planner',
+        subtitle: 'Organize your daily tasks',
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.today_outlined,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          ActionButton(
+            icon: Icons.today_outlined,
             onPressed: () {
               setState(() {
                 _selectedDate = DateTime.now();

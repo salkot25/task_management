@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:myapp/utils/design_system/design_system.dart';
 // Import the new dialog content widget
 import 'package:myapp/features/account_management/presentation/widgets/account_detail_dialog_content.dart';
+// Import the standardized AppBar component
+import 'package:myapp/presentation/widgets/standard_app_bar.dart';
 
 class AccountListPage extends StatefulWidget {
   const AccountListPage({super.key});
@@ -63,7 +65,29 @@ class _AccountListPageState extends State<AccountListPage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: _buildProfessionalAppBar(context, accountProvider),
+      appBar: _isSearching
+          ? _buildSearchAppBar(context, accountProvider)
+          : StandardAppBar(
+              title: 'Secure Vault',
+              subtitle: 'Your encrypted password manager',
+              actions: [
+                ActionButton(
+                  icon: Icons.search_outlined,
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = true;
+                    });
+                  },
+                  tooltip: 'Search accounts',
+                ),
+                ActionButton(
+                  icon: Icons.shield_outlined,
+                  onPressed: () => _showSecurityTips(context),
+                  tooltip: 'Security tips',
+                  color: AppColors.primaryColor,
+                ),
+              ],
+            ),
       body: Consumer<AccountProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
@@ -79,76 +103,34 @@ class _AccountListPageState extends State<AccountListPage> {
     );
   }
 
-  /// Professional Security-Focused AppBar
-  PreferredSizeWidget _buildProfessionalAppBar(
+  /// Search-focused AppBar when in search mode
+  PreferredSizeWidget _buildSearchAppBar(
     BuildContext context,
     AccountProvider accountProvider,
   ) {
     return AppBar(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       elevation: 0,
-      title: _isSearching
-          ? _buildSearchField(context, accountProvider)
-          : Row(
-              children: [
-                Icon(
-                  Icons.security_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 24,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Secure Vault',
-                  style: AppTypography.headlineMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-      centerTitle: false,
-      actions: [
-        if (!_isSearching)
-          IconButton(
-            icon: Icon(
-              Icons.search_outlined,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onPressed: () {
-              setState(() {
-                _isSearching = true;
-              });
-            },
-            tooltip: 'Search accounts',
-            style: AppComponents.textButtonStyle(),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          setState(() {
+            _isSearching = false;
+            accountProvider.setFilterWebsite('');
+            _searchController.clear();
+          });
+        },
+      ),
+      title: _buildSearchField(context, accountProvider),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          height: 1,
+          decoration: BoxDecoration(
+            color: AppColors.greyLightColor.withOpacity(0.3),
           ),
-        if (_isSearching)
-          IconButton(
-            icon: Icon(
-              Icons.close_outlined,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onPressed: () {
-              setState(() {
-                _isSearching = false;
-                accountProvider.setFilterWebsite('');
-                _searchController.clear();
-              });
-            },
-            tooltip: 'Close search',
-            style: AppComponents.textButtonStyle(),
-          ),
-        IconButton(
-          icon: Icon(
-            Icons.shield_outlined,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          onPressed: () {
-            _showSecurityTips(context);
-          },
-          tooltip: 'Security tips',
-          style: AppComponents.textButtonStyle(),
         ),
-      ],
+      ),
     );
   }
 

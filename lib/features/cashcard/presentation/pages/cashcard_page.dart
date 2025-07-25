@@ -10,6 +10,7 @@ import 'package:myapp/utils/design_system/app_components.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/financial_charts.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/budget_management.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/export_functions.dart';
+import 'package:myapp/presentation/widgets/standard_app_bar.dart';
 
 class CashcardPage extends StatefulWidget {
   const CashcardPage({super.key});
@@ -947,140 +948,52 @@ class _CashcardPageState extends State<CashcardPage>
 
     return Scaffold(
       backgroundColor: AppColors.greyExtraLightColor,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.blackColor,
-        elevation: 0,
-        centerTitle: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Cashcard',
-              style: AppTypography.titleLarge.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.blackColor,
-              ),
-            ),
-            Text(
-              'Manage your finances',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.greyDarkColor,
-              ),
-            ),
-          ],
-        ),
+      appBar: StandardAppBar(
+        title: 'Cashcard',
+        subtitle: 'Manage your finances',
         actions: [
           // Filter container with enhanced design
           Container(
-            margin: const EdgeInsets.only(right: AppSpacing.md),
+            margin: const EdgeInsets.only(right: AppSpacing.sm),
             child: Row(
               children: [
                 // Month filter
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(
-                      AppComponents.smallRadius,
-                    ),
-                    border: Border.all(
-                      color: AppColors.primaryColor.withOpacity(0.3),
-                    ),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedMonth,
-                      isDense: true,
-                      icon: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: AppColors.primaryColor,
-                        size: 18,
-                      ),
-                      style: AppTypography.labelMedium.copyWith(
-                        color: AppColors.primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      items: _months.map((String month) {
-                        return DropdownMenuItem<String>(
-                          value: month,
-                          child: Text(month),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            _selectedMonth = newValue;
-                            if (newValue == 'All Time') {
-                              cashcardProvider.setShowAllTime(true);
-                            } else {
-                              final monthIndex = _months.indexOf(newValue);
-                              cashcardProvider.setFilter(
-                                monthIndex,
-                                _selectedYear,
-                              );
-                            }
-                          });
+                AppBarFilterChip(
+                  value: _selectedMonth,
+                  items: _months,
+                  color: AppColors.primaryColor,
+                  label: 'Month',
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedMonth = newValue;
+                        if (newValue == 'All Time') {
+                          cashcardProvider.setShowAllTime(true);
+                        } else {
+                          final monthIndex = _months.indexOf(newValue);
+                          cashcardProvider.setFilter(monthIndex, _selectedYear);
                         }
-                      },
-                    ),
-                  ),
+                      });
+                    }
+                  },
                 ),
                 // Year filter (only visible when not showing All Time)
                 if (!cashcardProvider.showAllTime) ...[
                   const SizedBox(width: AppSpacing.sm),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(
-                        AppComponents.smallRadius,
-                      ),
-                      border: Border.all(
-                        color: AppColors.secondaryColor.withOpacity(0.3),
-                      ),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: _selectedYear,
-                        isDense: true,
-                        icon: Icon(
-                          Icons.keyboard_arrow_down,
-                          color: AppColors.secondaryDarkColor,
-                          size: 18,
-                        ),
-                        style: AppTypography.labelMedium.copyWith(
-                          color: AppColors.secondaryDarkColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        items: _years.map((int year) {
-                          return DropdownMenuItem<int>(
-                            value: year,
-                            child: Text(year.toString()),
-                          );
-                        }).toList(),
-                        onChanged: (int? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedYear = newValue;
-                              final monthIndex = _months.indexOf(
-                                _selectedMonth,
-                              );
-                              cashcardProvider.setFilter(
-                                monthIndex,
-                                _selectedYear,
-                              );
-                            });
-                          }
-                        },
-                      ),
-                    ),
+                  AppBarFilterChip(
+                    value: _selectedYear.toString(),
+                    items: _years.map((year) => year.toString()).toList(),
+                    color: AppColors.secondaryColor,
+                    label: 'Year',
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedYear = int.parse(newValue);
+                          final monthIndex = _months.indexOf(_selectedMonth);
+                          cashcardProvider.setFilter(monthIndex, _selectedYear);
+                        });
+                      }
+                    },
                   ),
                 ],
               ],
