@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
-import 'package:go_router/go_router.dart'; // Import go_router
-// Import app_colors
-import 'dart:developer' as developer; // Import developer for logging
+import 'package:go_router/go_router.dart';
+import 'package:myapp/utils/design_system/design_system.dart';
+import 'dart:developer' as developer;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,6 +16,13 @@ class LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
+  }
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
@@ -61,213 +68,163 @@ class LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Login'),
-      // ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0), // Increased padding
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment:
-                  CrossAxisAlignment.stretch, // Stretch elements horizontally
-              children: <Widget>[
-                // Replace FlutterLogo with Image.asset for your logo
-                Image.asset(
-                  'assets/images/logo.png', // Your logo asset path
-                  height: 100, // Adjust height as needed
-                ),
-                const SizedBox(height: 16.0),
-                Text(
-                  'TASKS MANAGEMENT', // App Name/Tagline
-                  textAlign: TextAlign.center,
-                  style:
-                      Theme.of(context)
-                          .textTheme
-                          .headlineSmall, // Use headlineSmall for tagline
-                ),
-                const SizedBox(height: 48.0), // Increased space before fields
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        8.0,
-                      ), // Rounded corners
-                      borderSide: BorderSide.none, // No border line
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200, // Changed from withOpacity
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        8.0,
-                      ), // Rounded corners
-                      borderSide: BorderSide.none, // No border line
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200, // Changed from withOpacity
-                  ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 8.0),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      context.go('/forgot-password');
-                    },
-                    child: Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                      ), // Use primary color for text button
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 24.0,
-                ), // Increased space before login button
-                if (authProvider.isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  ElevatedButton(
-                    onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                      ), // Increased vertical padding
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          8.0,
-                        ), // Rounded corners
-                      ),
-                      backgroundColor:
-                          Theme.of(context)
-                              .colorScheme
-                              .primary, // Use primary color for button background
-                      foregroundColor:
-                          Theme.of(context)
-                              .colorScheme
-                              .onPrimary, // Use onPrimary for text color
-                    ),
-                    child: const Text('Login'),
-                  ),
-                const SizedBox(
-                  height: 24.0,
-                ), // Increased space after login button
-                Row(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.getHorizontalPadding(screenWidth),
+              vertical: AppSpacing.lg,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: AppSpacing.getContainerWidth(screenWidth),
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    const Expanded(
-                      child: Divider(thickness: 1.0), // Divider line
+                    // Optimized logo size for better visual hierarchy
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 120, // Reduced from 180px for better proportion
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        'Or sign in with',
-                        style:
-                            Theme.of(context)
-                                .textTheme
-                                .bodyMedium, // Use bodyMedium for this text
-                      ),
-                    ),
-                    const Expanded(
-                      child: Divider(thickness: 1.0), // Divider line
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24.0), // Space after separator
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Placeholder for Apple Sign-In button (if needed later)
-                    // Container(
-                    //   width: 60, // Adjust size as needed
-                    //   height: 60,
-                    //   decoration: BoxDecoration(
-                    //     border: Border.all(color: Colors.grey.shade400), // Border around button
-                    //     borderRadius: BorderRadius.circular(8.0),
-                    //   ),
-                    //   child: IconButton(
-                    //     icon: Image.asset('assets/images/apple_logo.png'), // Replace with Apple logo asset
-                    //     onPressed: () {},
-                    //   ),
-                    // ),
-                    // const SizedBox(width: 16.0), // Space between buttons
-                    Container(
-                      width: 60, // Adjust size as needed
-                      height: 60,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.grey.shade400,
-                        ), // Changed from withOpacity
-                        borderRadius: BorderRadius.circular(
-                          8.0,
-                        ), // Rounded corners
-                      ),
-                      child: IconButton(
-                        icon: Image.asset(
-                          'assets/images/google.png', // Google logo asset
-                          width: 30, // Adjust logo size
-                        ),
-                        onPressed: _signInWithGoogle,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24.0), // Space before Register text
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                    const SizedBox(height: AppSpacing.lg),
                     Text(
-                      "Don't have an account? ",
-                      style:
-                          Theme.of(
-                            context,
-                          ).textTheme.bodyMedium, // Use bodyMedium
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        developer.log(
-                          'Register now button tapped!',
-                          name: 'LoginPage',
-                        ); // Replaced print with logging
-                        context.go('/register');
-                      },
-                      child: Text(
-                        'Register now',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                        ), // Use primary color
+                      'TASKS MANAGEMENT',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.loginTitle.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Sign in to continue',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.loginSubtitle.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: AppComponents.emailInputDecoration(
+                        colorScheme: Theme.of(context).colorScheme,
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: AppComponents.passwordInputDecoration(
+                        colorScheme: Theme.of(context).colorScheme,
+                        isPasswordVisible: _isPasswordVisible,
+                        onToggleVisibility: _togglePasswordVisibility,
+                      ),
+                      obscureText: !_isPasswordVisible,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          context.go('/forgot-password');
+                        },
+                        style: AppComponents.textButtonStyle(),
+                        child: Text(
+                          'Forgot Password?',
+                          style: AppTypography.linkText.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    if (authProvider.isLoading)
+                      AppComponents.loadingButton(
+                        height: 52.0,
+                        colorScheme: Theme.of(context).colorScheme,
+                      )
+                    else
+                      ElevatedButton(
+                        onPressed: _login,
+                        style: AppComponents.primaryButtonStyle(),
+                        child: Text(
+                          'Sign In',
+                          style: AppTypography.buttonPrimary,
+                        ),
+                      ),
+                    const SizedBox(height: AppSpacing.xl),
+                    AppComponents.dividerWithText(
+                      text: 'or continue with',
+                      colorScheme: Theme.of(context).colorScheme,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    OutlinedButton.icon(
+                      onPressed: _signInWithGoogle,
+                      icon: Image.asset(
+                        'assets/images/google.png',
+                        height: 20.0,
+                        width: 20.0,
+                      ),
+                      label: Text(
+                        'Continue with Google',
+                        style: AppTypography.buttonSecondary.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      style: AppComponents.secondaryButtonStyle(),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Don't have an account? ",
+                          style: AppTypography.bodyText.copyWith(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            developer.log(
+                              'Register now button tapped!',
+                              name: 'LoginPage',
+                            );
+                            context.go('/register');
+                          },
+                          style: AppComponents.textButtonStyle(),
+                          child: Text(
+                            'Sign up',
+                            style: AppTypography.linkText.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

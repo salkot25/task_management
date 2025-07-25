@@ -62,29 +62,28 @@ class _AccountListPageState extends State<AccountListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            _isSearching
-                ? TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search website...',
-                    border: InputBorder.none,
-                    hintStyle: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onPrimary.withOpacity(0.7),
-                    ),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search website...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withOpacity(0.7),
                   ),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontSize: 18.0,
-                  ),
-                  onChanged: (value) {
-                    // Update the filter in the provider
-                    accountProvider.setFilterWebsite(value);
-                  },
-                )
-                : const Text('Password Manager'),
+                ),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontSize: 18.0,
+                ),
+                onChanged: (value) {
+                  // Update the filter in the provider
+                  accountProvider.setFilterWebsite(value);
+                },
+              )
+            : const Text('Password Manager'),
         centerTitle: !_isSearching, // Center title only when not searching
         actions: [
           IconButton(
@@ -104,12 +103,11 @@ class _AccountListPageState extends State<AccountListPage> {
         // Apply AppBar theme from AppTheme
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
-        titleTextStyle:
-            _isSearching
-                ? null
-                : Theme.of(context)
-                    .appBarTheme
-                    .titleTextStyle, // Use themed title style when not searching
+        titleTextStyle: _isSearching
+            ? null
+            : Theme.of(context)
+                  .appBarTheme
+                  .titleTextStyle, // Use themed title style when not searching
       ),
       body: Consumer<AccountProvider>(
         builder: (context, provider, child) {
@@ -123,8 +121,8 @@ class _AccountListPageState extends State<AccountListPage> {
                   provider.message.isNotEmpty
                       ? provider.message
                       : accountProvider
-                          .filterWebsite
-                          .isNotEmpty // Check filter website as well
+                            .filterWebsite
+                            .isNotEmpty // Check filter website as well
                       ? 'No accounts found for "${accountProvider.filterWebsite}".'
                       : 'No accounts found. Tap the + button to add one.',
                   textAlign: TextAlign.center,
@@ -146,32 +144,31 @@ class _AccountListPageState extends State<AccountListPage> {
                     if (!mounted) return;
                     showDialog(
                       context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            title: const Text('Confirm Deletion'),
-                            content: Text(
-                              'Are you sure you want to delete account for ${account.website}?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  if (mounted) {
-                                    Navigator.pop(context);
-                                  }
-                                },
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  provider.removeAccount(account.id);
-                                  if (mounted) {
-                                    Navigator.pop(context);
-                                  }
-                                },
-                                child: const Text('Delete'),
-                              ),
-                            ],
+                      builder: (context) => AlertDialog(
+                        title: const Text('Confirm Deletion'),
+                        content: Text(
+                          'Are you sure you want to delete account for ${account.website}?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              if (mounted) {
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: const Text('Cancel'),
                           ),
+                          TextButton(
+                            onPressed: () {
+                              provider.removeAccount(account.id);
+                              if (mounted) {
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -278,12 +275,11 @@ class _AccountListItemState extends State<AccountListItem> {
                   size: 20.0,
                 ), // Adjusted icon size
                 tooltip: 'Copy Username',
-                onPressed:
-                    () => _copyToClipboard(
-                      context,
-                      widget.account.username,
-                      'Username',
-                    ),
+                onPressed: () => _copyToClipboard(
+                  context,
+                  widget.account.username,
+                  'Username',
+                ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0), // Rounded corners
@@ -294,10 +290,11 @@ class _AccountListItemState extends State<AccountListItem> {
                 vertical: 8.0,
               ), // Adjust padding
               isDense: true, // Reduce vertical space
-              labelStyle:
-                  Theme.of(context).textTheme.bodySmall, // Smaller label
+              labelStyle: Theme.of(
+                context,
+              ).textTheme.bodySmall, // Smaller label
               filled: true, // Fill background
-              fillColor: Theme.of(context).colorScheme.surfaceVariant
+              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest
                   .withOpacity(0.5), // Use a subtle fill color
             ),
             style: Theme.of(context).textTheme.bodyMedium, // Apply text style
@@ -324,8 +321,9 @@ class _AccountListItemState extends State<AccountListItem> {
                           : Icons.visibility_outlined,
                       size: 20.0, // Adjusted icon size
                     ),
-                    tooltip:
-                        _isPasswordVisible ? 'Hide Password' : 'Show Password',
+                    tooltip: _isPasswordVisible
+                        ? 'Hide Password'
+                        : 'Show Password',
                     onPressed: () {
                       setState(() {
                         _isPasswordVisible = !_isPasswordVisible;
@@ -338,12 +336,11 @@ class _AccountListItemState extends State<AccountListItem> {
                       size: 20.0,
                     ), // Adjusted icon size
                     tooltip: 'Copy Password',
-                    onPressed:
-                        () => _copyToClipboard(
-                          context,
-                          widget.account.password,
-                          'Password',
-                        ),
+                    onPressed: () => _copyToClipboard(
+                      context,
+                      widget.account.password,
+                      'Password',
+                    ),
                   ),
                 ],
               ),
@@ -356,10 +353,11 @@ class _AccountListItemState extends State<AccountListItem> {
                 vertical: 8.0,
               ), // Adjust padding
               isDense: true, // Reduce vertical space
-              labelStyle:
-                  Theme.of(context).textTheme.bodySmall, // Smaller label
+              labelStyle: Theme.of(
+                context,
+              ).textTheme.bodySmall, // Smaller label
               filled: true, // Fill background
-              fillColor: Theme.of(context).colorScheme.surfaceVariant
+              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest
                   .withOpacity(0.5), // Use a subtle fill color
             ),
             style: Theme.of(context).textTheme.bodyMedium, // Apply text style

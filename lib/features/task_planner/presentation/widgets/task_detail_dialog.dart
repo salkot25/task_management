@@ -6,7 +6,7 @@ import 'package:myapp/utils/app_colors.dart'; // Import AppColors
 class TaskDetailDialog extends StatelessWidget {
   final Task task;
 
-  const TaskDetailDialog({Key? key, required this.task}) : super(key: key);
+  const TaskDetailDialog({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +59,9 @@ class TaskDetailDialog extends StatelessWidget {
                     'Due Date: ${DateFormat('MMM d, yyyy').format(task.dueDate)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontStyle: FontStyle.italic,
-                      color:
-                          Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.color, // Use default text color
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.color, // Use default text color
                     ),
                   ),
                 ],
@@ -83,11 +81,9 @@ class TaskDetailDialog extends StatelessWidget {
                     Text(
                       task.description,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color:
-                            Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.color, // Use default text color
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color, // Use default text color
                       ),
                     ),
                   ],
