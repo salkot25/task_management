@@ -27,16 +27,27 @@ class ExportFunctions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).cardColor,
         borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.3)
+              : AppColors.greyLightColor,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : AppColors.greyColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -57,6 +68,7 @@ class ExportFunctions extends StatelessWidget {
                 'Export Financial Data',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : null,
                 ),
               ),
             ],
@@ -66,7 +78,7 @@ class ExportFunctions extends StatelessWidget {
           Text(
             'Generate detailed reports of your financial activities',
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.greyColor,
+              color: isDarkMode ? Colors.white70 : AppColors.greyColor,
             ),
           ),
 
@@ -132,22 +144,29 @@ class ExportFunctions extends StatelessWidget {
     Color color,
     VoidCallback onTap,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppComponents.smallRadius),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: isDarkMode ? color.withOpacity(0.1) : color.withOpacity(0.05),
           borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-          border: Border.all(color: color.withOpacity(0.2), width: 1),
+          border: Border.all(
+            color: isDarkMode ? color.withOpacity(0.4) : color.withOpacity(0.2),
+            width: 1,
+          ),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: isDarkMode
+                    ? color.withOpacity(0.2)
+                    : color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppComponents.smallRadius),
               ),
               child: Icon(icon, color: color, size: 20),
@@ -161,19 +180,24 @@ class ExportFunctions extends StatelessWidget {
                     title,
                     style: AppTypography.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.white : null,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     description,
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.greyColor,
+                      color: isDarkMode ? Colors.white70 : AppColors.greyColor,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.greyColor),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+            ),
           ],
         ),
       ),
@@ -181,12 +205,17 @@ class ExportFunctions extends StatelessWidget {
   }
 
   Widget _buildExportFormats(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Export Formats',
-          style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.white : null,
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
@@ -233,6 +262,8 @@ class ExportFunctions extends StatelessWidget {
     Color color,
     VoidCallback onTap,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppComponents.smallRadius),
@@ -242,9 +273,12 @@ class ExportFunctions extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: isDarkMode ? color.withOpacity(0.15) : color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-          border: Border.all(color: color.withOpacity(0.3), width: 1),
+          border: Border.all(
+            color: isDarkMode ? color.withOpacity(0.5) : color.withOpacity(0.3),
+            width: 1,
+          ),
         ),
         child: Column(
           children: [
@@ -287,55 +321,85 @@ class ExportFunctions extends StatelessWidget {
     nav.NavigationHelper.safeShowDialog(
       context: context,
       dialogId: 'export_dialog_$format',
-      builder: (context) => AlertDialog(
-        title: Text('Export as $format'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Select the type of report to export:'),
-            const SizedBox(height: AppSpacing.md),
-            _buildDialogOption('Monthly Statement', () {
-              nav.NavigationHelper.safePopDialog(context);
-              _exportMonthlyStatement(context);
-            }),
-            _buildDialogOption('Transaction History', () {
-              nav.NavigationHelper.safePopDialog(context);
-              _exportTransactionHistory(context);
-            }),
-            _buildDialogOption('Budget Report', () {
-              nav.NavigationHelper.safePopDialog(context);
-              _exportBudgetReport(context);
-            }),
-            _buildDialogOption('Tax Summary', () {
-              nav.NavigationHelper.safePopDialog(context);
-              _exportTaxSummary(context);
-            }),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => nav.NavigationHelper.safePopDialog(context),
-            child: const Text('Cancel'),
+      builder: (dialogContext) {
+        final isDarkMode =
+            Theme.of(dialogContext).brightness == Brightness.dark;
+
+        return AlertDialog(
+          backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : null,
+          title: Text(
+            'Export as $format',
+            style: TextStyle(color: isDarkMode ? Colors.white : null),
           ),
-        ],
-      ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select the type of report to export:',
+                style: TextStyle(color: isDarkMode ? Colors.white70 : null),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _buildDialogOption('Monthly Statement', () {
+                Navigator.of(dialogContext).pop();
+                _exportMonthlyStatement(context);
+              }),
+              _buildDialogOption('Transaction History', () {
+                Navigator.of(dialogContext).pop();
+                _exportTransactionHistory(context);
+              }),
+              _buildDialogOption('Budget Report', () {
+                Navigator.of(dialogContext).pop();
+                _exportBudgetReport(context);
+              }),
+              _buildDialogOption('Tax Summary', () {
+                Navigator.of(dialogContext).pop();
+                _exportTaxSummary(context);
+              }),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: isDarkMode ? Colors.white70 : null),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildDialogOption(String title, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        margin: const EdgeInsets.only(bottom: AppSpacing.xs),
-        decoration: BoxDecoration(
-          color: AppColors.greyExtraLightColor,
-          borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-        ),
-        child: Text(title, style: AppTypography.bodyMedium),
-      ),
+    return Builder(
+      builder: (context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+        return InkWell(
+          onTap: onTap,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            margin: const EdgeInsets.only(bottom: AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : AppColors.greyExtraLightColor,
+              borderRadius: BorderRadius.circular(AppComponents.smallRadius),
+            ),
+            child: Text(
+              title,
+              style: AppTypography.bodyMedium.copyWith(
+                color: isDarkMode ? Colors.white : null,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

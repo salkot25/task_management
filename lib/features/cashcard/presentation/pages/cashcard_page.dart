@@ -132,6 +132,8 @@ class _CashcardPageState extends State<CashcardPage>
 
   // Enhanced Add Transaction Modal
   void _showAddTransactionModal(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     nav.NavigationHelper.safeShowModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -139,7 +141,9 @@ class _CashcardPageState extends State<CashcardPage>
       builder: (modalContext) => Container(
         height: MediaQuery.of(modalContext).size.height * 0.85,
         decoration: BoxDecoration(
-          color: Theme.of(modalContext).scaffoldBackgroundColor,
+          color: isDarkMode
+              ? const Color(0xFF2D2D2D)
+              : Theme.of(modalContext).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(AppComponents.extraLargeRadius),
             topRight: Radius.circular(AppComponents.extraLargeRadius),
@@ -168,11 +172,15 @@ class _CashcardPageState extends State<CashcardPage>
                     'Add Transaction',
                     style: AppTypography.titleLarge.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.white : null,
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(modalContext).pop(),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(
+                      Icons.close,
+                      color: isDarkMode ? Colors.white : null,
+                    ),
                   ),
                 ],
               ),
@@ -190,6 +198,8 @@ class _CashcardPageState extends State<CashcardPage>
   Widget _buildEnhancedTransactionForm() {
     return StatefulBuilder(
       builder: (context, setModalState) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
         return Consumer<CashcardProvider>(
           builder: (context, provider, child) {
             return Padding(
@@ -207,10 +217,14 @@ class _CashcardPageState extends State<CashcardPage>
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: AppColors.greyExtraLightColor,
+                        color: isDarkMode
+                            ? Colors.grey.withOpacity(0.1)
+                            : AppColors.greyExtraLightColor,
                         borderRadius: AppComponents.standardBorderRadius,
                         border: Border.all(
-                          color: AppColors.greyLightColor,
+                          color: isDarkMode
+                              ? Colors.grey.withOpacity(0.2)
+                              : AppColors.greyLightColor,
                           width: 1,
                         ),
                       ),
@@ -221,6 +235,7 @@ class _CashcardPageState extends State<CashcardPage>
                             'Transaction Type',
                             style: AppTypography.titleSmall.copyWith(
                               fontWeight: FontWeight.w600,
+                              color: isDarkMode ? Colors.white : null,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
@@ -265,10 +280,14 @@ class _CashcardPageState extends State<CashcardPage>
                           Container(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color: AppColors.greyExtraLightColor,
+                              color: isDarkMode
+                                  ? Colors.grey.withOpacity(0.1)
+                                  : AppColors.greyExtraLightColor,
                               borderRadius: AppComponents.standardBorderRadius,
                               border: Border.all(
-                                color: AppColors.greyLightColor,
+                                color: isDarkMode
+                                    ? Colors.grey.withOpacity(0.2)
+                                    : AppColors.greyLightColor,
                                 width: 1,
                               ),
                             ),
@@ -279,6 +298,7 @@ class _CashcardPageState extends State<CashcardPage>
                                   'Expense Category',
                                   style: AppTypography.titleSmall.copyWith(
                                     fontWeight: FontWeight.w600,
+                                    color: isDarkMode ? Colors.white : null,
                                   ),
                                 ),
                                 const SizedBox(height: AppSpacing.sm),
@@ -289,6 +309,7 @@ class _CashcardPageState extends State<CashcardPage>
                                     prefixIcon: const Icon(
                                       Icons.category_outlined,
                                     ),
+                                    colorScheme: Theme.of(context).colorScheme,
                                   ),
                                   items: Transaction.getCategoryDisplayNames()
                                       .entries
@@ -322,6 +343,7 @@ class _CashcardPageState extends State<CashcardPage>
                         labelText: 'Transaction Description',
                         hintText: 'e.g., Grocery shopping, Salary payment',
                         prefixIcon: const Icon(Icons.description_outlined),
+                        colorScheme: Theme.of(context).colorScheme,
                       ),
                     ),
 
@@ -334,6 +356,7 @@ class _CashcardPageState extends State<CashcardPage>
                       decoration: AppComponents.inputDecoration(
                         labelText: 'Amount',
                         hintText: '0',
+                        colorScheme: Theme.of(context).colorScheme,
                         prefixIcon: Container(
                           margin: const EdgeInsets.all(12),
                           padding: const EdgeInsets.symmetric(
@@ -376,8 +399,15 @@ class _CashcardPageState extends State<CashcardPage>
                       child: Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.greyLightColor),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? Colors.grey.withOpacity(0.3)
+                                : AppColors.greyLightColor,
+                          ),
                           borderRadius: AppComponents.standardBorderRadius,
+                          color: isDarkMode
+                              ? Colors.grey.withOpacity(0.1)
+                              : null,
                         ),
                         child: Row(
                           children: [
@@ -393,7 +423,9 @@ class _CashcardPageState extends State<CashcardPage>
                                 Text(
                                   'Transaction Date',
                                   style: AppTypography.titleSmall.copyWith(
-                                    color: AppColors.greyDarkColor,
+                                    color: isDarkMode
+                                        ? Colors.white70
+                                        : AppColors.greyDarkColor,
                                   ),
                                 ),
                                 Text(
@@ -402,6 +434,7 @@ class _CashcardPageState extends State<CashcardPage>
                                   ).format(_selectedDate),
                                   style: AppTypography.bodyMedium.copyWith(
                                     fontWeight: FontWeight.w500,
+                                    color: isDarkMode ? Colors.white : null,
                                   ),
                                 ),
                               ],
@@ -466,6 +499,8 @@ class _CashcardPageState extends State<CashcardPage>
     Color color,
     CashcardProvider provider,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () => provider.setSelectedTransactionType(type),
       child: Container(
@@ -476,7 +511,11 @@ class _CashcardPageState extends State<CashcardPage>
         decoration: BoxDecoration(
           color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
           border: Border.all(
-            color: isSelected ? color : AppColors.greyLightColor,
+            color: isSelected
+                ? color
+                : isDarkMode
+                ? Colors.grey.withOpacity(0.3)
+                : AppColors.greyLightColor,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(AppComponents.smallRadius),
@@ -486,14 +525,22 @@ class _CashcardPageState extends State<CashcardPage>
           children: [
             Icon(
               icon,
-              color: isSelected ? color : AppColors.greyColor,
+              color: isSelected
+                  ? color
+                  : isDarkMode
+                  ? Colors.white70
+                  : AppColors.greyColor,
               size: 20,
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               label,
               style: AppTypography.bodyMedium.copyWith(
-                color: isSelected ? color : AppColors.greyDarkColor,
+                color: isSelected
+                    ? color
+                    : isDarkMode
+                    ? Colors.white70
+                    : AppColors.greyDarkColor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -672,14 +719,23 @@ class _CashcardPageState extends State<CashcardPage>
 
   // Professional Transaction List Widget
   Widget _buildProfessionalTransactionList(List<Transaction> transactions) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     if (transactions.isEmpty) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: isDarkMode
+              ? const Color(0xFF2D2D2D)
+              : Theme.of(context).cardColor,
           borderRadius: AppComponents.standardBorderRadius,
-          border: Border.all(color: AppColors.greyLightColor, width: 1),
+          border: Border.all(
+            color: isDarkMode
+                ? Colors.grey.withOpacity(0.2)
+                : AppColors.greyLightColor,
+            width: 1,
+          ),
         ),
         child: Column(
           children: [
@@ -1073,6 +1129,8 @@ class _CashcardPageState extends State<CashcardPage>
     IconData icon,
     Color color,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     // Professional color treatment for better visual hierarchy
     final bool isPositiveMetric = _isPositiveMetric(title, value);
     final cardColor = _getOptimizedCardColor(color, isPositiveMetric);
@@ -1080,15 +1138,19 @@ class _CashcardPageState extends State<CashcardPage>
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.greyLightColor.withOpacity(0.5),
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.2)
+              : AppColors.greyLightColor.withOpacity(0.5),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.08),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : AppColors.greyColor.withOpacity(0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1288,9 +1350,12 @@ class _CashcardPageState extends State<CashcardPage>
   Widget build(BuildContext context) {
     final cashcardProvider = Provider.of<CashcardProvider>(context);
     final transactions = cashcardProvider.transactions;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: isDarkMode
+          ? const Color(0xFF1A1A1A)
+          : Theme.of(context).colorScheme.surface,
       appBar: StandardAppBar(
         title: 'Cashcard',
         subtitle: 'Manage your finances',
@@ -1348,7 +1413,7 @@ class _CashcardPageState extends State<CashcardPage>
         children: [
           // Tab Bar
           Container(
-            color: Colors.white,
+            color: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
             child: TabBar(
               controller: _tabController,
               labelColor: AppColors.primaryColor,
@@ -1394,7 +1459,9 @@ class _CashcardPageState extends State<CashcardPage>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryColor.withOpacity(0.3),
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.3)
+                  : AppColors.primaryColor.withOpacity(0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

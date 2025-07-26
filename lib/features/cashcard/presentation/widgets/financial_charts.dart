@@ -18,6 +18,7 @@ class FinancialCharts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final lastIncome = _getLast30DaysIncome();
     final lastExpense = _getLast30DaysExpense();
     final prevIncome = _getPrevious30DaysIncome();
@@ -82,9 +83,15 @@ class FinancialCharts extends StatelessWidget {
               AppSpacing.md,
               AppSpacing.md,
             ),
+            decoration: BoxDecoration(
+              color: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: TabBar(
               labelColor: AppColors.primaryColor,
-              unselectedLabelColor: AppColors.greyColor,
+              unselectedLabelColor: isDarkMode
+                  ? Colors.white70
+                  : AppColors.greyColor,
               indicatorColor: AppColors.primaryColor,
               indicatorWeight: 3,
               labelStyle: AppTypography.bodyMedium.copyWith(
@@ -122,15 +129,26 @@ class FinancialCharts extends StatelessWidget {
     Color color,
     IconData icon,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).cardColor,
         borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.2)
+              : AppColors.greyLightColor,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : AppColors.greyColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -147,7 +165,7 @@ class FinancialCharts extends StatelessWidget {
                 child: Text(
                   title,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.greyColor,
+                    color: isDarkMode ? Colors.white70 : AppColors.greyColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -310,7 +328,8 @@ class FinancialCharts extends StatelessWidget {
   }
 
   // Enhanced chart data methods
-  LineChartData _buildEnhancedSpendingTrendsData() {
+  LineChartData _buildEnhancedSpendingTrendsData(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final twoWeeksAgo = now.subtract(const Duration(days: 14));
 
@@ -342,7 +361,10 @@ class FinancialCharts extends StatelessWidget {
                 locale: 'id_ID',
                 symbol: 'Rp',
               ).format(value),
-              style: AppTypography.bodySmall.copyWith(fontSize: 10),
+              style: AppTypography.bodySmall.copyWith(
+                fontSize: 10,
+                color: isDarkMode ? Colors.white70 : null,
+              ),
             ),
           ),
         ),
@@ -353,7 +375,10 @@ class FinancialCharts extends StatelessWidget {
               final date = twoWeeksAgo.add(Duration(days: value.toInt()));
               return Text(
                 '${date.day}/${date.month}',
-                style: AppTypography.bodySmall.copyWith(fontSize: 10),
+                style: AppTypography.bodySmall.copyWith(
+                  fontSize: 10,
+                  color: isDarkMode ? Colors.white70 : null,
+                ),
               );
             },
           ),
@@ -429,38 +454,53 @@ class FinancialCharts extends StatelessWidget {
       Colors.cyan,
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: categoryData.entries.map((entry) {
-        final index = categoryData.keys.toList().indexOf(entry.key);
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: colors[index % colors.length],
-                  shape: BoxShape.circle,
-                ),
+    return Builder(
+      builder: (context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: categoryData.entries.map((entry) {
+            final index = categoryData.keys.toList().indexOf(entry.key);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: colors[index % colors.length],
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      entry.key,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: isDarkMode ? Colors.white : null,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    _formatIndonesianCurrency(entry.value),
+                    style: AppTypography.bodySmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.white : null,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(child: Text(entry.key, style: AppTypography.bodySmall)),
-              Text(
-                _formatIndonesianCurrency(entry.value),
-                style: AppTypography.bodySmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
-  BarChartData _buildEnhancedWeeklyComparisonData() {
+  BarChartData _buildEnhancedWeeklyComparisonData(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
 
@@ -527,7 +567,10 @@ class FinancialCharts extends StatelessWidget {
                 locale: 'id_ID',
                 symbol: 'Rp',
               ).format(value),
-              style: AppTypography.bodySmall.copyWith(fontSize: 10),
+              style: AppTypography.bodySmall.copyWith(
+                fontSize: 10,
+                color: isDarkMode ? Colors.white70 : null,
+              ),
             ),
           ),
         ),
@@ -536,7 +579,12 @@ class FinancialCharts extends StatelessWidget {
             showTitles: true,
             getTitlesWidget: (value, meta) {
               final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-              return Text(days[value.toInt()], style: AppTypography.bodySmall);
+              return Text(
+                days[value.toInt()],
+                style: AppTypography.bodySmall.copyWith(
+                  color: isDarkMode ? Colors.white70 : null,
+                ),
+              );
             },
           ),
         ),
@@ -551,16 +599,27 @@ class FinancialCharts extends StatelessWidget {
 
   // Enhanced chart widgets
   Widget _buildEnhancedSpendingTrendsChart(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).cardColor,
         borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.2)
+              : AppColors.greyLightColor,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : AppColors.greyColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -577,6 +636,7 @@ class FinancialCharts extends StatelessWidget {
                 'Daily Spending Trends (Last 2 Weeks)',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : null,
                 ),
               ),
             ],
@@ -584,7 +644,7 @@ class FinancialCharts extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           SizedBox(
             height: 200,
-            child: LineChart(_buildEnhancedSpendingTrendsData()),
+            child: LineChart(_buildEnhancedSpendingTrendsData(context)),
           ),
         ],
       ),
@@ -593,17 +653,27 @@ class FinancialCharts extends StatelessWidget {
 
   Widget _buildEnhancedCategoryChart(BuildContext context) {
     final categoryData = _getCategoryDistribution();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).cardColor,
         borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.2)
+              : AppColors.greyLightColor,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : AppColors.greyColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -620,6 +690,7 @@ class FinancialCharts extends StatelessWidget {
                 'Expense Distribution by Category',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : null,
                 ),
               ),
             ],
@@ -649,16 +720,27 @@ class FinancialCharts extends StatelessWidget {
   }
 
   Widget _buildEnhancedComparisonChart(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).cardColor,
         borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.2)
+              : AppColors.greyLightColor,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : AppColors.greyColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -679,6 +761,7 @@ class FinancialCharts extends StatelessWidget {
                 'Daily Income vs Expense (This Week)',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : null,
                 ),
               ),
             ],
@@ -686,7 +769,7 @@ class FinancialCharts extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           SizedBox(
             height: 200,
-            child: BarChart(_buildEnhancedWeeklyComparisonData()),
+            child: BarChart(_buildEnhancedWeeklyComparisonData(context)),
           ),
           const SizedBox(height: AppSpacing.md),
           _buildWeeklyOverviewLegend(),
@@ -696,73 +779,89 @@ class FinancialCharts extends StatelessWidget {
   }
 
   Widget _buildNoCategoryDataWidget() {
-    return Container(
-      height: 140,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.pie_chart_outline,
-            size: 48,
-            color: AppColors.greyColor.withOpacity(0.5),
+    return Builder(
+      builder: (context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+        return Container(
+          height: 140,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.pie_chart_outline,
+                size: 48,
+                color: isDarkMode
+                    ? Colors.white30
+                    : AppColors.greyColor.withOpacity(0.5),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'No expense categories yet',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'No expense categories yet',
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.greyColor,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildWeeklyOverviewLegend() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
+    return Builder(
+      builder: (context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(2),
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Income',
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : null,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              'Income',
-              style: AppTypography.bodySmall.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+            const SizedBox(width: 24),
+            Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Expense',
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : null,
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        const SizedBox(width: 24),
-        Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Expense',
-              style: AppTypography.bodySmall.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ],
+        );
+      },
     );
   }
 

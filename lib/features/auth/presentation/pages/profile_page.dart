@@ -287,11 +287,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return true; // This is an actual error
   }
 
-  /// Wrapper for refresh that doesn't return Future for VoidCallback compatibility
-  void _handleRefresh() {
-    _refreshProfileData();
-  }
-
   /// Wrapper for logout that doesn't return Future for VoidCallback compatibility
   void _handleLogout() {
     _logout();
@@ -323,12 +318,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   },
                 ),
               ),
-              if (!isLoading)
-                ActionButton(
-                  icon: Icons.refresh_outlined,
-                  onPressed: _handleRefresh,
-                  tooltip: 'Refresh Profile',
-                ),
               if (!isLoading)
                 ActionButton(
                   icon: Icons.logout_outlined,
