@@ -17,15 +17,18 @@ class SyncStatusWidget extends StatelessWidget {
       builder: (context, autoSyncService, connectivityService, child) {
         return InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           child: Container(
+            height: 48, // Match ActionButton height
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: _getStatusColor(
                 autoSyncService,
                 connectivityService,
               ).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                12,
+              ), // Match ActionButton border radius
               border: Border.all(
                 color: _getStatusColor(
                   autoSyncService,

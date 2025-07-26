@@ -8,7 +8,6 @@ import 'package:myapp/utils/design_system/app_spacing.dart';
 import 'package:myapp/utils/design_system/app_typography.dart';
 import 'package:myapp/utils/design_system/app_components.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/financial_charts.dart';
-import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
 import 'package:myapp/features/cashcard/presentation/widgets/enhanced_budget_management.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/budget_notification_widgets.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/export_functions.dart';
@@ -130,363 +129,443 @@ class _CashcardPageState extends State<CashcardPage>
     return List.generate(11, (index) => currentYear - 5 + index);
   }
 
-  // Enhanced Add Transaction Modal
+  // Enhanced Add Transaction Dialog (changed from modal to popup)
   void _showAddTransactionModal(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    nav.NavigationHelper.safeShowModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (modalContext) => Container(
-        height: MediaQuery.of(modalContext).size.height * 0.85,
-        decoration: BoxDecoration(
-          color: isDarkMode
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: isDarkMode
               ? const Color(0xFF2D2D2D)
-              : Theme.of(modalContext).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(AppComponents.extraLargeRadius),
-            topRight: Radius.circular(AppComponents.extraLargeRadius),
+              : Theme.of(context).colorScheme.surface,
+          surfaceTintColor: isDarkMode
+              ? Colors.transparent
+              : Theme.of(context).colorScheme.surfaceTint,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        ),
-        child: Column(
-          children: [
-            // Modal handle
-            Container(
-              margin: const EdgeInsets.only(top: AppSpacing.sm),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.greyColor,
-                borderRadius: BorderRadius.circular(2),
+          elevation: isDarkMode ? 8 : 4,
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+          contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.add_card_rounded,
+                  color: AppColors.primaryColor,
+                  size: 24,
+                ),
               ),
-            ),
-
-            // Modal header
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Add Transaction',
-                    style: AppTypography.titleLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isDarkMode ? Colors.white : null,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(modalContext).pop(),
-                    icon: Icon(
-                      Icons.close,
-                      color: isDarkMode ? Colors.white : null,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Enhanced form content
-            Expanded(child: _buildEnhancedTransactionForm()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Enhanced Transaction Form
-  Widget _buildEnhancedTransactionForm() {
-    return StatefulBuilder(
-      builder: (context, setModalState) {
-        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-        return Consumer<CashcardProvider>(
-          builder: (context, provider, child) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.lg,
-                right: AppSpacing.lg,
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
-              ),
-              child: SingleChildScrollView(
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Transaction Type Selection (Enhanced)
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: isDarkMode
-                            ? Colors.grey.withOpacity(0.1)
-                            : AppColors.greyExtraLightColor,
-                        borderRadius: AppComponents.standardBorderRadius,
-                        border: Border.all(
-                          color: isDarkMode
-                              ? Colors.grey.withOpacity(0.2)
-                              : AppColors.greyLightColor,
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Transaction Type',
-                            style: AppTypography.titleSmall.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: isDarkMode ? Colors.white : null,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTransactionTypeButton(
-                                  'Income',
-                                  Icons.trending_up,
-                                  TransactionType.income,
-                                  provider.selectedTransactionType ==
-                                      TransactionType.income,
-                                  AppColors.successColor,
-                                  provider,
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.sm),
-                              Expanded(
-                                child: _buildTransactionTypeButton(
-                                  'Expense',
-                                  Icons.trending_down,
-                                  TransactionType.expense,
-                                  provider.selectedTransactionType ==
-                                      TransactionType.expense,
-                                  AppColors.errorColor,
-                                  provider,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    Text(
+                      'Add New Transaction',
+                      style: AppTypography.headlineSmall.copyWith(
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-
-                    const SizedBox(height: AppSpacing.lg),
-
-                    // Expense Category Selection (only visible for expense transactions)
-                    if (provider.selectedTransactionType ==
-                        TransactionType.expense)
-                      Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(AppSpacing.md),
-                            decoration: BoxDecoration(
-                              color: isDarkMode
-                                  ? Colors.grey.withOpacity(0.1)
-                                  : AppColors.greyExtraLightColor,
-                              borderRadius: AppComponents.standardBorderRadius,
-                              border: Border.all(
-                                color: isDarkMode
-                                    ? Colors.grey.withOpacity(0.2)
-                                    : AppColors.greyLightColor,
-                                width: 1,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Expense Category',
-                                  style: AppTypography.titleSmall.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: isDarkMode ? Colors.white : null,
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.sm),
-                                DropdownButtonFormField<ExpenseCategory>(
-                                  value: provider.selectedExpenseCategory,
-                                  decoration: AppComponents.inputDecoration(
-                                    labelText: 'Select Category',
-                                    prefixIcon: const Icon(
-                                      Icons.category_outlined,
-                                    ),
-                                    colorScheme: Theme.of(context).colorScheme,
-                                  ),
-                                  items: Transaction.getCategoryDisplayNames()
-                                      .entries
-                                      .map(
-                                        (entry) =>
-                                            DropdownMenuItem<ExpenseCategory>(
-                                              value: entry.key,
-                                              child: Text(entry.value),
-                                            ),
-                                      )
-                                      .toList(),
-                                  onChanged: (ExpenseCategory? newValue) {
-                                    if (newValue != null) {
-                                      provider.setSelectedExpenseCategory(
-                                        newValue,
-                                      );
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                        ],
-                      ),
-
-                    // Description Field (Enhanced)
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: AppComponents.inputDecoration(
-                        labelText: 'Transaction Description',
-                        hintText: 'e.g., Grocery shopping, Salary payment',
-                        prefixIcon: const Icon(Icons.description_outlined),
-                        colorScheme: Theme.of(context).colorScheme,
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    // Amount Field (Enhanced)
-                    TextFormField(
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: AppComponents.inputDecoration(
-                        labelText: 'Amount',
-                        hintText: '0',
-                        colorScheme: Theme.of(context).colorScheme,
-                        prefixIcon: Container(
-                          margin: const EdgeInsets.all(12),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Rp',
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    // Date Selection (Enhanced)
-                    InkWell(
-                      onTap: () async {
-                        final DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: _selectedDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2101),
-                        );
-                        if (picked != null && picked != _selectedDate) {
-                          setState(() {
-                            _selectedDate = picked;
-                          });
-                          setModalState(() {}); // Trigger modal rebuild
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isDarkMode
-                                ? Colors.grey.withOpacity(0.3)
-                                : AppColors.greyLightColor,
-                          ),
-                          borderRadius: AppComponents.standardBorderRadius,
-                          color: isDarkMode
-                              ? Colors.grey.withOpacity(0.1)
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_today_outlined,
-                              color: AppColors.primaryColor,
-                              size: 20,
-                            ),
-                            const SizedBox(width: AppSpacing.md),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Transaction Date',
-                                  style: AppTypography.titleSmall.copyWith(
-                                    color: isDarkMode
-                                        ? Colors.white70
-                                        : AppColors.greyDarkColor,
-                                  ),
-                                ),
-                                Text(
-                                  DateFormat(
-                                    'EEEE, MMM dd, yyyy',
-                                  ).format(_selectedDate),
-                                  style: AppTypography.bodyMedium.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: isDarkMode ? Colors.white : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: AppColors.greyColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xl),
-
-                    // Enhanced Add Button
-                    ElevatedButton(
-                      onPressed: () => _addTransaction(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.md,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppComponents.standardBorderRadius,
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.add, size: 20),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text(
-                            'Add Transaction',
-                            style: AppTypography.buttonPrimary.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      'Record your income or expense',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
+            ],
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: SingleChildScrollView(
+              child: _buildEnhancedTransactionForm(),
+            ),
+          ),
+          actions: [
+            // Enhanced Cancel Button
+            TextButton(
+              onPressed: () {
+                // Clear the form controllers when canceling
+                _descriptionController.clear();
+                _amountController.clear();
+                // Reset selected date to today
+                setState(() {
+                  _selectedDate = DateTime.now();
+                });
+                // Reset provider selections
+                final provider = Provider.of<CashcardProvider>(
+                  context,
+                  listen: false,
+                );
+                provider.setSelectedTransactionType(TransactionType.expense);
+                provider.setSelectedExpenseCategory(ExpenseCategory.others);
+                // Close the dialog
+                Navigator.of(dialogContext).pop();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: isDarkMode
+                    ? Colors.grey[400]
+                    : Colors.grey[600],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Cancel',
+                style: AppTypography.labelLarge.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Enhanced Add Button
+            ElevatedButton(
+              onPressed: () => _addTransaction(dialogContext),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add_rounded, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Add Transaction',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         );
       },
+    );
+  }
+
+  // Enhanced Transaction Form
+  Widget _buildEnhancedTransactionForm() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Consumer<CashcardProvider>(
+      builder: (context, provider, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+
+            // Transaction Type Selection (Enhanced)
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? Colors.grey.withOpacity(0.1)
+                    : Colors.grey.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDarkMode
+                      ? Colors.grey.withOpacity(0.3)
+                      : Colors.grey.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Transaction Type',
+                    style: AppTypography.titleSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTransactionTypeButton(
+                          'Income',
+                          Icons.trending_up,
+                          TransactionType.income,
+                          provider.selectedTransactionType ==
+                              TransactionType.income,
+                          AppColors.successColor,
+                          provider,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: _buildTransactionTypeButton(
+                          'Expense',
+                          Icons.trending_down,
+                          TransactionType.expense,
+                          provider.selectedTransactionType ==
+                              TransactionType.expense,
+                          AppColors.errorColor,
+                          provider,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Expense Category Selection (only visible for expense transactions)
+            if (provider.selectedTransactionType ==
+                TransactionType.expense) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? Colors.grey.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDarkMode
+                        ? Colors.grey.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Expense Category',
+                      style: AppTypography.titleSmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    DropdownButtonFormField<ExpenseCategory>(
+                      value: provider.selectedExpenseCategory,
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                      decoration: _buildEnhancedInputDecoration(
+                        context: context,
+                        labelText: 'Select Category',
+                        prefixIcon: Icons.category_outlined,
+                        isDarkMode: isDarkMode,
+                      ),
+                      dropdownColor: isDarkMode
+                          ? const Color(0xFF2D2D2D)
+                          : Colors.white,
+                      items: Transaction.getCategoryDisplayNames().entries
+                          .map(
+                            (entry) => DropdownMenuItem<ExpenseCategory>(
+                              value: entry.key,
+                              child: Text(
+                                entry.value,
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (ExpenseCategory? newValue) {
+                        if (newValue != null) {
+                          provider.setSelectedExpenseCategory(newValue);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+
+            // Description Field (Enhanced)
+            TextFormField(
+              controller: _descriptionController,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+              decoration: _buildEnhancedInputDecoration(
+                context: context,
+                labelText: 'Transaction Description',
+                hintText: 'e.g., Grocery shopping, Salary payment',
+                prefixIcon: Icons.description_outlined,
+                isDarkMode: isDarkMode,
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Amount Field (Enhanced)
+            TextFormField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+              decoration: _buildEnhancedInputDecoration(
+                context: context,
+                labelText: 'Amount',
+                hintText: 'Enter amount',
+                prefixIcon: Icons.attach_money_outlined,
+                isDarkMode: isDarkMode,
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Date Selection (Enhanced)
+            Container(
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? Colors.grey.withOpacity(0.1)
+                    : Colors.grey.withOpacity(0.05),
+                border: Border.all(
+                  color: isDarkMode
+                      ? Colors.grey.withOpacity(0.3)
+                      : Colors.grey.withOpacity(0.3),
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.calendar_today_outlined,
+                    color: AppColors.primaryColor,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  'Transaction Date',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  DateFormat('EEEE, MMM dd, yyyy').format(_selectedDate),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.edit_calendar_outlined,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  size: 20,
+                ),
+                onTap: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+                  if (picked != null && picked != _selectedDate) {
+                    setState(() {
+                      _selectedDate = picked;
+                    });
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Enhanced Input Decoration Helper
+  InputDecoration _buildEnhancedInputDecoration({
+    required BuildContext context,
+    required String labelText,
+    String? hintText,
+    required IconData prefixIcon,
+    required bool isDarkMode,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      labelStyle: TextStyle(
+        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+        fontWeight: FontWeight.w500,
+      ),
+      hintStyle: TextStyle(
+        color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+      ),
+      prefixIcon: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(prefixIcon, color: AppColors.primaryColor, size: 20),
+      ),
+      filled: true,
+      fillColor: isDarkMode
+          ? Colors.grey.withOpacity(0.1)
+          : Colors.grey.withOpacity(0.05),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.3)
+              : Colors.grey.withOpacity(0.3),
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.3)
+              : Colors.grey.withOpacity(0.3),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 
@@ -1407,6 +1486,13 @@ class _CashcardPageState extends State<CashcardPage>
               ],
             ),
           ),
+          // Add Transaction Button
+          ActionButton(
+            icon: Icons.add_rounded,
+            onPressed: () => _showAddTransactionModal(context),
+            tooltip: 'Tambah Transaksi',
+            color: AppColors.successColor,
+          ),
         ],
       ),
       body: Column(
@@ -1453,34 +1539,6 @@ class _CashcardPageState extends State<CashcardPage>
             ),
           ),
         ],
-      ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: isDarkMode
-                  ? Colors.black.withOpacity(0.3)
-                  : AppColors.primaryColor.withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: () => _showAddTransactionModal(context),
-          backgroundColor: AppColors.primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          icon: const Icon(Icons.add, size: 24),
-          label: Text(
-            'Add Transaction',
-            style: AppTypography.labelLarge.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
       ),
     );
   }

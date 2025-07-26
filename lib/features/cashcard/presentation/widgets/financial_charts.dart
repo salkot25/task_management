@@ -454,6 +454,12 @@ class FinancialCharts extends StatelessWidget {
       Colors.cyan,
     ];
 
+    // Calculate total for percentage calculation
+    final totalAmount = categoryData.values.fold(
+      0.0,
+      (sum, amount) => sum + amount,
+    );
+
     return Builder(
       builder: (context) {
         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -462,6 +468,10 @@ class FinancialCharts extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: categoryData.entries.map((entry) {
             final index = categoryData.keys.toList().indexOf(entry.key);
+            final percentage = totalAmount > 0
+                ? (entry.value / totalAmount) * 100
+                : 0.0;
+
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
@@ -483,6 +493,16 @@ class FinancialCharts extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${percentage.toStringAsFixed(1)}%',
+                    style: AppTypography.bodySmall.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     _formatIndonesianCurrency(entry.value),
                     style: AppTypography.bodySmall.copyWith(

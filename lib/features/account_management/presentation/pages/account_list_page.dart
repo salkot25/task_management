@@ -79,11 +79,28 @@ class _AccountListPageState extends State<AccountListPage> {
         title: 'Secure Vault',
         subtitle: 'Your encrypted password manager',
         actions: [
+          Container(
+            margin: const EdgeInsets.only(right: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ActionButton(
+              icon: Icons.shield_outlined,
+              onPressed: () => _showSecurityTips(context),
+              tooltip: 'Security tips',
+            ),
+          ),
+          // Add Account Button
           ActionButton(
-            icon: Icons.shield_outlined,
-            onPressed: () => _showSecurityTips(context),
-            tooltip: 'Security tips',
-            color: AppColors.primaryColor,
+            icon: Icons.add_rounded,
+            onPressed: () => _showAccountDetailDialog(),
+            tooltip: 'Tambah Akun',
+            color: AppColors.successColor,
           ),
         ],
       ),
@@ -134,7 +151,6 @@ class _AccountListPageState extends State<AccountListPage> {
           }
         },
       ),
-      floatingActionButton: _buildSecureFloatingActionButton(context),
     );
   }
 
@@ -369,7 +385,7 @@ class _AccountListPageState extends State<AccountListPage> {
     return ListView.builder(
       padding: AppSpacing.getPagePadding(screenWidth).copyWith(
         top: AppSpacing.md,
-        bottom: 80, // Space for FAB
+        bottom: AppSpacing.lg, // Standard bottom padding
       ),
       itemCount: provider.accounts.length,
       itemBuilder: (context, index) {
@@ -380,55 +396,6 @@ class _AccountListPageState extends State<AccountListPage> {
           onDelete: () => _showDeleteConfirmation(context, account, provider),
         );
       },
-    );
-  }
-
-  /// Secure Floating Action Button with Enhanced Design
-  Widget _buildSecureFloatingActionButton(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSpacing.lg),
-        boxShadow: [
-          BoxShadow(
-            color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : Theme.of(context).colorScheme.primary.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: FloatingActionButton.extended(
-        onPressed: () => _showAccountDetailDialog(),
-        icon: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(
-            Icons.add_outlined,
-            color: Theme.of(context).colorScheme.onPrimary,
-            size: 20,
-          ),
-        ),
-        label: Text(
-          'Add Account',
-          style: AppTypography.buttonPrimary.copyWith(
-            color: Theme.of(context).colorScheme.onPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        elevation: 0,
-        extendedPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl,
-          vertical: AppSpacing.md,
-        ),
-      ),
     );
   }
 

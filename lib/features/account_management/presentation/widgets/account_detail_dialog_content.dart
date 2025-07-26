@@ -3,6 +3,12 @@ import 'package:myapp/features/account_management/domain/entities/account.dart';
 import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:myapp/utils/design_system/design_system.dart';
+// import 'package:flutter/services.dart'; // Import for Clipboard (removed) 'package:flutter/material.dart';
+import 'package:myapp/features/account_management/domain/entities/account.dart';
+import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 // import 'package:flutter/services.dart'; // Import for Clipboard (removed)
 
 // This widget will be used as the content of the dialog
@@ -93,66 +99,143 @@ class _AccountDetailDialogContentState
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return AlertDialog(
-      // AlertDialog provides title, content, and actions structure
-      title: Text(_isEditing ? 'Edit Account' : 'Add Account'),
+      backgroundColor: isDarkMode
+          ? const Color(0xFF2D2D2D)
+          : Theme.of(context).colorScheme.surface,
+      surfaceTintColor: isDarkMode
+          ? Colors.transparent
+          : Theme.of(context).colorScheme.surfaceTint,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: isDarkMode ? 8 : 4,
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              _isEditing ? Icons.edit_outlined : Icons.add_circle_outline,
+              color: AppColors.primaryColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _isEditing ? 'Edit Account' : 'Add New Account',
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  _isEditing
+                      ? 'Update account credentials'
+                      : 'Save your login credentials securely',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       content: SingleChildScrollView(
-        // Wrap content in SingleChildScrollView for keyboard handling
         child: Form(
           key: _formKey,
-          child: ListBody(
-            // Use ListBody to arrange children in a column
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              const SizedBox(height: 8),
+              // Enhanced Website Field
               TextFormField(
                 controller: websiteController,
-                decoration: InputDecoration(
-                  labelText: 'Website',
-                  prefixIcon: const Icon(Icons.language_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
-                  ),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+                decoration: _buildEnhancedInputDecoration(
+                  context: context,
+                  labelText: 'Website/Service',
+                  hintText: 'e.g., Google, Facebook, GitHub',
+                  prefixIcon: Icons.language_outlined,
+                  isDarkMode: isDarkMode,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter website';
+                    return 'Please enter website or service name';
                   }
                   return null;
                 },
                 keyboardType: TextInputType.url,
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: AppSpacing.md),
+
+              // Enhanced Username Field
               TextFormField(
                 controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
-                  ),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+                decoration: _buildEnhancedInputDecoration(
+                  context: context,
+                  labelText: 'Username/Email',
+                  hintText: 'Enter your username or email',
+                  prefixIcon: Icons.person_outline,
+                  isDarkMode: isDarkMode,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter username';
+                    return 'Please enter username or email';
                   }
                   return null;
                 },
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: AppSpacing.md),
+
+              // Enhanced Category Dropdown
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
-                decoration: InputDecoration(
-                  labelText: 'Category',
-                  prefixIcon: const Icon(Icons.category_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+                decoration: _buildEnhancedInputDecoration(
+                  context: context,
+                  labelText: 'Category (Optional)',
+                  hintText: 'Select account category',
+                  prefixIcon: Icons.category_outlined,
+                  isDarkMode: isDarkMode,
+                ),
+                hint: Text(
+                  'Select category',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
                   ),
                 ),
-                hint: const Text('Select category (optional)'),
+                dropdownColor: isDarkMode
+                    ? const Color(0xFF2D2D2D)
+                    : Colors.white,
                 items: _predefinedCategories.map((category) {
                   return DropdownMenuItem(
                     value: category,
-                    child: Text(category),
+                    child: Text(
+                      category,
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -161,26 +244,32 @@ class _AccountDetailDialogContentState
                   });
                 },
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: AppSpacing.md),
+
+              // Enhanced Password Field
               TextFormField(
                 controller: passwordController,
-                decoration: InputDecoration(
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+                decoration: _buildEnhancedInputDecoration(
+                  context: context,
                   labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  hintText: 'Enter secure password',
+                  prefixIcon: Icons.lock_outline,
+                  isDarkMode: isDarkMode,
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                     ),
                     onPressed: () {
                       setState(() {
                         _isPasswordVisible = !_isPasswordVisible;
                       });
                     },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
                   ),
                 ),
                 obscureText: !_isPasswordVisible,
@@ -196,18 +285,108 @@ class _AccountDetailDialogContentState
         ),
       ),
       actions: [
-        // Action buttons for the dialog
+        // Enhanced Cancel Button
         TextButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          child: const Text('Cancel'),
+          style: TextButton.styleFrom(
+            foregroundColor: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            'Cancel',
+            style: AppTypography.labelLarge.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
+        const SizedBox(width: 8),
+
+        // Enhanced Save Button
         ElevatedButton(
           onPressed: _saveAccount,
-          child: Text(_isEditing ? 'Update' : 'Save'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _isEditing ? Icons.update_rounded : Icons.add_rounded,
+                size: 18,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                _isEditing ? 'Update Account' : 'Save Account',
+                style: AppTypography.labelLarge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  /// Enhanced Input Decoration matching Task Planner style
+  InputDecoration _buildEnhancedInputDecoration({
+    required BuildContext context,
+    required String labelText,
+    required String hintText,
+    required IconData prefixIcon,
+    required bool isDarkMode,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      prefixIcon: Icon(
+        prefixIcon,
+        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+      ),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: isDarkMode
+          ? Colors.grey.withOpacity(0.1)
+          : Colors.grey.withOpacity(0.05),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.3)
+              : Colors.grey.withOpacity(0.3),
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.3)
+              : Colors.grey.withOpacity(0.3),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+      ),
+      labelStyle: TextStyle(
+        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+      ),
+      hintStyle: TextStyle(
+        color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+      ),
     );
   }
 }

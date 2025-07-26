@@ -10,8 +10,12 @@ import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
 
 // Import Features
 import 'package:myapp/features/account_management/presentation/pages/account_list_page.dart';
+import 'package:myapp/features/account_management/presentation/pages/add_account_page.dart';
 import 'package:myapp/features/task_planner/presentation/pages/task_planner_page.dart';
+import 'package:myapp/features/task_planner/presentation/pages/add_task_page.dart';
 import 'package:myapp/features/cashcard/presentation/pages/cashcard_page.dart';
+import 'package:myapp/features/cashcard/presentation/pages/add_transaction_page.dart';
+import 'package:myapp/presentation/pages/about_page.dart';
 
 // Import Navigation Shell
 import 'package:myapp/presentation/widgets/bottom_navigation_shell.dart';
@@ -87,6 +91,13 @@ class AppRouter {
               path: '/tasks',
               name: 'tasks',
               builder: (context, state) => const TaskPlannerPage(),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  name: 'add-task',
+                  builder: (context, state) => const AddTaskPage(),
+                ),
+              ],
             ),
           ],
         ),
@@ -98,6 +109,13 @@ class AppRouter {
               path: '/accounts',
               name: 'vault',
               builder: (context, state) => const AccountListPage(),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  name: 'add-account',
+                  builder: (context, state) => const AddAccountPage(),
+                ),
+              ],
             ),
           ],
         ),
@@ -109,6 +127,13 @@ class AppRouter {
               path: '/cashcard',
               name: 'cashcard',
               builder: (context, state) => const CashcardPage(),
+              routes: [
+                GoRoute(
+                  path: 'add',
+                  name: 'add-transaction',
+                  builder: (context, state) => const AddTransactionPage(),
+                ),
+              ],
             ),
           ],
         ),
@@ -120,6 +145,13 @@ class AppRouter {
               path: '/profile',
               name: 'profile',
               builder: (context, state) => const ProfilePage(),
+              routes: [
+                GoRoute(
+                  path: 'about',
+                  name: 'about',
+                  builder: (context, state) => const AboutPage(),
+                ),
+              ],
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
 import 'package:myapp/features/auth/domain/entities/profile.dart';
 import 'package:intl/intl.dart';
@@ -344,7 +345,23 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 24.0),
                     _buildAppSettings(),
                     const SizedBox(height: 24.0),
-                    _buildAccountActions(isLoading),
+                    // Logout button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading ? null : _logout,
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Logout'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.errorColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
                   ]
                   // Error state (only for actual errors, not missing profile)
                   else if (hasError && _isActualError())
@@ -679,8 +696,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 4),
-                                  if (profile.role != null &&
-                                      profile.role!.isNotEmpty)
+                                  // Username display
+                                  if (profile.username != null &&
+                                      profile.username!.isNotEmpty)
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 10,
@@ -691,17 +709,43 @@ class _ProfilePageState extends State<ProfilePage> {
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                       child: Text(
-                                        profile.role!.toUpperCase(),
+                                        '@${profile.username!}',
                                         style: TextStyle(
                                           color: Theme.of(
                                             context,
                                           ).colorScheme.primary,
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  // Role display (if exists)
+                                  if (profile.role != null &&
+                                      profile.role!.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.8),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Text(
+                                        profile.role!.toUpperCase(),
+                                        style: TextStyle(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
                                           letterSpacing: 1,
                                         ),
                                       ),
                                     ),
+                                  ],
                                 ],
                               ),
                             ),
@@ -810,36 +854,42 @@ class _ProfilePageState extends State<ProfilePage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            if (profile.isEmailVerified == true)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.successColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.verified,
-                                      color: Colors.white,
-                                      size: 12,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Verified',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            // User Verification Status
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
                               ),
+                              decoration: BoxDecoration(
+                                color: profile.isEmailVerified == true
+                                    ? AppColors.successColor
+                                    : Colors.orange.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    profile.isEmailVerified == true
+                                        ? Icons.verified_user
+                                        : Icons.pending,
+                                    color: Colors.white,
+                                    size: 12,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    profile.isEmailVerified == true
+                                        ? 'Verified User'
+                                        : 'Pending Verification',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                             if (profile.lastSignInAt != null) ...[
                               const SizedBox(height: 8),
                               Container(
@@ -1104,139 +1154,117 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-      ],
-    );
-  }
 
-  /// Build information card widget
-  /// Build account actions section
-  Widget _buildAccountActions(bool isLoading) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Account Actions', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 12.0),
 
-        // Action buttons
-        _buildActionButton(
-          icon: Icons.sync_outlined,
-          title: 'Sync Settings',
-          subtitle: 'Manage data synchronization',
-          onTap: isLoading
-              ? null
-              : () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (context) => const SyncSettingsBottomSheet(),
-                  );
-                },
+        // Sync Settings Card
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => const SyncSettingsBottomSheet(),
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.sync_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sync Settings',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Manage data synchronization',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.grey[400],
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
 
         const SizedBox(height: 12.0),
 
-        _buildActionButton(
-          icon: Icons.security_outlined,
-          title: 'Security Settings',
-          subtitle: 'Manage password and security options',
-          onTap: isLoading
-              ? null
-              : () {
-                  // Navigate to security settings
-                  _showErrorSnackBar('Security settings coming soon');
-                },
-        ),
-
-        const SizedBox(height: 12.0),
-
-        _buildActionButton(
-          icon: Icons.notifications_outlined,
-          title: 'Notification Settings',
-          subtitle: 'Configure notification preferences',
-          onTap: isLoading
-              ? null
-              : () {
-                  // Navigate to notification settings
-                  _showErrorSnackBar('Notification settings coming soon');
-                },
-        ),
-
-        const SizedBox(height: 12.0),
-
-        _buildActionButton(
-          icon: Icons.help_outline,
-          title: 'Help & Support',
-          subtitle: 'Get help and contact support',
-          onTap: isLoading
-              ? null
-              : () {
-                  // Navigate to help
-                  _showErrorSnackBar('Help section coming soon');
-                },
-        ),
-
-        const SizedBox(height: 20.0),
-
-        // Logout button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: isLoading ? null : _logout,
-            icon: const Icon(Icons.logout),
-            label: const Text('Logout'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.errorColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        // About Application Card
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () {
+              context.go('/profile/about');
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tentang Aplikasi',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Informasi aplikasi, versi, dan fitur',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.grey[400],
+                    size: 16,
+                  ),
+                ],
               ),
             ),
           ),
         ),
       ],
-    );
-  }
-
-  /// Build action button widget
-  Widget _buildActionButton({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -1285,6 +1313,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   late TextEditingController _nameController;
   late TextEditingController _usernameController;
   late TextEditingController _whatsappController;
+  late TextEditingController _avatarUrlController;
 
   @override
   void initState() {
@@ -1296,6 +1325,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     _whatsappController = TextEditingController(
       text: widget.profile.whatsapp ?? '',
     );
+    _avatarUrlController = TextEditingController(
+      text: widget.profile.profilePictureUrl ?? '',
+    );
   }
 
   @override
@@ -1303,6 +1335,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     _nameController.dispose();
     _usernameController.dispose();
     _whatsappController.dispose();
+    _avatarUrlController.dispose();
     super.dispose();
   }
 
@@ -1330,6 +1363,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         whatsapp: _whatsappController.text.trim().isEmpty
             ? null
             : _whatsappController.text.trim(),
+        profilePictureUrl: _avatarUrlController.text.trim().isEmpty
+            ? null
+            : _avatarUrlController.text.trim(),
         // Ensure required fields are present
         email: widget.profile.email ?? authProvider.user?.email ?? '',
         createdAt: widget.profile.createdAt ?? now,
@@ -1376,33 +1412,212 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return AlertDialog(
-          title: const Text('Edit Profile'),
+          backgroundColor: isDarkMode
+              ? const Color(0xFF2D2D2D)
+              : Theme.of(context).colorScheme.surface,
+          surfaceTintColor: isDarkMode
+              ? Colors.transparent
+              : Theme.of(context).colorScheme.surfaceTint,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: isDarkMode ? 8 : 4,
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+          contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.edit_outlined,
+                  color: AppColors.primaryColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Edit Profile',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    Text(
+                      'Update informasi profil Anda',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const SizedBox(height: 8),
+
+                // Avatar Preview Section
+                if (_avatarUrlController.text.trim().isNotEmpty)
+                  Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.primaryColor,
+                            width: 2,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: Image.network(
+                            _avatarUrlController.text.trim(),
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[300],
+                                child: Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.grey[600],
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[300],
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Avatar Preview',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+
+                // Avatar URL Field
+                TextFormField(
+                  controller: _avatarUrlController,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Avatar URL',
+                    hintText: 'https://example.com/avatar.jpg',
+                    prefixIcon: Icon(
+                      Icons.image_outlined,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    labelStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    hintStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                    ),
+                  ),
+                  keyboardType: TextInputType.url,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (value) {
+                    // Trigger rebuild to update preview
+                    setState(() {});
+                  },
+                ),
+                const SizedBox(height: 16),
+
                 // Name Field
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    prefixIcon: Icon(Icons.person_outlined),
-                    border: OutlineInputBorder(),
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Nama Lengkap',
+                    hintText: 'Masukkan nama lengkap',
+                    prefixIcon: Icon(
+                      Icons.person_outlined,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    labelStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    hintStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                    ),
                   ),
                   textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Nama wajib diisi';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
 
                 // Username Field
                 TextFormField(
                   controller: _usernameController,
-                  decoration: const InputDecoration(
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                  decoration: InputDecoration(
                     labelText: 'Username',
-                    prefixIcon: Icon(Icons.alternate_email_outlined),
-                    border: OutlineInputBorder(),
+                    hintText: 'Masukkan username',
+                    prefixIcon: Icon(
+                      Icons.alternate_email_outlined,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    labelStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    hintStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                    ),
                   ),
                   textInputAction: TextInputAction.next,
                 ),
@@ -1411,10 +1626,25 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 // WhatsApp Field
                 TextFormField(
                   controller: _whatsappController,
-                  decoration: const InputDecoration(
-                    labelText: 'WhatsApp Number',
-                    prefixIcon: Icon(Icons.phone_outlined),
-                    border: OutlineInputBorder(),
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Nomor WhatsApp',
+                    hintText: 'Contoh: +62812345678',
+                    prefixIcon: Icon(
+                      Icons.phone_outlined,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    labelStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    hintStyle: TextStyle(
+                      color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                    ),
                   ),
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.done,
@@ -1424,34 +1654,119 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 if (authProvider.errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
-                    child: Text(
-                      authProvider.errorMessage!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontSize: 14,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.errorColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppColors.errorColor.withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: AppColors.errorColor,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              authProvider.errorMessage!,
+                              style: TextStyle(
+                                color: AppColors.errorColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
               ],
             ),
           ),
           actions: [
+            // Enhanced Cancel Button
             TextButton(
               onPressed: authProvider.isLoading
                   ? null
                   : () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                foregroundColor: isDarkMode
+                    ? Colors.grey[400]
+                    : Colors.grey[600],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Batal',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+              ),
             ),
+            const SizedBox(width: 8),
+            // Enhanced Save Button
             ElevatedButton(
               onPressed: authProvider.isLoading ? null : _saveProfile,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
               child: authProvider.isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Menyimpan...',
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ],
                     )
-                  : const Text('Save'),
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.save_outlined, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Simpan',
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ],
+                    ),
             ),
           ],
         );

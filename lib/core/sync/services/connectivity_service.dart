@@ -1,6 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
+
+// Platform conditional imports
+import 'connectivity_io.dart'
+    if (dart.library.html) 'connectivity_web.dart'
+    as connectivity_impl;
 
 /// Service untuk memantau koneksi internet
 class ConnectivityService extends ChangeNotifier {
@@ -27,12 +31,10 @@ class ConnectivityService extends ChangeNotifier {
   /// Cek koneksi internet
   Future<void> _checkConnectivity() async {
     try {
-      final result = await InternetAddress.lookup(
-        'google.com',
-      ).timeout(const Duration(seconds: 3));
-
       final wasConnected = _isConnected;
-      _isConnected = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+
+      // Use platform-specific implementation
+      _isConnected = await connectivity_impl.checkConnectivity();
       _isOnline = _isConnected;
 
       // Notify listeners only if status changed

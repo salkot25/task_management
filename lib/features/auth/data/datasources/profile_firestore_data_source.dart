@@ -25,6 +25,8 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
         'createdAt': Timestamp.fromDate(profile.createdAt ?? now),
         'updatedAt': Timestamp.fromDate(now),
         // Optional fields
+        if (profile.username != null && profile.username!.isNotEmpty)
+          'username': profile.username,
         if (profile.profilePictureUrl != null)
           'photoUrl': profile.profilePictureUrl,
         if (profile.whatsapp != null) 'phoneNumber': profile.whatsapp,
@@ -49,6 +51,7 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
         return Profile(
           uid: uid,
           name: data['name'] ?? '',
+          username: data['username'], // Add username field
           email: data['email'],
           profilePictureUrl: data['photoUrl'],
           whatsapp: data['phoneNumber'],
@@ -81,6 +84,8 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
         'email': profile.email ?? '',
         'updatedAt': Timestamp.fromDate(now),
         // Optional fields - only update if they have values
+        if (profile.username != null && profile.username!.isNotEmpty)
+          'username': profile.username,
         if (profile.profilePictureUrl != null)
           'photoUrl': profile.profilePictureUrl,
         if (profile.whatsapp != null) 'phoneNumber': profile.whatsapp,

@@ -36,6 +36,12 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
           (isDarkMode ? const Color(0xFF2D2D2D) : Colors.white),
       foregroundColor:
           foregroundColor ?? (isDarkMode ? Colors.white : AppColors.blackColor),
+      iconTheme: IconThemeData(
+        color:
+            foregroundColor ??
+            (isDarkMode ? Colors.white : AppColors.blackColor),
+        size: 24,
+      ),
       elevation: elevation,
       centerTitle: centerTitle,
       leading: leading,
@@ -114,13 +120,16 @@ class AppBarFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 48, // Match ActionButton height (36 + padding)
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppComponents.smallRadius),
+        borderRadius: BorderRadius.circular(
+          12,
+        ), // Match ActionButton border radius
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: DropdownButtonHideUnderline(
