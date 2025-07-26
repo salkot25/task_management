@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
+import 'package:clarity/features/auth/presentation/provider/auth_provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
 import 'dart:developer' as developer;
 
 class LoginPage extends StatefulWidget {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/features/account_management/domain/entities/account.dart';
-import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
+import 'package:clarity/features/account_management/domain/entities/account.dart';
+import 'package:clarity/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
 // import 'package:flutter/services.dart'; // Import for Clipboard (removed) 'package:flutter/material.dart';
-import 'package:myapp/features/account_management/domain/entities/account.dart';
-import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
+import 'package:clarity/features/account_management/domain/entities/account.dart';
+import 'package:clarity/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 // import 'package:flutter/services.dart'; // Import for Clipboard (removed)

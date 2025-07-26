@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/auth/domain/entities/profile.dart';
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/auth/domain/entities/profile.dart';
 
 abstract class ProfileRepository {
   Future<Either<Failure, void>> createProfile(Profile profile);

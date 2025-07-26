@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
-import 'package:myapp/features/auth/domain/entities/profile.dart';
+import 'package:clarity/features/auth/presentation/provider/auth_provider.dart';
+import 'package:clarity/features/auth/domain/entities/profile.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/presentation/widgets/standard_app_bar.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
-import 'package:myapp/core/sync/widgets/sync_status_widget.dart';
-import 'package:myapp/core/sync/services/auto_sync_service.dart';
-import 'package:myapp/core/sync/services/connectivity_service.dart';
-import 'package:myapp/core/theme/theme_provider.dart';
-import 'package:myapp/core/theme/widgets/theme_selector.dart';
+import 'package:clarity/presentation/widgets/standard_app_bar.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
+import 'package:clarity/core/sync/widgets/sync_status_widget.dart';
+import 'package:clarity/core/sync/services/auto_sync_service.dart';
+import 'package:clarity/core/sync/services/connectivity_service.dart';
+import 'package:clarity/core/theme/theme_provider.dart';
+import 'package:clarity/core/theme/widgets/theme_selector.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

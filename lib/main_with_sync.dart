@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/features/task_planner/domain/repositories/task_repository.dart'
+import 'package:clarity/features/task_planner/domain/repositories/task_repository.dart'
     as task_repository_impl;
 import 'package:provider/provider.dart';
 
 // Import Theme
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
 
 // Import Router
-import 'package:myapp/core/routing/app_router.dart';
+import 'package:clarity/core/routing/app_router.dart';
 
 // Import Firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -18,40 +18,40 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 // Import Auth Features
-import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart'
+import 'package:clarity/features/auth/data/datasources/auth_remote_data_source.dart'
     as auth_remote_data_source;
-import 'package:myapp/features/auth/data/repositories/auth_repository_impl.dart'
+import 'package:clarity/features/auth/data/repositories/auth_repository_impl.dart'
     as auth_repository_impl;
-import 'package:myapp/features/auth/domain/usecases/create_profile.dart';
-import 'package:myapp/features/auth/domain/usecases/get_profile.dart';
-import 'package:myapp/features/auth/domain/usecases/update_profile.dart';
-import 'package:myapp/features/auth/data/datasources/profile_firestore_data_source.dart'
+import 'package:clarity/features/auth/domain/usecases/create_profile.dart';
+import 'package:clarity/features/auth/domain/usecases/get_profile.dart';
+import 'package:clarity/features/auth/domain/usecases/update_profile.dart';
+import 'package:clarity/features/auth/data/datasources/profile_firestore_data_source.dart'
     as profile_firestore_data_source;
-import 'package:myapp/features/auth/data/repositories/profile_repository_impl.dart'
+import 'package:clarity/features/auth/data/repositories/profile_repository_impl.dart'
     as profile_repository_impl;
-import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
+import 'package:clarity/features/auth/presentation/provider/auth_provider.dart';
 
 // Import Account Features
-import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart'
+import 'package:clarity/features/account_management/data/datasources/account_firestore_data_source.dart'
     as account_firestore_data_source;
-import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart'
+import 'package:clarity/features/account_management/data/repositories/account_repository_impl.dart'
     as account_repository_impl;
-import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
+import 'package:clarity/features/account_management/presentation/provider/account_provider.dart';
 
 // Import Task Planner Features
-import 'package:myapp/features/task_planner/data/datasources/task_firestore_data_source.dart'
+import 'package:clarity/features/task_planner/data/datasources/task_firestore_data_source.dart'
     as task_firestore_data_source;
-import 'package:myapp/features/task_planner/presentation/provider/task_provider.dart';
+import 'package:clarity/features/task_planner/presentation/provider/task_provider.dart';
 
 // Import Cashcard Features
-import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_data_source.dart'
+import 'package:clarity/features/cashcard/data/datasources/transaction_firestore_data_source.dart'
     as transaction_firestore_data_source;
-import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart'
+import 'package:clarity/features/cashcard/data/repositories/transaction_repository_impl.dart'
     as transaction_repository_impl;
-import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart';
+import 'package:clarity/features/cashcard/presentation/provider/cashcard_provider.dart';
 
 // Import Sync Services
-import 'package:myapp/core/sync/providers/sync_provider.dart';
+import 'package:clarity/core/sync/providers/sync_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -163,7 +163,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Task Management',
+      title: 'Clarity',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,

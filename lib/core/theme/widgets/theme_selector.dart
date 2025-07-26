@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/core/theme/theme_provider.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:clarity/core/theme/theme_provider.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
 
 /// Widget untuk memilih theme mode
 class ThemeSelector extends StatelessWidget {

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/auth/domain/entities/user.dart';
-import 'package:myapp/features/auth/domain/entities/profile.dart'; // Import Profile entity
-import 'package:myapp/features/auth/domain/repositories/auth_repository.dart';
-import 'package:myapp/features/auth/domain/repositories/profile_repository.dart'; // Import ProfileRepository
-import 'package:myapp/features/auth/domain/usecases/create_profile.dart'; // Import CreateProfile use case
-import 'package:myapp/features/auth/domain/usecases/get_profile.dart'; // Import GetProfile use case
-import 'package:myapp/features/auth/domain/usecases/update_profile.dart'; // Import UpdateProfile use case
-import 'package:myapp/features/auth/data/repositories/auth_repository_impl.dart'; // Import AuthRepositoryImpl
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/auth/domain/entities/user.dart';
+import 'package:clarity/features/auth/domain/entities/profile.dart'; // Import Profile entity
+import 'package:clarity/features/auth/domain/repositories/auth_repository.dart';
+import 'package:clarity/features/auth/domain/repositories/profile_repository.dart'; // Import ProfileRepository
+import 'package:clarity/features/auth/domain/usecases/create_profile.dart'; // Import CreateProfile use case
+import 'package:clarity/features/auth/domain/usecases/get_profile.dart'; // Import GetProfile use case
+import 'package:clarity/features/auth/domain/usecases/update_profile.dart'; // Import UpdateProfile use case
+import 'package:clarity/features/auth/data/repositories/auth_repository_impl.dart'; // Import AuthRepositoryImpl
 // Import ProfileRepositoryImpl
 
 class AuthProvider extends ChangeNotifier {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/core/sync/models/sync_item.dart';
-import 'package:myapp/core/sync/services/auto_sync_service.dart';
-import 'package:myapp/core/sync/services/connectivity_service.dart';
+import 'package:clarity/core/sync/models/sync_item.dart';
+import 'package:clarity/core/sync/services/auto_sync_service.dart';
+import 'package:clarity/core/sync/services/connectivity_service.dart';
 
 /// Helper class untuk mengintegrasikan auto sync dengan berbagai provider
 class OfflineDataHelper {

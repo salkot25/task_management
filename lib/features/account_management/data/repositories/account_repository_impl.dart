@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/account_management/data/datasources/account_firestore_data_source.dart';
-import 'package:myapp/features/account_management/domain/entities/account.dart';
-import 'package:myapp/features/account_management/domain/repositories/account_repository.dart';
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/account_management/data/datasources/account_firestore_data_source.dart';
+import 'package:clarity/features/account_management/domain/entities/account.dart';
+import 'package:clarity/features/account_management/domain/repositories/account_repository.dart';
 import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 

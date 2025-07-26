@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/auth/domain/entities/user.dart';
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, User>> signInWithEmailAndPassword(

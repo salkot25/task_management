@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
-import 'package:myapp/features/account_management/domain/entities/account.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
+import 'package:clarity/features/account_management/domain/entities/account.dart';
 
 enum SecurityStrength { all, weak, medium, strong, excellent }
 

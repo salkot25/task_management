@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/task.dart'; // Import Task entity
-import 'package:myapp/utils/app_colors.dart'; // Import AppColors
-import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
+import 'package:clarity/utils/app_colors.dart'; // Import AppColors
+import 'package:clarity/utils/navigation_helper_v2.dart' as nav;
 
 class TaskDetailDialog extends StatelessWidget {
   final Task task;

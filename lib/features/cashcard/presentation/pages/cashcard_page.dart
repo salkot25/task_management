@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart';
-import 'package:myapp/features/cashcard/domain/entities/transaction.dart';
+import 'package:clarity/features/cashcard/presentation/provider/cashcard_provider.dart';
+import 'package:clarity/features/cashcard/domain/entities/transaction.dart';
 import 'package:intl/intl.dart'; // Import for date formatting
-import 'package:myapp/utils/design_system/app_colors.dart';
-import 'package:myapp/utils/design_system/app_spacing.dart';
-import 'package:myapp/utils/design_system/app_typography.dart';
-import 'package:myapp/utils/design_system/app_components.dart';
-import 'package:myapp/features/cashcard/presentation/widgets/financial_charts.dart';
-import 'package:myapp/features/cashcard/presentation/widgets/enhanced_budget_management.dart';
-import 'package:myapp/features/cashcard/presentation/widgets/budget_notification_widgets.dart';
-import 'package:myapp/features/cashcard/presentation/widgets/export_functions.dart';
-import 'package:myapp/presentation/widgets/standard_app_bar.dart';
+import 'package:clarity/utils/design_system/app_colors.dart';
+import 'package:clarity/utils/design_system/app_spacing.dart';
+import 'package:clarity/utils/design_system/app_typography.dart';
+import 'package:clarity/utils/design_system/app_components.dart';
+import 'package:clarity/features/cashcard/presentation/widgets/financial_charts.dart';
+import 'package:clarity/features/cashcard/presentation/widgets/enhanced_budget_management.dart';
+import 'package:clarity/features/cashcard/presentation/widgets/budget_notification_widgets.dart';
+import 'package:clarity/features/cashcard/presentation/widgets/export_functions.dart';
+import 'package:clarity/presentation/widgets/standard_app_bar.dart';
 
 class CashcardPage extends StatefulWidget {
   const CashcardPage({super.key});

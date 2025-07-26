@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/services.dart';
 
-import 'package:myapp/core/error/exceptions.dart';
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/auth/data/datasources/profile_firestore_data_source.dart';
-import 'package:myapp/features/auth/domain/entities/profile.dart';
-import 'package:myapp/features/auth/domain/repositories/profile_repository.dart';
+import 'package:clarity/core/error/exceptions.dart';
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/auth/data/datasources/profile_firestore_data_source.dart';
+import 'package:clarity/features/auth/domain/entities/profile.dart';
+import 'package:clarity/features/auth/domain/repositories/profile_repository.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileFirestoreDataSource firestoreDataSource;

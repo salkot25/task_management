@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:myapp/utils/design_system/app_colors.dart';
-import 'package:myapp/presentation/widgets/standard_app_bar.dart';
+import 'package:clarity/utils/design_system/app_colors.dart';
+import 'package:clarity/presentation/widgets/standard_app_bar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class AboutPage extends StatefulWidget {

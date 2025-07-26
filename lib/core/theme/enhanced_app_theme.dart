@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/utils/app_colors.dart';
+import 'package:clarity/utils/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Enhanced App Theme dengan dukungan dark mode yang lebih baik

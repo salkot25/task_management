@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/core/sync/services/auto_sync_service.dart';
-import 'package:myapp/core/sync/services/connectivity_service.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:clarity/core/sync/services/auto_sync_service.dart';
+import 'package:clarity/core/sync/services/connectivity_service.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
 
 /// Widget untuk menampilkan status sync
 class SyncStatusWidget extends StatelessWidget {

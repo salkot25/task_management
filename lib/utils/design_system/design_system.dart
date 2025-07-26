@@ -13,7 +13,7 @@ export 'app_theme.dart';
 /// Design System Usage:
 /// 
 /// ```dart
-/// import 'package:myapp/utils/design_system/design_system.dart';
+/// import 'package:clarity/utils/design_system/design_system.dart';
 /// 
 /// // Use anywhere in your app:
 /// Container(

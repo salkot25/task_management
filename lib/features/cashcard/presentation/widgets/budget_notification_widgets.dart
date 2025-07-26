@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart';
-import 'package:myapp/utils/design_system/app_colors.dart';
-import 'package:myapp/utils/design_system/app_spacing.dart';
-import 'package:myapp/utils/design_system/app_typography.dart';
-import 'package:myapp/utils/design_system/app_components.dart';
+import 'package:clarity/features/cashcard/presentation/provider/cashcard_provider.dart';
+import 'package:clarity/utils/design_system/app_colors.dart';
+import 'package:clarity/utils/design_system/app_spacing.dart';
+import 'package:clarity/utils/design_system/app_typography.dart';
+import 'package:clarity/utils/design_system/app_components.dart';
 
 class BudgetNotificationWidget extends StatelessWidget {
   const BudgetNotificationWidget({super.key});

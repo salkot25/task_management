@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/features/cashcard/domain/entities/transaction.dart'
+import 'package:clarity/features/cashcard/domain/entities/transaction.dart'
     as entity;
-import 'package:myapp/features/cashcard/domain/repositories/transaction_repository.dart';
-import 'package:myapp/features/cashcard/domain/entities/budget_models.dart';
+import 'package:clarity/features/cashcard/domain/repositories/transaction_repository.dart';
+import 'package:clarity/features/cashcard/domain/entities/budget_models.dart';
 
 class CashcardProvider with ChangeNotifier {
   final TransactionRepository repository;

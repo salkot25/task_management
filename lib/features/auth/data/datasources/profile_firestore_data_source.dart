@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 
-import 'package:myapp/core/error/exceptions.dart';
-import 'package:myapp/features/auth/domain/entities/profile.dart';
+import 'package:clarity/core/error/exceptions.dart';
+import 'package:clarity/features/auth/domain/entities/profile.dart';
 
 abstract class ProfileFirestoreDataSource {
   Future<void> createProfile(Profile profile);

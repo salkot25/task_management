@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/account_management/domain/entities/account.dart';
-import 'package:myapp/features/account_management/domain/repositories/account_repository.dart';
-import 'package:myapp/features/account_management/presentation/widgets/advanced_search_bar.dart';
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/account_management/domain/entities/account.dart';
+import 'package:clarity/features/account_management/domain/repositories/account_repository.dart';
+import 'package:clarity/features/account_management/presentation/widgets/advanced_search_bar.dart';
 import 'dart:async';
 import 'dart:developer' as developer;
 

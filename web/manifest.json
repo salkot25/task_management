@@ -1,11 +1,11 @@
 {
-    "name": "myapp",
-    "short_name": "myapp",
+    "name": "Clarity",
+    "short_name": "Clarity",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
+    "background_color": "#ffffff",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Professional task management application with advanced planning features.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

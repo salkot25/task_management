@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 // Import Authentication
-import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
-import 'package:myapp/features/auth/presentation/pages/login_page.dart';
-import 'package:myapp/features/auth/presentation/pages/register_page.dart';
-import 'package:myapp/features/auth/presentation/pages/forgot_password_page.dart';
-import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
+import 'package:clarity/features/auth/presentation/provider/auth_provider.dart';
+import 'package:clarity/features/auth/presentation/pages/login_page.dart';
+import 'package:clarity/features/auth/presentation/pages/register_page.dart';
+import 'package:clarity/features/auth/presentation/pages/forgot_password_page.dart';
+import 'package:clarity/features/auth/presentation/pages/profile_page.dart';
 
 // Import Features
-import 'package:myapp/features/account_management/presentation/pages/account_list_page.dart';
-import 'package:myapp/features/account_management/presentation/pages/add_account_page.dart';
-import 'package:myapp/features/task_planner/presentation/pages/task_planner_page.dart';
-import 'package:myapp/features/task_planner/presentation/pages/add_task_page.dart';
-import 'package:myapp/features/cashcard/presentation/pages/cashcard_page.dart';
-import 'package:myapp/features/cashcard/presentation/pages/add_transaction_page.dart';
-import 'package:myapp/presentation/pages/about_page.dart';
+import 'package:clarity/features/account_management/presentation/pages/account_list_page.dart';
+import 'package:clarity/features/account_management/presentation/pages/add_account_page.dart';
+import 'package:clarity/features/task_planner/presentation/pages/task_planner_page.dart';
+import 'package:clarity/features/task_planner/presentation/pages/add_task_page.dart';
+import 'package:clarity/features/cashcard/presentation/pages/cashcard_page.dart';
+import 'package:clarity/features/cashcard/presentation/pages/add_transaction_page.dart';
+import 'package:clarity/presentation/pages/about_page.dart';
 
 // Import Navigation Shell
-import 'package:myapp/presentation/widgets/bottom_navigation_shell.dart';
+import 'package:clarity/presentation/widgets/bottom_navigation_shell.dart';
 
 /// App Router Configuration
 /// Centralized routing configuration for better maintainability

@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:myapp/core/error/exceptions.dart';
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart';
-// import 'package:myapp/features/auth/data/models/user_model.dart'; // Remove this import
-import 'package:myapp/features/auth/domain/entities/user.dart';
-import 'package:myapp/features/auth/domain/repositories/auth_repository.dart';
+import 'package:clarity/core/error/exceptions.dart';
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/auth/data/datasources/auth_remote_data_source.dart';
+// import 'package:clarity/features/auth/data/models/user_model.dart'; // Remove this import
+import 'package:clarity/features/auth/domain/entities/user.dart';
+import 'package:clarity/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;

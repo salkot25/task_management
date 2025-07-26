@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
-import 'package:myapp/features/auth/presentation/pages/login_page.dart';
-import 'package:myapp/presentation/pages/home_page.dart'; // Assuming your main authenticated page is HomePage
+import 'package:clarity/features/auth/presentation/provider/auth_provider.dart';
+import 'package:clarity/features/auth/presentation/pages/login_page.dart';
+import 'package:clarity/presentation/pages/home_page.dart'; // Assuming your main authenticated page is HomePage
 
 class AuthChecker extends StatelessWidget {
   const AuthChecker({super.key});

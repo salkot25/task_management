@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:myapp/core/sync/models/sync_item.dart';
-import 'package:myapp/core/sync/services/connectivity_service.dart';
-import 'package:myapp/core/sync/services/local_sync_storage.dart';
-import 'package:myapp/core/sync/services/auto_sync_service.dart';
-import 'package:myapp/features/auth/data/repositories/profile_repository_impl.dart';
-import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart';
-import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart';
+import 'package:clarity/core/sync/models/sync_item.dart';
+import 'package:clarity/core/sync/services/connectivity_service.dart';
+import 'package:clarity/core/sync/services/local_sync_storage.dart';
+import 'package:clarity/core/sync/services/auto_sync_service.dart';
+import 'package:clarity/features/auth/data/repositories/profile_repository_impl.dart';
+import 'package:clarity/features/cashcard/data/repositories/transaction_repository_impl.dart';
+import 'package:clarity/features/account_management/data/repositories/account_repository_impl.dart';
 
 /// Provider untuk menginisialisasi dan menyediakan sync services
 class SyncProvider extends ChangeNotifier {

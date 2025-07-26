@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/utils/design_system/app_colors.dart';
-import 'package:myapp/utils/design_system/app_spacing.dart';
-import 'package:myapp/utils/design_system/app_typography.dart';
-import 'package:myapp/utils/design_system/app_components.dart';
+import 'package:clarity/utils/design_system/app_colors.dart';
+import 'package:clarity/utils/design_system/app_spacing.dart';
+import 'package:clarity/utils/design_system/app_typography.dart';
+import 'package:clarity/utils/design_system/app_components.dart';
 
 class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

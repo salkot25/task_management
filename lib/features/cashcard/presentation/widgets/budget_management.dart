@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/utils/design_system/app_colors.dart';
-import 'package:myapp/utils/design_system/app_spacing.dart';
-import 'package:myapp/utils/design_system/app_typography.dart';
-import 'package:myapp/utils/design_system/app_components.dart';
-import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
-import 'package:myapp/features/cashcard/domain/entities/budget_models.dart';
+import 'package:clarity/utils/design_system/app_colors.dart';
+import 'package:clarity/utils/design_system/app_spacing.dart';
+import 'package:clarity/utils/design_system/app_typography.dart';
+import 'package:clarity/utils/design_system/app_components.dart';
+import 'package:clarity/utils/navigation_helper_v2.dart' as nav;
+import 'package:clarity/features/cashcard/domain/entities/budget_models.dart';
 
 // Input formatter for thousands separator
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {

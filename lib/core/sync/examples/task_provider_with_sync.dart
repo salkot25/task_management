@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/core/sync/models/sync_item.dart';
-import 'package:myapp/core/sync/helpers/offline_data_helper.dart';
-import 'package:myapp/core/sync/widgets/sync_status_widget.dart';
+import 'package:clarity/core/sync/models/sync_item.dart';
+import 'package:clarity/core/sync/helpers/offline_data_helper.dart';
+import 'package:clarity/core/sync/widgets/sync_status_widget.dart';
 
 /// Contoh implementasi TaskProvider dengan auto sync
 ///

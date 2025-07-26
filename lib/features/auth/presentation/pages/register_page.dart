@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/features/auth/presentation/provider/auth_provider.dart';
+import 'package:clarity/features/auth/presentation/provider/auth_provider.dart';
 import 'package:go_router/go_router.dart'; // Import go_router
 // Remove unused import
-// import 'package:myapp/utils/app_colors.dart'; // Import app_colors
+// import 'package:clarity/utils/app_colors.dart'; // Import app_colors
 import 'dart:developer' as developer; // Import developer for logging
 
 class RegisterPage extends StatefulWidget {

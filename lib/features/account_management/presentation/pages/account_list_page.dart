@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/features/account_management/presentation/provider/account_provider.dart';
+import 'package:clarity/features/account_management/presentation/provider/account_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/features/account_management/domain/entities/account.dart';
+import 'package:clarity/features/account_management/domain/entities/account.dart';
 import 'package:flutter/services.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
 // Import the new dialog content widget
-import 'package:myapp/features/account_management/presentation/widgets/account_detail_dialog_content.dart';
+import 'package:clarity/features/account_management/presentation/widgets/account_detail_dialog_content.dart';
 // Import the standardized AppBar component
-import 'package:myapp/presentation/widgets/standard_app_bar.dart';
+import 'package:clarity/presentation/widgets/standard_app_bar.dart';
 // Import Advanced Search Bar
-import 'package:myapp/features/account_management/presentation/widgets/advanced_search_bar.dart';
+import 'package:clarity/features/account_management/presentation/widgets/advanced_search_bar.dart';
 
 class AccountListPage extends StatefulWidget {
   const AccountListPage({super.key});

@@ -3,13 +3,13 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/features/cashcard/domain/entities/transaction.dart'
+import 'package:clarity/features/cashcard/domain/entities/transaction.dart'
     as entity;
-import 'package:myapp/utils/design_system/app_colors.dart';
-import 'package:myapp/utils/design_system/app_spacing.dart';
-import 'package:myapp/utils/design_system/app_typography.dart';
-import 'package:myapp/utils/design_system/app_components.dart';
-import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
+import 'package:clarity/utils/design_system/app_colors.dart';
+import 'package:clarity/utils/design_system/app_spacing.dart';
+import 'package:clarity/utils/design_system/app_typography.dart';
+import 'package:clarity/utils/design_system/app_components.dart';
+import 'package:clarity/utils/navigation_helper_v2.dart' as nav;
 
 class ExportFunctions extends StatelessWidget {
   final List<entity.Transaction> transactions;

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:myapp/core/sync/models/sync_item.dart';
-import 'package:myapp/core/sync/services/connectivity_service.dart';
-import 'package:myapp/core/sync/services/local_sync_storage.dart';
-import 'package:myapp/features/auth/data/repositories/profile_repository_impl.dart';
-import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart';
-import 'package:myapp/features/account_management/data/repositories/account_repository_impl.dart';
+import 'package:clarity/core/sync/models/sync_item.dart';
+import 'package:clarity/core/sync/services/connectivity_service.dart';
+import 'package:clarity/core/sync/services/local_sync_storage.dart';
+import 'package:clarity/features/auth/data/repositories/profile_repository_impl.dart';
+import 'package:clarity/features/cashcard/data/repositories/transaction_repository_impl.dart';
+import 'package:clarity/features/account_management/data/repositories/account_repository_impl.dart';
 import 'package:uuid/uuid.dart';
 
 /// Service utama untuk mengelola auto sync

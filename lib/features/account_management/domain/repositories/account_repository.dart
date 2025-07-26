@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:myapp/core/error/failures.dart';
-import 'package:myapp/features/account_management/domain/entities/account.dart';
+import 'package:clarity/core/error/failures.dart';
+import 'package:clarity/features/account_management/domain/entities/account.dart';
 
 abstract class AccountRepository {
   Future<Either<Failure, void>> createAccount(Account account);

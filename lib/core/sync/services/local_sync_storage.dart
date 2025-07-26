@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:myapp/core/sync/models/sync_item.dart';
+import 'package:clarity/core/sync/models/sync_item.dart';
 
 /// Service untuk menyimpan data sync secara lokal menggunakan Hive
 class LocalSyncStorage {

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../provider/task_provider.dart';
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:clarity/utils/design_system/design_system.dart';
 import '../../domain/entities/task.dart'; // Corrected import path for Task entity
 import '../widgets/task_detail_dialog.dart'; // Import the custom dialog
-import 'package:myapp/presentation/widgets/standard_app_bar.dart';
-import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
+import 'package:clarity/presentation/widgets/standard_app_bar.dart';
+import 'package:clarity/utils/navigation_helper_v2.dart' as nav;
 
 class TaskPlannerPage extends StatefulWidget {
   const TaskPlannerPage({super.key});

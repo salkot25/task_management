@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // import '../../features/task_planner/presentation/pages/task_planner_page.dart';
 // import '../../features/account_management/presentation/pages/account_list_page.dart';
 // import '../../features/cashcard/presentation/pages/cashcard_page.dart';
-// import 'package:myapp/features/auth/presentation/pages/profile_page.dart';
+// import 'package:clarity/features/auth/presentation/pages/profile_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
