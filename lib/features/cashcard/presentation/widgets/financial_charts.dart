@@ -1,47 +1,556 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/features/cashcard/domain/entities/transaction.dart';
-import 'package:myapp/utils/design_system/app_colors.dart';
-import 'package:myapp/utils/design_system/app_spacing.dart';
-import 'package:myapp/utils/design_system/app_typography.dart';
-import 'package:myapp/utils/design_system/app_components.dart';
+
+// Core imports
+import '../../../../utils/app_colors.dart';
+import '../../../../utils/design_system/app_components.dart';
+import '../../../../utils/design_system/app_spacing.dart';
+import '../../../../utils/design_system/app_typography.dart';
+
+// Domain entities
+import '../../domain/entities/transaction.dart' as entity;
 
 class FinancialCharts extends StatelessWidget {
-  final List<Transaction> transactions;
-  final double totalIncome;
-  final double totalExpense;
+  final List<entity.Transaction> transactions;
 
-  const FinancialCharts({
-    super.key,
-    required this.transactions,
-    required this.totalIncome,
-    required this.totalExpense,
-  });
+  const FinancialCharts({super.key, required this.transactions});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Spending Trends Chart
-        _buildSpendingTrendsChart(context),
-        const SizedBox(height: AppSpacing.lg),
+    final lastIncome = _getLast30DaysIncome();
+    final lastExpense = _getLast30DaysExpense();
+    final prevIncome = _getPrevious30DaysIncome();
+    final prevExpense = _getPrevious30DaysExpense();
 
-        // Income vs Expense Chart
-        _buildIncomeExpenseChart(context),
-        const SizedBox(height: AppSpacing.lg),
+    // Safe percentage calculation with proper division by zero handling
+    final incomeChange = prevIncome > 0
+        ? ((lastIncome - prevIncome) / prevIncome) * 100
+        : (lastIncome > 0 ? 100.0 : 0.0);
+    final expenseChange = prevExpense > 0
+        ? ((lastExpense - prevExpense) / prevExpense) * 100
+        : (lastExpense > 0 ? 100.0 : 0.0);
 
-        // Category Distribution Chart
-        _buildCategoryDistributionChart(context),
-        const SizedBox(height: AppSpacing.lg),
+    return DefaultTabController(
+      length: 3,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Financial Summary Cards
+          Container(
+            margin: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryCard(
+                    context,
+                    'Monthly Income',
+                    NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol: '',
+                      decimalDigits: 0,
+                    ).format(lastIncome),
+                    incomeChange,
+                    Colors.green,
+                    Icons.trending_up,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: _buildSummaryCard(
+                    context,
+                    'Monthly Expense',
+                    NumberFormat.currency(
+                      locale: 'id_ID',
+                      symbol: '',
+                      decimalDigits: 0,
+                    ).format(lastExpense),
+                    expenseChange,
+                    Colors.red,
+                    Icons.trending_down,
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-        // Weekly Overview Chart
-        _buildWeeklyOverviewChart(context),
+          // Tab Bar for Charts
+          Container(
+            margin: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.md,
+            ),
+            child: TabBar(
+              labelColor: AppColors.primaryColor,
+              unselectedLabelColor: AppColors.greyColor,
+              indicatorColor: AppColors.primaryColor,
+              indicatorWeight: 3,
+              labelStyle: AppTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: AppTypography.bodyMedium,
+              tabs: const [
+                Tab(icon: Icon(Icons.trending_up), text: 'Trends'),
+                Tab(icon: Icon(Icons.donut_large), text: 'Categories'),
+                Tab(icon: Icon(Icons.compare_arrows), text: 'Comparison'),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            height: 380,
+            child: TabBarView(
+              children: [
+                _buildEnhancedSpendingTrendsChart(context),
+                _buildEnhancedCategoryChart(context),
+                _buildEnhancedComparisonChart(context),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(
+    BuildContext context,
+    String title,
+    String value,
+    double changePercentage,
+    Color color,
+    IconData icon,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: AppComponents.standardBorderRadius,
+        border: Border.all(color: AppColors.greyLightColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.greyColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.greyColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            value,
+            style: AppTypography.titleLarge.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          if (changePercentage != 0.0) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              children: [
+                Icon(
+                  changePercentage > 0
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward,
+                  size: 14,
+                  color: changePercentage > 0 ? Colors.green : Colors.red,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '${_formatPercentage(changePercentage.abs())}% vs last month',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: changePercentage > 0 ? Colors.green : Colors.red,
+                      fontSize: 11,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Helper method to format percentage properly
+  String _formatPercentage(double percentage) {
+    if (percentage.isInfinite || percentage.isNaN) {
+      return '∞';
+    }
+
+    if (percentage >= 1000000) {
+      return '${(percentage / 1000000).toStringAsFixed(1)}M';
+    } else if (percentage >= 1000) {
+      return '${(percentage / 1000).toStringAsFixed(1)}K';
+    } else if (percentage >= 100) {
+      return percentage.toStringAsFixed(0);
+    } else {
+      return percentage.toStringAsFixed(1);
+    }
+  }
+
+  // Helper method to format Indonesian currency
+  String _formatIndonesianCurrency(double amount) {
+    if (amount >= 1000000) {
+      final millions = amount / 1000000;
+      if (millions == millions.truncate()) {
+        return 'Rp${millions.truncate()} jt';
+      } else {
+        return 'Rp${millions.toStringAsFixed(1)} jt';
+      }
+    } else if (amount >= 1000) {
+      final thousands = amount / 1000;
+      if (thousands == thousands.truncate()) {
+        return 'Rp${thousands.truncate()} rb';
+      } else {
+        return 'Rp${thousands.toStringAsFixed(0)} rb';
+      }
+    } else {
+      return 'Rp${amount.toStringAsFixed(0)}';
+    }
+  }
+
+  // Helper methods for financial calculations
+  double _getLast30DaysIncome() {
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+    return transactions
+        .where(
+          (t) =>
+              t.type == entity.TransactionType.income &&
+              t.date.isAfter(thirtyDaysAgo),
+        )
+        .fold(0.0, (sum, t) => sum + t.amount);
+  }
+
+  double _getLast30DaysExpense() {
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+    return transactions
+        .where(
+          (t) =>
+              t.type == entity.TransactionType.expense &&
+              t.date.isAfter(thirtyDaysAgo),
+        )
+        .fold(0.0, (sum, t) => sum + t.amount);
+  }
+
+  double _getPrevious30DaysIncome() {
+    final now = DateTime.now();
+    final sixtyDaysAgo = now.subtract(const Duration(days: 60));
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+    final income = transactions
+        .where(
+          (t) =>
+              t.type == entity.TransactionType.income &&
+              t.date.isAfter(sixtyDaysAgo) &&
+              t.date.isBefore(thirtyDaysAgo),
+        )
+        .fold(0.0, (sum, t) => sum + t.amount);
+
+    return income; // Return actual value, handle division by zero in calculation
+  }
+
+  double _getPrevious30DaysExpense() {
+    final now = DateTime.now();
+    final sixtyDaysAgo = now.subtract(const Duration(days: 60));
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+    final expense = transactions
+        .where(
+          (t) =>
+              t.type == entity.TransactionType.expense &&
+              t.date.isAfter(sixtyDaysAgo) &&
+              t.date.isBefore(thirtyDaysAgo),
+        )
+        .fold(0.0, (sum, t) => sum + t.amount);
+
+    return expense; // Return actual value, handle division by zero in calculation
+  }
+
+  Map<String, double> _getCategoryDistribution() {
+    final categoryMap = <String, double>{};
+
+    for (final transaction in transactions) {
+      if (transaction.type == entity.TransactionType.expense) {
+        final categoryName = transaction.category != null
+            ? _getCategoryDisplayNameFromExpenseType(transaction.category!)
+            : 'Others';
+
+        categoryMap[categoryName] =
+            (categoryMap[categoryName] ?? 0) + transaction.amount;
+      }
+    }
+
+    return categoryMap;
+  }
+
+  // Enhanced chart data methods
+  LineChartData _buildEnhancedSpendingTrendsData() {
+    final now = DateTime.now();
+    final twoWeeksAgo = now.subtract(const Duration(days: 14));
+
+    final dailyExpenses = <FlSpot>[];
+
+    for (int i = 0; i < 14; i++) {
+      final date = twoWeeksAgo.add(Duration(days: i));
+      final dayExpenses = transactions
+          .where(
+            (t) =>
+                t.type == entity.TransactionType.expense &&
+                t.date.year == date.year &&
+                t.date.month == date.month &&
+                t.date.day == date.day,
+          )
+          .fold(0.0, (sum, t) => sum + t.amount);
+
+      dailyExpenses.add(FlSpot(i.toDouble(), dayExpenses));
+    }
+
+    return LineChartData(
+      gridData: FlGridData(show: false),
+      titlesData: FlTitlesData(
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) => Text(
+              NumberFormat.compactCurrency(
+                locale: 'id_ID',
+                symbol: 'Rp',
+              ).format(value),
+              style: AppTypography.bodySmall.copyWith(fontSize: 10),
+            ),
+          ),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) {
+              final date = twoWeeksAgo.add(Duration(days: value.toInt()));
+              return Text(
+                '${date.day}/${date.month}',
+                style: AppTypography.bodySmall.copyWith(fontSize: 10),
+              );
+            },
+          ),
+        ),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+      ),
+      borderData: FlBorderData(show: false),
+      lineBarsData: [
+        LineChartBarData(
+          spots: dailyExpenses,
+          isCurved: true,
+          color: AppColors.primaryColor,
+          barWidth: 3,
+          isStrokeCapRound: true,
+          dotData: const FlDotData(show: false),
+          belowBarData: BarAreaData(
+            show: true,
+            color: AppColors.primaryColor.withOpacity(0.1),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildSpendingTrendsChart(BuildContext context) {
+  PieChartData _buildEnhancedCategoryPieData(Map<String, double> categoryData) {
+    final colors = [
+      AppColors.primaryColor,
+      AppColors.secondaryColor,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.pink,
+      Colors.indigo,
+      Colors.amber,
+      Colors.cyan,
+    ];
+
+    return PieChartData(
+      sectionsSpace: 2,
+      centerSpaceRadius: 40,
+      sections: categoryData.entries.map((entry) {
+        final index = categoryData.keys.toList().indexOf(entry.key);
+        final percentage =
+            (entry.value / categoryData.values.reduce((a, b) => a + b)) * 100;
+
+        return PieChartSectionData(
+          color: colors[index % colors.length],
+          value: entry.value,
+          title: '${percentage.toStringAsFixed(1)}%',
+          radius: 60,
+          titleStyle: AppTypography.bodySmall.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildEnhancedCategoryLegend(Map<String, double> categoryData) {
+    final colors = [
+      AppColors.primaryColor,
+      AppColors.secondaryColor,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.pink,
+      Colors.indigo,
+      Colors.amber,
+      Colors.cyan,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: categoryData.entries.map((entry) {
+        final index = categoryData.keys.toList().indexOf(entry.key);
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: colors[index % colors.length],
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(entry.key, style: AppTypography.bodySmall)),
+              Text(
+                _formatIndonesianCurrency(entry.value),
+                style: AppTypography.bodySmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  BarChartData _buildEnhancedWeeklyComparisonData() {
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+
+    final weeklyData = <BarChartGroupData>[];
+
+    for (int i = 0; i < 7; i++) {
+      final date = weekStart.add(Duration(days: i));
+      final dayIncome = transactions
+          .where(
+            (t) =>
+                t.type == entity.TransactionType.income &&
+                t.date.year == date.year &&
+                t.date.month == date.month &&
+                t.date.day == date.day,
+          )
+          .fold(0.0, (sum, t) => sum + t.amount);
+
+      final dayExpense = transactions
+          .where(
+            (t) =>
+                t.type == entity.TransactionType.expense &&
+                t.date.year == date.year &&
+                t.date.month == date.month &&
+                t.date.day == date.day,
+          )
+          .fold(0.0, (sum, t) => sum + t.amount);
+
+      weeklyData.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: dayIncome,
+              color: Colors.green,
+              width: 12,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(4),
+              ),
+            ),
+            BarChartRodData(
+              toY: dayExpense,
+              color: Colors.red,
+              width: 12,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(4),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return BarChartData(
+      alignment: BarChartAlignment.spaceAround,
+      groupsSpace: 20,
+      barGroups: weeklyData,
+      gridData: FlGridData(show: false),
+      titlesData: FlTitlesData(
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) => Text(
+              NumberFormat.compactCurrency(
+                locale: 'id_ID',
+                symbol: 'Rp',
+              ).format(value),
+              style: AppTypography.bodySmall.copyWith(fontSize: 10),
+            ),
+          ),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) {
+              final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+              return Text(days[value.toInt()], style: AppTypography.bodySmall);
+            },
+          ),
+        ),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+      ),
+      borderData: FlBorderData(show: false),
+    );
+  }
+
+  // Enhanced chart widgets
+  Widget _buildEnhancedSpendingTrendsChart(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -65,7 +574,50 @@ class FinancialCharts extends StatelessWidget {
               Icon(Icons.trending_up, color: AppColors.primaryColor, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'Spending Trends (Last 7 Days)',
+                'Daily Spending Trends (Last 2 Weeks)',
+                style: AppTypography.titleMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            height: 200,
+            child: LineChart(_buildEnhancedSpendingTrendsData()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedCategoryChart(BuildContext context) {
+    final categoryData = _getCategoryDistribution();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: AppComponents.standardBorderRadius,
+        border: Border.all(color: AppColors.greyLightColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.greyColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.donut_large, color: AppColors.primaryColor, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                'Expense Distribution by Category',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -73,13 +625,30 @@ class FinancialCharts extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          SizedBox(height: 200, child: LineChart(_buildSpendingTrendsData())),
+          if (categoryData.isNotEmpty)
+            Column(
+              children: [
+                Center(
+                  child: SizedBox(
+                    width: 160,
+                    height: 160,
+                    child: PieChart(
+                      _buildEnhancedCategoryPieData(categoryData),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _buildEnhancedCategoryLegend(categoryData),
+              ],
+            )
+          else
+            _buildNoCategoryDataWidget(),
         ],
       ),
     );
   }
 
-  Widget _buildIncomeExpenseChart(BuildContext context) {
+  Widget _buildEnhancedComparisonChart(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -107,601 +676,118 @@ class FinancialCharts extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'Income vs Expense',
+                'Daily Income vs Expense (This Week)',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
-          SizedBox(height: 200, child: BarChart(_buildIncomeExpenseData())),
           const SizedBox(height: AppSpacing.md),
-          _buildIncomeExpenseLegend(),
+          SizedBox(
+            height: 200,
+            child: BarChart(_buildEnhancedWeeklyComparisonData()),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _buildWeeklyOverviewLegend(),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryDistributionChart(BuildContext context) {
-    final categoryData = _getCategoryDistribution();
-
+  Widget _buildNoCategoryDataWidget() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      height: 140,
+      alignment: Alignment.center,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Icon(Icons.pie_chart, color: AppColors.primaryColor, size: 20),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                'Expense by Category',
-                style: AppTypography.titleMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          Icon(
+            Icons.pie_chart_outline,
+            size: 48,
+            color: AppColors.greyColor.withOpacity(0.5),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              SizedBox(
-                width: 150,
-                height: 150,
-                child: PieChart(_buildCategoryPieData(categoryData)),
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(child: _buildCategoryLegend(categoryData)),
-            ],
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'No expense categories yet',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.greyColor,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWeeklyOverviewChart(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.greyColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_view_week,
-                color: AppColors.primaryColor,
-                size: 20,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                'Weekly Overview',
-                style: AppTypography.titleMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          SizedBox(height: 200, child: BarChart(_buildWeeklyOverviewData())),
-        ],
-      ),
-    );
-  }
-
-  LineChartData _buildSpendingTrendsData() {
-    final last7Days = _getLast7DaysData();
-
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: false,
-        horizontalInterval: 50000,
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: AppColors.greyLightColor,
-            strokeWidth: 1,
-            dashArray: [5, 5],
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 50,
-            getTitlesWidget: (value, meta) {
-              return Text(
-                '${(value / 1000).toInt()}K',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.greyColor,
-                ),
-              );
-            },
-          ),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            getTitlesWidget: (value, meta) {
-              final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-              final index = value.toInt();
-              if (index >= 0 && index < days.length) {
-                return Text(
-                  days[index],
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.greyColor,
-                  ),
-                );
-              }
-              return const Text('');
-            },
-          ),
-        ),
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      ),
-      borderData: FlBorderData(show: false),
-      lineBarsData: [
-        LineChartBarData(
-          spots: last7Days,
-          isCurved: true,
-          color: AppColors.primaryColor,
-          barWidth: 3,
-          isStrokeCapRound: true,
-          dotData: FlDotData(
-            show: true,
-            getDotPainter: (spot, percent, barData, index) {
-              return FlDotCirclePainter(
-                radius: 4,
-                color: AppColors.primaryColor,
-                strokeWidth: 2,
-                strokeColor: Colors.white,
-              );
-            },
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            color: AppColors.primaryColor.withOpacity(0.1),
-          ),
-        ),
-      ],
-    );
-  }
-
-  BarChartData _buildIncomeExpenseData() {
-    return BarChartData(
-      alignment: BarChartAlignment.spaceAround,
-      maxY: [totalIncome, totalExpense].reduce((a, b) => a > b ? a : b) * 1.2,
-      barTouchData: BarTouchData(
-        touchTooltipData: BarTouchTooltipData(
-          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-            final value = NumberFormat.currency(
-              locale: 'id',
-              symbol: 'Rp ',
-              decimalDigits: 0,
-            ).format(rod.toY);
-            return BarTooltipItem(
-              value,
-              AppTypography.bodySmall.copyWith(color: Colors.white),
-            );
-          },
-        ),
-      ),
-      titlesData: FlTitlesData(
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 50,
-            getTitlesWidget: (value, meta) {
-              return Text(
-                '${(value / 1000000).toStringAsFixed(1)}M',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.greyColor,
-                ),
-              );
-            },
-          ),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: (value, meta) {
-              switch (value.toInt()) {
-                case 0:
-                  return Text(
-                    'Income',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.greyColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  );
-                case 1:
-                  return Text(
-                    'Expense',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.greyColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  );
-                default:
-                  return const Text('');
-              }
-            },
-          ),
-        ),
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      ),
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: false,
-        horizontalInterval: totalIncome > 0 ? totalIncome / 5 : 100000,
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: AppColors.greyLightColor,
-            strokeWidth: 1,
-            dashArray: [5, 5],
-          );
-        },
-      ),
-      borderData: FlBorderData(show: false),
-      barGroups: [
-        BarChartGroupData(
-          x: 0,
-          barRods: [
-            BarChartRodData(
-              toY: totalIncome,
-              color: AppColors.successColor,
-              width: 40,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(6),
-                topRight: Radius.circular(6),
-              ),
-            ),
-          ],
-        ),
-        BarChartGroupData(
-          x: 1,
-          barRods: [
-            BarChartRodData(
-              toY: totalExpense,
-              color: AppColors.errorColor,
-              width: 40,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(6),
-                topRight: Radius.circular(6),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  PieChartData _buildCategoryPieData(Map<String, double> categoryData) {
-    final colors = [
-      AppColors.primaryColor,
-      AppColors.successColor,
-      AppColors.warningColor,
-      AppColors.errorColor,
-      AppColors.infoColor,
-    ];
-
-    int index = 0;
-    return PieChartData(
-      pieTouchData: PieTouchData(
-        touchCallback: (FlTouchEvent event, pieTouchResponse) {},
-      ),
-      sectionsSpace: 2,
-      centerSpaceRadius: 40,
-      sections: categoryData.entries.map((entry) {
-        final color = colors[index % colors.length];
-        index++;
-
-        final percentage = (entry.value / totalExpense) * 100;
-        return PieChartSectionData(
-          color: color,
-          value: entry.value,
-          title: '${percentage.toStringAsFixed(1)}%',
-          radius: 50,
-          titleStyle: AppTypography.bodySmall.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  BarChartData _buildWeeklyOverviewData() {
-    final weeklyData = _getWeeklyData();
-
-    return BarChartData(
-      alignment: BarChartAlignment.spaceAround,
-      maxY: weeklyData.reduce((a, b) => a > b ? a : b) * 1.2,
-      barTouchData: BarTouchData(
-        touchTooltipData: BarTouchTooltipData(
-          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-            final value = NumberFormat.currency(
-              locale: 'id',
-              symbol: 'Rp ',
-              decimalDigits: 0,
-            ).format(rod.toY);
-            return BarTooltipItem(
-              value,
-              AppTypography.bodySmall.copyWith(color: Colors.white),
-            );
-          },
-        ),
-      ),
-      titlesData: FlTitlesData(
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 50,
-            getTitlesWidget: (value, meta) {
-              return Text(
-                '${(value / 1000).toInt()}K',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.greyColor,
-                ),
-              );
-            },
-          ),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: (value, meta) {
-              final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-              final index = value.toInt();
-              if (index >= 0 && index < days.length) {
-                return Text(
-                  days[index],
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.greyColor,
-                  ),
-                );
-              }
-              return const Text('');
-            },
-          ),
-        ),
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      ),
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: false,
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: AppColors.greyLightColor,
-            strokeWidth: 1,
-            dashArray: [5, 5],
-          );
-        },
-      ),
-      borderData: FlBorderData(show: false),
-      barGroups: List.generate(7, (index) {
-        return BarChartGroupData(
-          x: index,
-          barRods: [
-            BarChartRodData(
-              toY: weeklyData[index],
-              color: AppColors.primaryColor,
-              width: 20,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(4),
-              ),
-            ),
-          ],
-        );
-      }),
-    );
-  }
-
-  Widget _buildIncomeExpenseLegend() {
+  Widget _buildWeeklyOverviewLegend() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildLegendItem('Income', AppColors.successColor),
-        const SizedBox(width: AppSpacing.lg),
-        _buildLegendItem('Expense', AppColors.errorColor),
-      ],
-    );
-  }
-
-  Widget _buildCategoryLegend(Map<String, double> categoryData) {
-    final colors = [
-      AppColors.primaryColor,
-      AppColors.successColor,
-      AppColors.warningColor,
-      AppColors.errorColor,
-      AppColors.infoColor,
-    ];
-
-    int index = 0;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: categoryData.entries.map((entry) {
-        final color = colors[index % colors.length];
-        index++;
-
-        final percentage = (entry.value / totalExpense) * 100;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-          child: Row(
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        Row(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(2),
               ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  '${entry.key} (${percentage.toStringAsFixed(1)}%)',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.greyColor,
-                  ),
-                ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Income',
+              style: AppTypography.bodySmall.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildLegendItem(String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+          ],
         ),
-        const SizedBox(width: AppSpacing.xs),
-        Text(
-          label,
-          style: AppTypography.bodySmall.copyWith(color: AppColors.greyColor),
+        const SizedBox(width: 24),
+        Row(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Expense',
+              style: AppTypography.bodySmall.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  List<FlSpot> _getLast7DaysData() {
-    final now = DateTime.now();
-    final last7Days = List.generate(7, (index) {
-      return DateTime(now.year, now.month, now.day - (6 - index));
-    });
-
-    return last7Days.asMap().entries.map((entry) {
-      final day = entry.value;
-      final dayTransactions = transactions
-          .where(
-            (t) =>
-                t.date.year == day.year &&
-                t.date.month == day.month &&
-                t.date.day == day.day &&
-                t.type == TransactionType.expense,
-          )
-          .toList();
-
-      final totalForDay = dayTransactions.fold(0.0, (sum, t) => sum + t.amount);
-      return FlSpot(entry.key.toDouble(), totalForDay);
-    }).toList();
-  }
-
-  List<double> _getWeeklyData() {
-    final now = DateTime.now();
-    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-
-    return List.generate(7, (index) {
-      final day = startOfWeek.add(Duration(days: index));
-      final dayTransactions = transactions
-          .where(
-            (t) =>
-                t.date.year == day.year &&
-                t.date.month == day.month &&
-                t.date.day == day.day &&
-                t.type == TransactionType.expense,
-          )
-          .toList();
-
-      return dayTransactions.fold(0.0, (sum, t) => sum + t.amount);
-    });
-  }
-
-  Map<String, double> _getCategoryDistribution() {
-    final categoryMap = <String, double>{};
-
-    for (final transaction in transactions) {
-      if (transaction.type == TransactionType.expense) {
-        final category = _getCategoryFromDescription(transaction.description);
-        categoryMap[category] =
-            (categoryMap[category] ?? 0) + transaction.amount;
-      }
-    }
-
-    // Sort by amount and take top 5
-    final sortedEntries = categoryMap.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    final result = <String, double>{};
-    for (int i = 0; i < sortedEntries.length && i < 5; i++) {
-      result[sortedEntries[i].key] = sortedEntries[i].value;
-    }
-
-    return result;
-  }
-
-  String _getCategoryFromDescription(String description) {
-    final lowerDesc = description.toLowerCase();
-
-    if (lowerDesc.contains('food') ||
-        lowerDesc.contains('makan') ||
-        lowerDesc.contains('lunch') ||
-        lowerDesc.contains('dinner')) {
-      return 'Food';
-    } else if (lowerDesc.contains('transport') ||
-        lowerDesc.contains('gas') ||
-        lowerDesc.contains('fuel') ||
-        lowerDesc.contains('bensin')) {
-      return 'Transport';
-    } else if (lowerDesc.contains('shop') ||
-        lowerDesc.contains('buy') ||
-        lowerDesc.contains('beli') ||
-        lowerDesc.contains('belanja')) {
-      return 'Shopping';
-    } else if (lowerDesc.contains('health') ||
-        lowerDesc.contains('medical') ||
-        lowerDesc.contains('hospital') ||
-        lowerDesc.contains('dokter')) {
-      return 'Health';
-    } else if (lowerDesc.contains('entertainment') ||
-        lowerDesc.contains('movie') ||
-        lowerDesc.contains('game') ||
-        lowerDesc.contains('hiburan')) {
-      return 'Entertainment';
-    } else {
-      return 'Others';
+  String _getCategoryDisplayNameFromExpenseType(
+    entity.ExpenseCategory category,
+  ) {
+    switch (category) {
+      case entity.ExpenseCategory.food:
+        return 'Food & Dining';
+      case entity.ExpenseCategory.transport:
+        return 'Transportation';
+      case entity.ExpenseCategory.shopping:
+        return 'Shopping';
+      case entity.ExpenseCategory.health:
+        return 'Health & Medical';
+      case entity.ExpenseCategory.entertainment:
+        return 'Entertainment';
+      case entity.ExpenseCategory.utilities:
+        return 'Bills & Utilities';
+      case entity.ExpenseCategory.education:
+        return 'Education';
+      case entity.ExpenseCategory.rewardP2TL:
+        return 'Reward P2TL';
+      default:
+        return 'Others';
     }
   }
 }

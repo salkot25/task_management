@@ -484,8 +484,9 @@ class _AdvancedSearchBarState extends State<AdvancedSearchBar>
     if (widget.filters.searchQuery.isNotEmpty) count++;
     if (widget.filters.securityFilter != SecurityStrength.all) count++;
     if (widget.filters.selectedCategories.isNotEmpty) count++;
-    if (widget.filters.dateFrom != null || widget.filters.dateTo != null)
+    if (widget.filters.dateFrom != null || widget.filters.dateTo != null) {
       count++;
+    }
     return count;
   }
 
@@ -610,12 +611,14 @@ extension AccountFiltering on List<Account> {
 
     // Auto-categorize based on website name for backward compatibility
     final website = account.website.toLowerCase();
-    if (website.contains('bank') || website.contains('finance'))
+    if (website.contains('bank') || website.contains('finance')) {
       return 'Banking';
+    }
     if (website.contains('social') ||
         website.contains('facebook') ||
-        website.contains('twitter'))
+        website.contains('twitter')) {
       return 'Social';
+    }
     if (website.contains('email') || website.contains('mail')) return 'Email';
     if (website.contains('work') || website.contains('office')) return 'Work';
     return 'Other';

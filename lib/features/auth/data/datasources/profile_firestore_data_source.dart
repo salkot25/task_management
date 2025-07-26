@@ -18,19 +18,18 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
   @override
   Future<void> createProfile(Profile profile) async {
     try {
-      await firestore.collection('profiles').doc(profile.uid).set({
-        'uid': profile.uid,
+      final now = DateTime.now();
+      await firestore.collection('users').doc(profile.uid).set({
         'name': profile.name,
-        'username': profile.username, // Added username
-        'email': profile.email, // Added email
-        'whatsapp': profile.whatsapp, // Added whatsapp
-        'profilePictureUrl': profile.profilePictureUrl,
-        'role': profile.role, // Added role
-        'createdAt':
-            profile.createdAt?.millisecondsSinceEpoch, // Added createdAt
-        'lastSignInAt':
-            profile.lastSignInAt?.millisecondsSinceEpoch, // Added lastSignInAt
-        'isEmailVerified': profile.isEmailVerified, // Added isEmailVerified
+        'email': profile.email ?? '',
+        'createdAt': Timestamp.fromDate(profile.createdAt ?? now),
+        'updatedAt': Timestamp.fromDate(now),
+        // Optional fields
+        if (profile.profilePictureUrl != null)
+          'photoUrl': profile.profilePictureUrl,
+        if (profile.whatsapp != null) 'phoneNumber': profile.whatsapp,
+        if (profile.role != null && profile.role!.isNotEmpty)
+          'bio': profile.role,
       });
     } on PlatformException catch (e) {
       throw FirestoreException(e.message ?? 'Failed to create profile');
@@ -44,24 +43,23 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
   @override
   Future<Profile?> getProfile(String uid) async {
     try {
-      final doc = await firestore.collection('profiles').doc(uid).get();
+      final doc = await firestore.collection('users').doc(uid).get();
       if (doc.exists) {
         final data = doc.data()!;
         return Profile(
-          uid: data['uid'],
-          name: data['name'],
-          username: data['username'], // Added username
-          email: data['email'], // Added email
-          whatsapp: data['whatsapp'], // Added whatsapp
-          profilePictureUrl: data['profilePictureUrl'],
-          role: data['role'], // Added role
+          uid: uid,
+          name: data['name'] ?? '',
+          email: data['email'],
+          profilePictureUrl: data['photoUrl'],
+          whatsapp: data['phoneNumber'],
+          role: data['bio'],
           createdAt: data['createdAt'] != null
-              ? DateTime.fromMillisecondsSinceEpoch(data['createdAt'])
-              : null, // Added createdAt
+              ? (data['createdAt'] as Timestamp).toDate()
+              : null,
           lastSignInAt: data['lastSignInAt'] != null
-              ? DateTime.fromMillisecondsSinceEpoch(data['lastSignInAt'])
-              : null, // Added lastSignInAt
-          isEmailVerified: data['isEmailVerified'], // Added isEmailVerified
+              ? (data['lastSignInAt'] as Timestamp).toDate()
+              : null,
+          isEmailVerified: data['isEmailVerified'] ?? false,
         );
       }
       return null;
@@ -77,16 +75,17 @@ class ProfileFirestoreDataSourceImpl implements ProfileFirestoreDataSource {
   @override
   Future<void> updateProfile(Profile profile) async {
     try {
-      await firestore.collection('profiles').doc(profile.uid).update({
+      final now = DateTime.now();
+      await firestore.collection('users').doc(profile.uid).update({
         'name': profile.name,
-        'username': profile.username, // Added username
-        'email': profile.email, // Added email
-        'whatsapp': profile.whatsapp, // Added whatsapp
-        'profilePictureUrl': profile.profilePictureUrl,
-        'role': profile.role, // Added role
-        'lastSignInAt': DateTime.now()
-            .millisecondsSinceEpoch, // Update lastSignInAt on profile update
-        'isEmailVerified': profile.isEmailVerified, // Added isEmailVerified
+        'email': profile.email ?? '',
+        'updatedAt': Timestamp.fromDate(now),
+        // Optional fields - only update if they have values
+        if (profile.profilePictureUrl != null)
+          'photoUrl': profile.profilePictureUrl,
+        if (profile.whatsapp != null) 'phoneNumber': profile.whatsapp,
+        if (profile.role != null && profile.role!.isNotEmpty)
+          'bio': profile.role,
       });
     } on PlatformException catch (e) {
       throw FirestoreException(e.message ?? 'Failed to update profile');

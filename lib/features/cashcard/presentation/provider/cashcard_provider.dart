@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/features/cashcard/domain/entities/transaction.dart';
+import 'package:myapp/features/cashcard/domain/entities/transaction.dart'
+    as entity;
 import 'package:myapp/features/cashcard/domain/repositories/transaction_repository.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/budget_management.dart';
 
 class CashcardProvider with ChangeNotifier {
   final TransactionRepository repository;
-  List<Transaction> _transactions = [];
+  List<entity.Transaction> _transactions = [];
   final List<BudgetCategory> _budgetCategories = [];
 
   // Added for filtering
@@ -14,14 +15,18 @@ class CashcardProvider with ChangeNotifier {
   bool _showAllTime = true; // New flag for all time view
 
   // Added for tracking the selected transaction type in the modal
-  TransactionType _selectedTransactionType =
-      TransactionType.expense; // Default to expense
+  entity.TransactionType _selectedTransactionType =
+      entity.TransactionType.expense; // Default to expense
+
+  // Added for tracking the selected expense category in the modal
+  entity.ExpenseCategory _selectedExpenseCategory =
+      entity.ExpenseCategory.others; // Default to others
 
   CashcardProvider(this.repository) {
     _listenToTransactions();
   }
 
-  List<Transaction> get transactions {
+  List<entity.Transaction> get transactions {
     if (_showAllTime) {
       return _transactions; // Return all transactions if showAllTime is true
     } else {
@@ -42,29 +47,42 @@ class CashcardProvider with ChangeNotifier {
   List<BudgetCategory> get budgetCategories => _budgetCategories;
 
   // Getter for the selected transaction type in the modal
-  TransactionType get selectedTransactionType => _selectedTransactionType;
+  entity.TransactionType get selectedTransactionType =>
+      _selectedTransactionType;
+
+  // Getter for the selected expense category in the modal
+  entity.ExpenseCategory get selectedExpenseCategory =>
+      _selectedExpenseCategory;
 
   // Calculate total income for the *currently displayed* transactions (filtered or all time)
   double get totalIncome {
     return transactions
-        .where((transaction) => transaction.type == TransactionType.income)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.income,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
   }
 
   // Calculate total expense for the *currently displayed* transactions (filtered or all time)
   double get totalExpense {
     return transactions
-        .where((transaction) => transaction.type == TransactionType.expense)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.expense,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
   }
 
   // Calculate overall balance (across ALL transactions, regardless of filter)
   double get balance {
     double totalIncomeAll = _transactions
-        .where((transaction) => transaction.type == TransactionType.income)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.income,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
     double totalExpenseAll = _transactions
-        .where((transaction) => transaction.type == TransactionType.expense)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.expense,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
     return totalIncomeAll - totalExpenseAll;
   }
@@ -80,7 +98,7 @@ class CashcardProvider with ChangeNotifier {
     });
   }
 
-  Future<void> addTransaction(Transaction transaction) async {
+  Future<void> addTransaction(entity.Transaction transaction) async {
     await repository.addTransaction(transaction);
     // Data will be updated via the stream listener, so no need to add to _transactions list directly
   }
@@ -105,8 +123,14 @@ class CashcardProvider with ChangeNotifier {
   }
 
   // Method to update the selected transaction type in the modal
-  void setSelectedTransactionType(TransactionType type) {
+  void setSelectedTransactionType(entity.TransactionType type) {
     _selectedTransactionType = type;
+    notifyListeners();
+  }
+
+  // Method to update the selected expense category in the modal
+  void setSelectedExpenseCategory(entity.ExpenseCategory category) {
+    _selectedExpenseCategory = category;
     notifyListeners();
   }
 
@@ -155,9 +179,11 @@ class CashcardProvider with ChangeNotifier {
     return _transactions
         .where(
           (transaction) =>
-              transaction.type == TransactionType.expense &&
-              _getCategoryFromDescription(transaction.description) ==
-                  categoryName,
+              transaction.type == entity.TransactionType.expense &&
+              (transaction.category != null
+                  ? transaction.getCategoryDisplayName() == categoryName
+                  : _getCategoryFromDescription(transaction.description) ==
+                        categoryName),
         )
         .fold(0.0, (sum, transaction) => sum + transaction.amount);
   }
@@ -165,16 +191,21 @@ class CashcardProvider with ChangeNotifier {
   String _getCategoryFromDescription(String description) {
     final lowerDesc = description.toLowerCase();
 
-    if (lowerDesc.contains('food') ||
+    if (lowerDesc.contains('reward') ||
+        lowerDesc.contains('p2tl') ||
+        lowerDesc.contains('cashback') ||
+        lowerDesc.contains('points')) {
+      return 'Reward P2TL';
+    } else if (lowerDesc.contains('food') ||
         lowerDesc.contains('makan') ||
         lowerDesc.contains('lunch') ||
         lowerDesc.contains('dinner')) {
-      return 'Food';
+      return 'Food & Dining';
     } else if (lowerDesc.contains('transport') ||
         lowerDesc.contains('gas') ||
         lowerDesc.contains('fuel') ||
         lowerDesc.contains('bensin')) {
-      return 'Transport';
+      return 'Transportation';
     } else if (lowerDesc.contains('shop') ||
         lowerDesc.contains('buy') ||
         lowerDesc.contains('beli') ||
@@ -184,14 +215,80 @@ class CashcardProvider with ChangeNotifier {
         lowerDesc.contains('medical') ||
         lowerDesc.contains('hospital') ||
         lowerDesc.contains('dokter')) {
-      return 'Health';
+      return 'Health & Medical';
     } else if (lowerDesc.contains('entertainment') ||
         lowerDesc.contains('movie') ||
         lowerDesc.contains('game') ||
         lowerDesc.contains('hiburan')) {
       return 'Entertainment';
+    } else if (lowerDesc.contains('utilities') ||
+        lowerDesc.contains('listrik') ||
+        lowerDesc.contains('air') ||
+        lowerDesc.contains('internet')) {
+      return 'Utilities';
+    } else if (lowerDesc.contains('education') ||
+        lowerDesc.contains('school') ||
+        lowerDesc.contains('course') ||
+        lowerDesc.contains('belajar')) {
+      return 'Education';
     } else {
       return 'Others';
+    }
+  }
+
+  // Method to get ExpenseCategory enum from description (public version)
+  entity.ExpenseCategory getExpenseCategoryFromDescription(String description) {
+    return _getExpenseCategoryFromDescription(description);
+  }
+
+  // Method to get ExpenseCategory enum from description
+  entity.ExpenseCategory _getExpenseCategoryFromDescription(
+    String description,
+  ) {
+    final lowerDesc = description.toLowerCase();
+
+    if (lowerDesc.contains('reward') ||
+        lowerDesc.contains('p2tl') ||
+        lowerDesc.contains('cashback') ||
+        lowerDesc.contains('points')) {
+      return entity.ExpenseCategory.rewardP2TL;
+    } else if (lowerDesc.contains('food') ||
+        lowerDesc.contains('makan') ||
+        lowerDesc.contains('lunch') ||
+        lowerDesc.contains('dinner')) {
+      return entity.ExpenseCategory.food;
+    } else if (lowerDesc.contains('transport') ||
+        lowerDesc.contains('gas') ||
+        lowerDesc.contains('fuel') ||
+        lowerDesc.contains('bensin')) {
+      return entity.ExpenseCategory.transport;
+    } else if (lowerDesc.contains('shop') ||
+        lowerDesc.contains('buy') ||
+        lowerDesc.contains('beli') ||
+        lowerDesc.contains('belanja')) {
+      return entity.ExpenseCategory.shopping;
+    } else if (lowerDesc.contains('health') ||
+        lowerDesc.contains('medical') ||
+        lowerDesc.contains('hospital') ||
+        lowerDesc.contains('dokter')) {
+      return entity.ExpenseCategory.health;
+    } else if (lowerDesc.contains('entertainment') ||
+        lowerDesc.contains('movie') ||
+        lowerDesc.contains('game') ||
+        lowerDesc.contains('hiburan')) {
+      return entity.ExpenseCategory.entertainment;
+    } else if (lowerDesc.contains('utilities') ||
+        lowerDesc.contains('listrik') ||
+        lowerDesc.contains('air') ||
+        lowerDesc.contains('internet')) {
+      return entity.ExpenseCategory.utilities;
+    } else if (lowerDesc.contains('education') ||
+        lowerDesc.contains('school') ||
+        lowerDesc.contains('course') ||
+        lowerDesc.contains('belajar')) {
+      return entity.ExpenseCategory.education;
+    } else {
+      return entity.ExpenseCategory.others;
     }
   }
 

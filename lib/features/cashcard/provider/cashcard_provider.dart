@@ -1,80 +1,120 @@
 import 'package:flutter/material.dart';
-import '../domain/entities/transaction.dart';
+import '../domain/entities/transaction.dart' as entity;
+import '../domain/repositories/transaction_repository.dart';
 import '../presentation/widgets/budget_management.dart';
 
 class CashcardProvider with ChangeNotifier {
-  final List<Transaction> _transactions = [];
+  final TransactionRepository repository;
+  List<entity.Transaction> _transactions = [];
   final List<BudgetCategory> _budgetCategories = [];
 
-  // Filter state
+  // Added for filtering
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
   bool _showAllTime = true; // New flag for all time view
 
-  // Transaction type selection for add form
-  TransactionType _selectedTransactionType = TransactionType.expense;
+  // Added for tracking the selected transaction type in the modal
+  entity.TransactionType _selectedTransactionType =
+      entity.TransactionType.expense; // Default to expense
 
-  List<Transaction> get transactions {
+  CashcardProvider(this.repository) {
+    _listenToTransactions();
+  }
+
+  List<entity.Transaction> get transactions {
     if (_showAllTime) {
       return _transactions; // Return all transactions if showAllTime is true
     } else {
       // Apply month/year filter
       return _transactions.where((transaction) {
+        // Add null checks for transaction
         return transaction.date.month == _selectedMonth &&
             transaction.date.year == _selectedYear;
       }).toList();
     }
   }
 
-  List<BudgetCategory> get budgetCategories => _budgetCategories;
-
-  TransactionType get selectedTransactionType => _selectedTransactionType;
-
   // Getter for selected month and year
   int get selectedMonth => _selectedMonth;
   int get selectedYear => _selectedYear;
   bool get showAllTime => _showAllTime; // Getter for the new flag
 
+  List<BudgetCategory> get budgetCategories => _budgetCategories;
+
+  // Getter for the selected transaction type in the modal
+  entity.TransactionType get selectedTransactionType =>
+      _selectedTransactionType;
+
   // Calculate total income for the *currently displayed* transactions (filtered or all time)
   double get totalIncome {
     return transactions
-        .where((transaction) => transaction.type == TransactionType.income)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.income,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
   }
 
   // Calculate total expense for the *currently displayed* transactions (filtered or all time)
   double get totalExpense {
     return transactions
-        .where((transaction) => transaction.type == TransactionType.expense)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.expense,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
   }
 
   // Calculate overall balance (across ALL transactions, regardless of filter)
   double get balance {
     double totalIncomeAll = _transactions
-        .where((transaction) => transaction.type == TransactionType.income)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.income,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
     double totalExpenseAll = _transactions
-        .where((transaction) => transaction.type == TransactionType.expense)
+        .where(
+          (transaction) => transaction.type == entity.TransactionType.expense,
+        )
         .fold(0.0, (sum, item) => sum + item.amount);
     return totalIncomeAll - totalExpenseAll;
   }
 
-  void addTransaction(Transaction transaction) {
-    _transactions.add(transaction);
-    // Update budget categories with new spending
-    _updateBudgetSpending();
+  void _listenToTransactions() {
+    repository.getTransactions().listen((newTransactions) {
+      _transactions = newTransactions;
+      // Sort transactions by date in descending order
+      _transactions.sort((a, b) => b.date.compareTo(a.date));
+      // Update budget spending when transactions change
+      _updateBudgetSpending();
+      notifyListeners();
+    });
+  }
+
+  Future<void> addTransaction(entity.Transaction transaction) async {
+    await repository.addTransaction(transaction);
+    // Data will be updated via the stream listener, so no need to add to _transactions list directly
+  }
+
+  Future<void> deleteTransaction(String id) async {
+    await repository.deleteTransaction(id); // Call delete method on repository
+    // Data will be updated via the stream listener, so no need to remove from _transactions list directly
+  }
+
+  // Method to set the filter by month and year
+  void setFilter(int month, int year) {
+    _selectedMonth = month;
+    _selectedYear = year;
+    _showAllTime = false; // Disable all time when setting a specific filter
     notifyListeners();
   }
 
-  void removeTransaction(String id) {
-    _transactions.removeWhere((transaction) => transaction.id == id);
-    // Update budget categories after removing transaction
-    _updateBudgetSpending();
+  // Method to set the filter to show all time
+  void setShowAllTime(bool value) {
+    _showAllTime = value;
     notifyListeners();
   }
 
-  void setSelectedTransactionType(TransactionType type) {
+  // Method to update the selected transaction type in the modal
+  void setSelectedTransactionType(entity.TransactionType type) {
     _selectedTransactionType = type;
     notifyListeners();
   }
@@ -124,7 +164,7 @@ class CashcardProvider with ChangeNotifier {
     return _transactions
         .where(
           (transaction) =>
-              transaction.type == TransactionType.expense &&
+              transaction.type == entity.TransactionType.expense &&
               _getCategoryFromDescription(transaction.description) ==
                   categoryName,
         )
@@ -163,25 +203,4 @@ class CashcardProvider with ChangeNotifier {
       return 'Others';
     }
   }
-
-  // Method to set the filter by month and year
-  void setFilter(int month, int year) {
-    _selectedMonth = month;
-    _selectedYear = year;
-    _showAllTime = false; // Disable all time when setting a specific filter
-    notifyListeners();
-  }
-
-  // Method to set the filter to show all time
-  void setShowAllTime(bool value) {
-    _showAllTime = value;
-    notifyListeners();
-  }
-
-  // You might want a method to clear the filter later
-  // void clearFilter() {
-  //   _selectedMonth = DateTime.now().month;
-  //   _selectedYear = DateTime.now().year;
-  //   notifyListeners();
-  // }
 }

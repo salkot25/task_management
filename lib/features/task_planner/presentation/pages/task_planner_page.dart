@@ -355,9 +355,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                         Container(
                           height: 8,
                           decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceVariant.withOpacity(0.6),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.6),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: ClipRRect(
@@ -381,7 +382,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                               : AppColors.primaryColor)
                                         : Theme.of(
                                             context,
-                                          ).colorScheme.surfaceVariant,
+                                          ).colorScheme.surfaceContainerHighest,
                                   ),
                                   minHeight: 8,
                                 );
@@ -405,9 +406,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           height: 64,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceVariant.withOpacity(0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.3),
                           ),
                         ),
                         // Animated Progress circle
@@ -434,7 +436,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                             : AppColors.primaryColor)
                                       : Theme.of(
                                           context,
-                                        ).colorScheme.surfaceVariant,
+                                        ).colorScheme.surfaceContainerHighest,
                                 ),
                               );
                             },
@@ -454,7 +456,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                       .round();
 
                               return Text(
-                                '${animatedPercentage}%',
+                                '$animatedPercentage%',
                                 style: AppTypography.labelMedium.copyWith(
                                   color: Theme.of(
                                     context,
@@ -550,7 +552,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   ? color.withOpacity(0.1)
                   : Theme.of(
                       context,
-                    ).colorScheme.surfaceVariant.withOpacity(0.5),
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -621,7 +623,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).colorScheme.surfaceVariant.withOpacity(0.5),
+                      ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -666,7 +668,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).colorScheme.surfaceVariant.withOpacity(0.5),
+                      ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -1209,7 +1211,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: task.isCompleted
-            ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3)
+            ? Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withOpacity(0.3)
             : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -1505,7 +1509,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             decoration: BoxDecoration(
               color: Theme.of(
                 context,
-              ).colorScheme.surfaceVariant.withOpacity(0.5),
+              ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ActionButton(

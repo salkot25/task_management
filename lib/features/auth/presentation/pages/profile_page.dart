@@ -25,7 +25,10 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _initializeProfileData();
+    // Defer initialization until after the build phase is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeProfileData();
+    });
   }
 
   @override
@@ -35,6 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   /// Initialize profile data with comprehensive error handling
   Future<void> _initializeProfileData() async {
+    // Ensure widget is still mounted before proceeding
     if (!mounted) return;
 
     try {
@@ -42,19 +46,26 @@ class _ProfilePageState extends State<ProfilePage> {
 
       // Check if user is authenticated
       if (authProvider.user == null) {
-        setState(() {
-          _lastError = 'User not authenticated';
-        });
+        if (mounted) {
+          setState(() {
+            _lastError = 'User not authenticated';
+          });
+        }
         return;
       }
 
       // Clear previous errors
-      setState(() {
-        _lastError = null;
-      });
+      if (mounted) {
+        setState(() {
+          _lastError = null;
+        });
+      }
 
       // Load profile data from backend
       await authProvider.getCurrentUserProfile();
+
+      // Only update state if widget is still mounted
+      if (!mounted) return;
 
       // Check for any errors after loading
       if (authProvider.errorMessage != null) {
@@ -73,9 +84,11 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     } catch (e) {
-      setState(() {
-        _lastError = 'Failed to load profile data: ${e.toString()}';
-      });
+      if (mounted) {
+        setState(() {
+          _lastError = 'Failed to load profile data: ${e.toString()}';
+        });
+      }
     }
   }
 
@@ -493,11 +506,14 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     try {
-      // Create a basic profile with user's email
+      // Create a basic profile with user's email and required fields
       final newProfile = Profile(
         uid: authProvider.user!.uid,
         name: authProvider.user!.email?.split('@').first ?? 'User',
-        email: authProvider.user!.email,
+        email: authProvider.user!.email ?? '',
+        createdAt: DateTime.now(),
+        isEmailVerified:
+            false, // Will be updated later when we have proper auth info
       );
 
       // Show edit dialog to let user customize their profile
@@ -513,7 +529,7 @@ class _ProfilePageState extends State<ProfilePage> {
         await _refreshProfileData();
       }
     } catch (e) {
-      _showErrorSnackBar('Failed to create profile');
+      _showErrorSnackBar('Failed to create profile: ${e.toString()}');
     }
   }
 
@@ -1253,6 +1269,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     }
 
     try {
+      final now = DateTime.now();
       final updatedProfile = widget.profile.copyWith(
         name: _nameController.text.trim(),
         username: _usernameController.text.trim().isEmpty
@@ -1261,7 +1278,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         whatsapp: _whatsappController.text.trim().isEmpty
             ? null
             : _whatsappController.text.trim(),
-        createdAt: widget.profile.createdAt ?? DateTime.now(),
+        // Ensure required fields are present
+        email: widget.profile.email ?? authProvider.user?.email ?? '',
+        createdAt: widget.profile.createdAt ?? now,
       );
 
       // Check if this is a new profile (no existing profile in provider)

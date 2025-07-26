@@ -208,8 +208,7 @@ class AuthProvider extends ChangeNotifier {
       (failure) => _errorMessage = _mapFailureToMessage(failure),
       (profile) => _profile = profile,
     );
-    // Ensure notifyListeners is called after profile update, regardless of success
-    notifyListeners();
+    // Note: notifyListeners is called by the caller method
   }
 
   Future<void> updateProfile(Profile profile) async {
@@ -239,8 +238,21 @@ class AuthProvider extends ChangeNotifier {
 
   // Helper method to get the current user's profile
   Future<Profile?> getCurrentUserProfile() async {
-    if (_user != null && _profile == null) {
+    if (_user != null) {
+      // Set loading state
+      if (_isLoading != true || _errorMessage != null) {
+        _isLoading = true;
+        _errorMessage = null;
+        notifyListeners();
+      }
+
       await _getProfile(_user!.uid);
+
+      // Always update loading state at the end
+      if (_isLoading != false) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
     return _profile;
   }

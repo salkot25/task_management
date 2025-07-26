@@ -1,46 +1,81 @@
-import 'package:cloud_firestore/cloud_firestore.dart'
-    as firestore; // Use prefix
-import '../../domain/entities/transaction.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../domain/entities/transaction.dart' as entity;
 
 abstract class TransactionFirestoreDataSource {
-  Future<void> addTransaction(Transaction transaction);
-  Stream<List<Transaction>> getTransactions();
-  Future<void> updateTransaction(Transaction transaction);
-  Future<void> deleteTask(String id); // Added delete method
+  Future<void> addTransaction(entity.Transaction transaction);
+  Stream<List<entity.Transaction>> getTransactions();
+  Future<void> updateTransaction(entity.Transaction transaction);
+  Future<void> deleteTransaction(String id);
 }
 
 class TransactionFirestoreDataSourceImpl
     implements TransactionFirestoreDataSource {
-  final firestore.FirebaseFirestore _firestore =
-      firestore.FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  @override
-  Future<void> addTransaction(Transaction transaction) {
+  String? get _currentUserId => _auth.currentUser?.uid;
+
+  CollectionReference<Map<String, dynamic>> get _transactionsCollection {
+    if (_currentUserId == null) {
+      throw Exception('User not authenticated');
+    }
     return _firestore
-        .collection('transactions')
-        .doc(transaction.id)
-        .set(transaction.toMap());
+        .collection('users')
+        .doc(_currentUserId)
+        .collection('transactions');
   }
 
   @override
-  Stream<List<Transaction>> getTransactions() {
-    return _firestore.collection('transactions').snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => Transaction.fromMap(doc.data()))
-          .toList();
+  Future<void> addTransaction(entity.Transaction transaction) async {
+    if (_currentUserId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    // Add timestamp and userId to transaction data
+    final transactionData = transaction.toMap();
+    transactionData['userId'] = _currentUserId;
+    transactionData['createdAt'] = FieldValue.serverTimestamp();
+    transactionData['updatedAt'] = FieldValue.serverTimestamp();
+
+    return _transactionsCollection.doc(transaction.id).set(transactionData);
+  }
+
+  @override
+  Stream<List<entity.Transaction>> getTransactions() {
+    if (_currentUserId == null) {
+      return Stream.value([]);
+    }
+
+    return _transactionsCollection.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        // Ensure the document ID matches the transaction ID
+        data['id'] = doc.id;
+        return entity.Transaction.fromMap(data);
+      }).toList();
     });
   }
 
   @override
-  Future<void> updateTransaction(Transaction transaction) {
-    return _firestore
-        .collection('transactions')
-        .doc(transaction.id)
-        .update(transaction.toMap());
+  Future<void> updateTransaction(entity.Transaction transaction) async {
+    if (_currentUserId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final transactionData = transaction.toMap();
+    transactionData['userId'] = _currentUserId;
+    transactionData['updatedAt'] = FieldValue.serverTimestamp();
+
+    return _transactionsCollection.doc(transaction.id).update(transactionData);
   }
 
   @override
-  Future<void> deleteTask(String id) {
-    return _firestore.collection('transactions').doc(id).delete();
+  Future<void> deleteTransaction(String id) async {
+    if (_currentUserId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    return _transactionsCollection.doc(id).delete();
   }
 }

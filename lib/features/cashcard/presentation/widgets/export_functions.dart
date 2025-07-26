@@ -3,7 +3,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/features/cashcard/domain/entities/transaction.dart';
+import 'package:myapp/features/cashcard/domain/entities/transaction.dart'
+    as entity;
 import 'package:myapp/utils/design_system/app_colors.dart';
 import 'package:myapp/utils/design_system/app_spacing.dart';
 import 'package:myapp/utils/design_system/app_typography.dart';
@@ -11,7 +12,7 @@ import 'package:myapp/utils/design_system/app_components.dart';
 import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
 
 class ExportFunctions extends StatelessWidget {
-  final List<Transaction> transactions;
+  final List<entity.Transaction> transactions;
   final double totalIncome;
   final double totalExpense;
   final double balance;
@@ -624,7 +625,7 @@ class ExportFunctions extends StatelessWidget {
               children: [
                 pw.Text('Income Transactions'),
                 pw.Text(
-                  '${transactions.where((t) => t.type == TransactionType.income).length}',
+                  '${transactions.where((t) => t.type == entity.TransactionType.income).length}',
                   style: pw.TextStyle(
                     fontSize: 18,
                     fontWeight: pw.FontWeight.bold,
@@ -637,7 +638,7 @@ class ExportFunctions extends StatelessWidget {
               children: [
                 pw.Text('Expense Transactions'),
                 pw.Text(
-                  '${transactions.where((t) => t.type == TransactionType.expense).length}',
+                  '${transactions.where((t) => t.type == entity.TransactionType.expense).length}',
                   style: pw.TextStyle(
                     fontSize: 18,
                     fontWeight: pw.FontWeight.bold,
@@ -713,7 +714,7 @@ class ExportFunctions extends StatelessWidget {
                 '• Savings rate: ${totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome * 100).toStringAsFixed(1) : 0}%',
               ),
               pw.Text(
-                '• Largest expense: ${NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0).format(transactions.where((t) => t.type == TransactionType.expense).isEmpty ? 0 : transactions.where((t) => t.type == TransactionType.expense).map((t) => t.amount).reduce((a, b) => a > b ? a : b))}',
+                '• Largest expense: ${NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0).format(transactions.where((t) => t.type == entity.TransactionType.expense).isEmpty ? 0 : transactions.where((t) => t.type == entity.TransactionType.expense).map((t) => t.amount).reduce((a, b) => a > b ? a : b))}',
               ),
             ],
           ),
@@ -724,10 +725,10 @@ class ExportFunctions extends StatelessWidget {
 
   pw.Widget _buildTaxSummaryPDF() {
     final incomeTransactions = transactions
-        .where((t) => t.type == TransactionType.income)
+        .where((t) => t.type == entity.TransactionType.income)
         .toList();
     final expenseTransactions = transactions
-        .where((t) => t.type == TransactionType.expense)
+        .where((t) => t.type == entity.TransactionType.expense)
         .toList();
 
     return pw.Column(
@@ -832,7 +833,9 @@ class ExportFunctions extends StatelessWidget {
   }
 
   // Helper method to build monthly income table
-  pw.Widget _buildMonthlyIncomeTable(List<Transaction> incomeTransactions) {
+  pw.Widget _buildMonthlyIncomeTable(
+    List<entity.Transaction> incomeTransactions,
+  ) {
     final data = _getMonthlyIncomeSummary(incomeTransactions);
     return pw.Table.fromTextArray(
       headers: ['Month', 'Total Income'],
@@ -844,7 +847,9 @@ class ExportFunctions extends StatelessWidget {
   }
 
   // Helper method to build category expense table
-  pw.Widget _buildCategoryExpenseTable(List<Transaction> expenseTransactions) {
+  pw.Widget _buildCategoryExpenseTable(
+    List<entity.Transaction> expenseTransactions,
+  ) {
     final data = _getCategoryExpenseSummary(expenseTransactions);
     return pw.Table.fromTextArray(
       headers: ['Category', 'Total Amount'],
@@ -856,7 +861,7 @@ class ExportFunctions extends StatelessWidget {
   }
 
   List<List<String>> _getMonthlyIncomeSummary(
-    List<Transaction> incomeTransactions,
+    List<entity.Transaction> incomeTransactions,
   ) {
     if (incomeTransactions.isEmpty) {
       return [
@@ -891,7 +896,7 @@ class ExportFunctions extends StatelessWidget {
   }
 
   List<List<String>> _getCategoryExpenseSummary(
-    List<Transaction> expenseTransactions,
+    List<entity.Transaction> expenseTransactions,
   ) {
     if (expenseTransactions.isEmpty) {
       return [
@@ -1027,7 +1032,7 @@ class ExportFunctions extends StatelessWidget {
   }
 
   // Helper method to build transaction table efficiently
-  pw.Widget _buildTransactionTable(List<Transaction> transactionList) {
+  pw.Widget _buildTransactionTable(List<entity.Transaction> transactionList) {
     // Chunk the data to prevent memory issues
     const int maxRowsPerPage = 30;
 
@@ -1068,13 +1073,13 @@ class ExportFunctions extends StatelessWidget {
   }
 
   // Helper method to convert transaction to table row
-  List<String> _transactionToTableRow(Transaction transaction) {
+  List<String> _transactionToTableRow(entity.Transaction transaction) {
     return [
       DateFormat('dd/MM/yyyy').format(transaction.date),
       transaction.description.length > 30
           ? '${transaction.description.substring(0, 30)}...'
           : transaction.description,
-      transaction.type == TransactionType.income ? 'Income' : 'Expense',
+      transaction.type == entity.TransactionType.income ? 'Income' : 'Expense',
       NumberFormat.currency(
         locale: 'id',
         symbol: 'Rp ',
