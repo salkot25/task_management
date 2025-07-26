@@ -297,8 +297,9 @@ class AutoSyncService extends ChangeNotifier {
 
   /// Sync profile item
   Future<void> _syncProfileItem(SyncItem item) async {
-    if (_profileRepository == null)
+    if (_profileRepository == null) {
       throw Exception('Profile repository not available');
+    }
 
     switch (item.operationType) {
       case SyncOperationType.create:
@@ -337,8 +338,9 @@ class AutoSyncService extends ChangeNotifier {
 
   /// Sync transaction item
   Future<void> _syncTransactionItem(SyncItem item) async {
-    if (_transactionRepository == null)
+    if (_transactionRepository == null) {
       throw Exception('Transaction repository not available');
+    }
 
     switch (item.operationType) {
       case SyncOperationType.create:
@@ -357,8 +359,9 @@ class AutoSyncService extends ChangeNotifier {
 
   /// Sync account item
   Future<void> _syncAccountItem(SyncItem item) async {
-    if (_accountRepository == null)
+    if (_accountRepository == null) {
       throw Exception('Account repository not available');
+    }
 
     switch (item.operationType) {
       case SyncOperationType.create:

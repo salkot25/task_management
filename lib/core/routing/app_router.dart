@@ -10,11 +10,9 @@ import 'package:clarity/features/auth/presentation/pages/profile_page.dart';
 
 // Import Features
 import 'package:clarity/features/account_management/presentation/pages/account_list_page.dart';
-import 'package:clarity/features/account_management/presentation/pages/add_account_page.dart';
 import 'package:clarity/features/task_planner/presentation/pages/task_planner_page.dart';
-import 'package:clarity/features/task_planner/presentation/pages/add_task_page.dart';
 import 'package:clarity/features/cashcard/presentation/pages/cashcard_page.dart';
-import 'package:clarity/features/cashcard/presentation/pages/add_transaction_page.dart';
+import 'package:clarity/features/settings/presentation/pages/permission_settings_page.dart';
 import 'package:clarity/presentation/pages/about_page.dart';
 
 // Import Navigation Shell
@@ -91,13 +89,6 @@ class AppRouter {
               path: '/tasks',
               name: 'tasks',
               builder: (context, state) => const TaskPlannerPage(),
-              routes: [
-                GoRoute(
-                  path: 'add',
-                  name: 'add-task',
-                  builder: (context, state) => const AddTaskPage(),
-                ),
-              ],
             ),
           ],
         ),
@@ -109,13 +100,6 @@ class AppRouter {
               path: '/accounts',
               name: 'vault',
               builder: (context, state) => const AccountListPage(),
-              routes: [
-                GoRoute(
-                  path: 'add',
-                  name: 'add-account',
-                  builder: (context, state) => const AddAccountPage(),
-                ),
-              ],
             ),
           ],
         ),
@@ -127,13 +111,6 @@ class AppRouter {
               path: '/cashcard',
               name: 'cashcard',
               builder: (context, state) => const CashcardPage(),
-              routes: [
-                GoRoute(
-                  path: 'add',
-                  name: 'add-transaction',
-                  builder: (context, state) => const AddTransactionPage(),
-                ),
-              ],
             ),
           ],
         ),
@@ -150,6 +127,11 @@ class AppRouter {
                   path: 'about',
                   name: 'about',
                   builder: (context, state) => const AboutPage(),
+                ),
+                GoRoute(
+                  path: 'permissions',
+                  name: 'permissions',
+                  builder: (context, state) => const PermissionSettingsPage(),
                 ),
               ],
             ),
@@ -198,6 +180,8 @@ abstract class AppRoutes {
   static const String vault = 'vault';
   static const String cashcard = 'cashcard';
   static const String profile = 'profile';
+  static const String about = 'about';
+  static const String permissions = 'permissions';
 }
 
 /// Navigation Extensions
@@ -223,4 +207,10 @@ extension AppNavigation on BuildContext {
 
   /// Navigate to profile page
   void goToProfile() => go('/profile');
+
+  /// Navigate to about page
+  void goToAbout() => go('/profile/about');
+
+  /// Navigate to permissions page
+  void goToPermissions() => go('/profile/permissions');
 }

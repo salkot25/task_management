@@ -69,9 +69,12 @@ class LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: isDarkMode
+          ? Theme.of(context).colorScheme.surface
+          : Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -187,10 +190,27 @@ class LoginPageState extends State<LoginPage> {
                       label: Text(
                         'Continue with Google',
                         style: AppTypography.buttonSecondary.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: isDarkMode ? Colors.white : Colors.black87,
                         ),
                       ),
-                      style: AppComponents.secondaryButtonStyle(),
+                      style: OutlinedButton.styleFrom(
+                        padding: AppSpacing.buttonPadding,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                        side: BorderSide(
+                          color: isDarkMode
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade300,
+                          width: 1.5,
+                        ),
+                        backgroundColor: isDarkMode
+                            ? Colors.grey.shade800
+                            : Colors.white,
+                        foregroundColor: isDarkMode
+                            ? Colors.white
+                            : Colors.black87,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Row(

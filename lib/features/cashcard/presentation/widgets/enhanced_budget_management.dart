@@ -58,7 +58,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               decoration: BoxDecoration(
                 color: isDarkMode
                     ? const Color(0xFF2D2D2D)
-                    : AppColors.greyExtraLightColor,
+                    : Colors.white, // Gunakan putih murni untuk tab bar
                 borderRadius: AppComponents.standardBorderRadius,
                 border: Border.all(
                   color: isDarkMode
@@ -69,10 +69,13 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 boxShadow: [
                   BoxShadow(
                     color: isDarkMode
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                        ? Colors.black.withOpacity(0.4)
+                        : Colors.black.withOpacity(
+                            0.08,
+                          ), // Shadow lebih gelap untuk tab bar
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                    spreadRadius: -1,
                   ),
                 ],
               ),
@@ -245,13 +248,25 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk quick actions
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
               ? Colors.grey.withOpacity(0.2)
               : AppColors.greyLightColor,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk quick actions
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,13 +501,25 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk budget progress summary
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
               ? Colors.grey.withOpacity(0.2)
               : AppColors.greyLightColor,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk progress summary
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,13 +609,25 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk recent activities
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
               ? Colors.grey.withOpacity(0.2)
               : AppColors.greyLightColor,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk recent activities
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1022,13 +1061,25 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk recommendations section
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
               ? Colors.grey.withOpacity(0.2)
               : AppColors.greyLightColor,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk recommendations
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1246,7 +1297,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : null,
+              backgroundColor: isDarkMode
+                  ? const Color(0xFF2D2D2D)
+                  : Colors.white, // Gunakan putih murni untuk dialog
               title: Text(
                 'Add Budget Category',
                 style: TextStyle(
@@ -1526,6 +1579,8 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor:
+              Colors.white, // Gunakan putih murni untuk edit dialog
           title: const Text(
             'Edit Budget Category',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
@@ -1650,6 +1705,8 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor:
+              Colors.white, // Gunakan putih murni untuk delete dialog
           title: const Text(
             'Delete Budget Category',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
@@ -1709,6 +1766,8 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor:
+              Colors.white, // Gunakan putih murni untuk reset dialog
           title: const Text(
             'Reset Budget Month',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),

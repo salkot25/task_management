@@ -74,7 +74,7 @@ class _AccountListPageState extends State<AccountListPage> {
     return Scaffold(
       backgroundColor: isDarkMode
           ? const Color(0xFF1A1A1A)
-          : Theme.of(context).colorScheme.surface,
+          : const Color(0xFFF5F5F5), // Gunakan background gelap yang konsisten
       appBar: StandardAppBar(
         title: 'Secure Vault',
         subtitle: 'Your encrypted password manager',
@@ -84,9 +84,9 @@ class _AccountListPageState extends State<AccountListPage> {
             decoration: BoxDecoration(
               color: isDarkMode
                   ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  : Colors.white.withOpacity(
+                      0.8,
+                    ), // Background putih untuk action button
               borderRadius: BorderRadius.circular(12),
             ),
             child: ActionButton(
@@ -412,7 +412,7 @@ class _AccountListPageState extends State<AccountListPage> {
       builder: (context) => AlertDialog(
         backgroundColor: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).colorScheme.surface,
+            : Colors.white, // Gunakan putih murni untuk delete dialog
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.md),
         ),
@@ -488,7 +488,7 @@ class _AccountListPageState extends State<AccountListPage> {
       builder: (context) => AlertDialog(
         backgroundColor: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).colorScheme.surface,
+            : Colors.white, // Gunakan putih murni untuk security tips dialog
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.md),
         ),
@@ -678,7 +678,7 @@ class _AccountListItemState extends State<AccountListItem> {
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).colorScheme.surface,
+            : Colors.white, // Gunakan putih murni untuk account card
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
           color: isDarkMode
@@ -689,10 +689,13 @@ class _AccountListItemState extends State<AccountListItem> {
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : Theme.of(context).colorScheme.shadow.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk account card
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
           ),
         ],
       ),
@@ -931,9 +934,9 @@ class _AccountListItemState extends State<AccountListItem> {
           decoration: BoxDecoration(
             color: isDarkMode
                 ? Colors.grey.withOpacity(0.1)
-                : Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                : Colors.grey.withOpacity(
+                    0.05,
+                  ), // Background lebih subtle untuk credential field
             borderRadius: BorderRadius.circular(AppSpacing.sm),
             border: Border.all(
               color: isDarkMode

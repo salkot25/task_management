@@ -11,6 +11,7 @@ import 'package:clarity/core/sync/services/auto_sync_service.dart';
 import 'package:clarity/core/sync/services/connectivity_service.dart';
 import 'package:clarity/core/theme/theme_provider.dart';
 import 'package:clarity/core/theme/widgets/theme_selector.dart';
+import 'package:clarity/features/settings/presentation/widgets/permission_status_widget.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -880,7 +881,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Text(
                                     profile.isEmailVerified == true
                                         ? 'Verified User'
-                                        : 'Pending Verification',
+                                        : 'Pending',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -937,6 +938,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   textAlign: TextAlign.right,
                                 ),
                               ),
+                              const SizedBox(height: 12),
                             ],
                           ],
                         ),
@@ -1195,6 +1197,64 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 4),
                         Text(
                           'Manage data synchronization',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.grey[400],
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12.0),
+
+        // Permission Status Widget
+        const PermissionStatusWidget(),
+
+        const SizedBox(height: 12.0),
+
+        // App Permissions Card
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () {
+              context.go('/profile/permissions');
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.security,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'App Permissions',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Manage app permissions and privacy settings',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: Colors.grey[700]),
                         ),

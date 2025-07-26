@@ -866,7 +866,7 @@ class _CashcardPageState extends State<CashcardPage>
                 ),
             ],
           );
-        }).toList(),
+        }),
 
         // Show count indicator at bottom if needed
         if (transactions.length > 5)

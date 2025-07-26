@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:clarity/utils/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Extension untuk menambahkan warna surface khusus
+extension CustomColorScheme on ColorScheme {
+  /// Surface putih murni untuk card dan container utama
+  Color get surfaceWhite => Colors.white;
+
+  /// Surface container untuk komponen sekunder
+  Color get surfaceContainer =>
+      brightness == Brightness.light ? Colors.white : const Color(0xFF2D2D2D);
+}
+
 /// Enhanced App Theme dengan dukungan dark mode yang lebih baik
 class AppTheme {
   /// Light Theme
@@ -17,12 +27,12 @@ class AppTheme {
             primary: AppColors.primaryColor,
             secondary: AppColors.secondaryColor,
             error: AppColors.errorColor,
-            surface: Colors.white,
-            background: const Color(0xFFF8F9FA),
+            surface: const Color(
+              0xFFF5F5F5,
+            ), // Background lebih gelap untuk kontras
             onPrimary: Colors.white,
             onSecondary: Colors.white,
             onSurface: Colors.black87,
-            onBackground: Colors.black87,
           ),
 
       // Text Theme dengan Google Fonts
@@ -111,7 +121,7 @@ class AppTheme {
         elevation: 2,
         shadowColor: Colors.black.withOpacity(0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        color: Colors.white,
+        color: Colors.white, // Tetap putih murni untuk card
         surfaceTintColor: Colors.transparent,
       ),
 
@@ -173,9 +183,9 @@ class AppTheme {
 
       // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        selectedItemColor: AppColors.primaryColor,
-        unselectedItemColor: Colors.grey.shade500,
+        backgroundColor: AppColors.primaryColor,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white.withOpacity(0.7),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
         selectedLabelStyle: GoogleFonts.inter(
@@ -209,7 +219,7 @@ class AppTheme {
 
       // Dialog Theme
       dialogTheme: DialogThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white, // Tetap putih murni untuk dialog
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         titleTextStyle: GoogleFonts.inter(
@@ -247,11 +257,9 @@ class AppTheme {
             secondary: AppColors.secondaryColor,
             error: AppColors.errorColor,
             surface: const Color(0xFF1E1E1E),
-            background: const Color(0xFF121212),
             onPrimary: Colors.white,
             onSecondary: Colors.white,
             onSurface: Colors.white,
-            onBackground: Colors.white,
           ),
 
       // Text Theme dengan Google Fonts untuk Dark Mode

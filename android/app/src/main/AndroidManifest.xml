@@ -1,4 +1,49 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internet permission for Firebase and API calls -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- Camera permission for profile photos -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Storage permissions for file management -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    
+    <!-- Notification permissions -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    
+    <!-- Biometric/Fingerprint authentication -->
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    
+    <!-- Calendar permissions for task scheduling -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    
+    <!-- Location permissions for location-based tasks -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- Contacts permission for sharing tasks -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    
+    <!-- Phone permission for contact integration -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    
+    <!-- Microphone for voice notes -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    
+    <!-- Background app refresh -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    
     <application
         android:label="Clarity"
         android:name="${applicationName}"

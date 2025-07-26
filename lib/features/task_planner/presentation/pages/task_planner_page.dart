@@ -127,10 +127,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         return AlertDialog(
           backgroundColor: isDarkMode
               ? const Color(0xFF2D2D2D)
-              : Theme.of(context).colorScheme.surface,
+              : Colors.white, // Gunakan putih murni untuk dialog
           surfaceTintColor: isDarkMode
               ? Colors.transparent
-              : Theme.of(context).colorScheme.surfaceTint,
+              : Colors.transparent, // Hapus surface tint untuk mode light
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -516,7 +516,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           decoration: BoxDecoration(
             color: isDarkMode
                 ? const Color(0xFF2D2D2D)
-                : Theme.of(context).colorScheme.surface,
+                : Colors.white, // Gunakan putih murni untuk mode light
             borderRadius: BorderRadius.circular(AppComponents.largeRadius),
             border: Border.all(
               color: isDarkMode
@@ -527,11 +527,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             boxShadow: [
               BoxShadow(
                 color: isDarkMode
-                    ? Colors.black.withOpacity(0.3)
-                    : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-                spreadRadius: 0,
+                    ? Colors.black.withOpacity(0.5)
+                    : Colors.black.withOpacity(
+                        0.15,
+                      ), // Shadow lebih gelap dan jelas
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+                spreadRadius: -2,
               ),
             ],
           ),
@@ -846,7 +848,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           decoration: BoxDecoration(
             color: isDarkMode
                 ? const Color(0xFF2D2D2D)
-                : Theme.of(context).colorScheme.surface,
+                : Colors.white, // Gunakan putih murni untuk calendar
             borderRadius: BorderRadius.circular(AppComponents.largeRadius),
             border: Border.all(
               color: isDarkMode
@@ -857,11 +859,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             boxShadow: [
               BoxShadow(
                 color: isDarkMode
-                    ? Colors.black.withOpacity(0.3)
-                    : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-                spreadRadius: 0,
+                    ? Colors.black.withOpacity(0.5)
+                    : Colors.black.withOpacity(
+                        0.15,
+                      ), // Shadow lebih gelap dan jelas untuk calendar
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+                spreadRadius: -2,
               ),
             ],
           ),
@@ -1140,11 +1144,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               boxShadow: [
                 BoxShadow(
                   color: AppColors.errorColor.withOpacity(
-                    0.3 * _blinkAnimation.value,
+                    0.5 * _blinkAnimation.value, // Shadow animasi lebih kuat
                   ),
-                  blurRadius: 8 * _blinkAnimation.value,
-                  spreadRadius: 2 * _blinkAnimation.value,
-                  offset: const Offset(0, 0),
+                  blurRadius: 12 * _blinkAnimation.value,
+                  spreadRadius: 3 * _blinkAnimation.value,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -1252,7 +1256,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         decoration: BoxDecoration(
           color: isDarkMode
               ? const Color(0xFF2D2D2D)
-              : Theme.of(context).colorScheme.surface,
+              : Colors.white, // Gunakan putih murni untuk task section
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDarkMode
@@ -1263,11 +1267,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           boxShadow: [
             BoxShadow(
               color: isDarkMode
-                  ? Colors.black.withOpacity(0.3)
-                  : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                  ? Colors.black.withOpacity(0.5)
+                  : Colors.black.withOpacity(
+                      0.12,
+                    ), // Shadow lebih gelap untuk task section
               blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: 0,
+              offset: const Offset(0, 10),
+              spreadRadius: -3,
             ),
           ],
         ),
@@ -1423,7 +1429,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).colorScheme.surface,
+            : Colors
+                  .white, // Gunakan putih murni untuk task section dengan tasks
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDarkMode
@@ -1434,11 +1441,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                ? Colors.black.withOpacity(0.5)
+                : Colors.black.withOpacity(
+                    0.12,
+                  ), // Shadow lebih gelap untuk task section dengan tasks
             blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: 0,
+            offset: const Offset(0, 10),
+            spreadRadius: -3,
           ),
         ],
       ),
@@ -1506,7 +1515,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     ).colorScheme.surfaceContainerHighest.withOpacity(0.3))
             : (isDarkMode
                   ? const Color(0xFF2D2D2D)
-                  : Theme.of(context).colorScheme.surface),
+                  : Colors.white), // Gunakan putih murni untuk task card
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: task.isCompleted
@@ -1525,15 +1534,17 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             : [
                 BoxShadow(
                   color: isOverdue
-                      ? AppColors.errorColor.withOpacity(0.08)
+                      ? AppColors.errorColor.withOpacity(
+                          0.25,
+                        ) // Shadow lebih kuat untuk overdue
                       : (isDarkMode
-                            ? Colors.black.withOpacity(0.3)
-                            : Theme.of(
-                                context,
-                              ).colorScheme.shadow.withOpacity(0.04)),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                  spreadRadius: 0,
+                            ? Colors.black.withOpacity(0.4)
+                            : Colors.black.withOpacity(
+                                0.1,
+                              )), // Shadow lebih gelap untuk task card
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                  spreadRadius: -2,
                 ),
               ],
       ),
@@ -1907,10 +1918,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           ),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+              color: Colors.black.withOpacity(
+                0.12,
+              ), // Shadow lebih gelap untuk authentication widget
               blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: 0,
+              offset: const Offset(0, 10),
+              spreadRadius: -3,
             ),
           ],
         ),

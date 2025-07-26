@@ -35,7 +35,7 @@ class ExportFunctions extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk export functions
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
@@ -46,10 +46,13 @@ class ExportFunctions extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : AppColors.greyColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk export functions
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
           ),
         ],
       ),
@@ -326,7 +329,9 @@ class ExportFunctions extends StatelessWidget {
             Theme.of(dialogContext).brightness == Brightness.dark;
 
         return AlertDialog(
-          backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : null,
+          backgroundColor: isDarkMode
+              ? const Color(0xFF2D2D2D)
+              : Colors.white, // Gunakan putih murni untuk export dialog
           title: Text(
             'Export as $format',
             style: TextStyle(color: isDarkMode ? Colors.white : null),
@@ -388,7 +393,9 @@ class ExportFunctions extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDarkMode
                   ? Colors.grey.withOpacity(0.2)
-                  : AppColors.greyExtraLightColor,
+                  : Colors.grey.withOpacity(
+                      0.05,
+                    ), // Background lebih subtle untuk dialog option
               borderRadius: BorderRadius.circular(AppComponents.smallRadius),
             ),
             child: Text(

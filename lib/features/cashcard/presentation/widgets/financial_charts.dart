@@ -84,8 +84,22 @@ class FinancialCharts extends StatelessWidget {
               AppSpacing.md,
             ),
             decoration: BoxDecoration(
-              color: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+              color: isDarkMode
+                  ? const Color(0xFF2D2D2D)
+                  : Colors.white, // Gunakan putih murni untuk tab bar
               borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: isDarkMode
+                      ? Colors.black.withOpacity(0.4)
+                      : Colors.black.withOpacity(
+                          0.08,
+                        ), // Shadow lebih gelap untuk tab bar
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                  spreadRadius: -1,
+                ),
+              ],
             ),
             child: TabBar(
               labelColor: AppColors.primaryColor,
@@ -136,7 +150,7 @@ class FinancialCharts extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk summary card
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
@@ -147,10 +161,13 @@ class FinancialCharts extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : AppColors.greyColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk summary card
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
           ),
         ],
       ),
@@ -627,7 +644,7 @@ class FinancialCharts extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk spending trends chart
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
@@ -638,10 +655,13 @@ class FinancialCharts extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : AppColors.greyColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk spending trends chart
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+            spreadRadius: -2,
           ),
         ],
       ),
@@ -681,7 +701,7 @@ class FinancialCharts extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk category chart
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
@@ -692,10 +712,13 @@ class FinancialCharts extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : AppColors.greyColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk category chart
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+            spreadRadius: -2,
           ),
         ],
       ),
@@ -748,7 +771,7 @@ class FinancialCharts extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode
             ? const Color(0xFF2D2D2D)
-            : Theme.of(context).cardColor,
+            : Colors.white, // Gunakan putih murni untuk comparison chart
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
@@ -759,10 +782,13 @@ class FinancialCharts extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : AppColors.greyColor.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(
+                    0.1,
+                  ), // Shadow lebih gelap untuk comparison chart
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+            spreadRadius: -2,
           ),
         ],
       ),
