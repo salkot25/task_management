@@ -5,6 +5,9 @@ import 'package:myapp/features/auth/domain/entities/profile.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/presentation/widgets/standard_app_bar.dart';
 import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:myapp/core/sync/widgets/sync_status_widget.dart';
+import 'package:myapp/core/sync/services/auto_sync_service.dart';
+import 'package:myapp/core/sync/services/connectivity_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,7 +23,6 @@ class _ProfilePageState extends State<ProfilePage> {
   // App settings state
   bool _notificationsEnabled = true;
   bool _isDarkMode = false;
-  bool _autoSyncEnabled = true;
 
   @override
   void initState() {
@@ -308,6 +310,18 @@ class _ProfilePageState extends State<ProfilePage> {
             title: 'Profile',
             subtitle: 'Manage your account',
             actions: [
+              // Sync Status Widget
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: SyncStatusWidget(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const SyncDetailsDialog(),
+                    );
+                  },
+                ),
+              ),
               if (!isLoading)
                 ActionButton(
                   icon: Icons.refresh_outlined,
@@ -1033,19 +1047,54 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        'Automatically sync data in background',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[700],
-                        ),
+                      Consumer2<AutoSyncService, ConnectivityService>(
+                        builder:
+                            (
+                              context,
+                              autoSyncService,
+                              connectivityService,
+                              child,
+                            ) {
+                              String subtitle;
+                              if (!connectivityService.isConnected) {
+                                subtitle = 'Offline - sync when connected';
+                              } else if (autoSyncService.isAutoSyncEnabled) {
+                                subtitle =
+                                    'Automatically sync data in background';
+                              } else {
+                                subtitle = 'Manual sync only';
+                              }
+
+                              return Text(
+                                subtitle,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey[700]),
+                              );
+                            },
                       ),
                     ],
                   ),
                 ),
-                Switch(
-                  value: _autoSyncEnabled,
-                  onChanged: _toggleAutoSync,
-                  activeColor: Theme.of(context).colorScheme.primary,
+                Consumer2<AutoSyncService, ConnectivityService>(
+                  builder:
+                      (context, autoSyncService, connectivityService, child) {
+                        return Switch(
+                          value: autoSyncService.isAutoSyncEnabled,
+                          onChanged: connectivityService.isConnected
+                              ? (value) {
+                                  // Update actual auto sync service
+                                  autoSyncService.toggleAutoSync();
+
+                                  _showSuccessSnackBar(
+                                    value
+                                        ? 'Auto sync enabled'
+                                        : 'Auto sync disabled',
+                                  );
+                                }
+                              : null,
+                          activeColor: Theme.of(context).colorScheme.primary,
+                        );
+                      },
                 ),
               ],
             ),
@@ -1065,6 +1114,23 @@ class _ProfilePageState extends State<ProfilePage> {
         const SizedBox(height: 16.0),
 
         // Action buttons
+        _buildActionButton(
+          icon: Icons.sync_outlined,
+          title: 'Sync Settings',
+          subtitle: 'Manage data synchronization',
+          onTap: isLoading
+              ? null
+              : () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (context) => const SyncSettingsBottomSheet(),
+                  );
+                },
+        ),
+
+        const SizedBox(height: 12.0),
+
         _buildActionButton(
           icon: Icons.security_outlined,
           title: 'Security Settings',
@@ -1207,15 +1273,6 @@ class _ProfilePageState extends State<ProfilePage> {
     });
     // TODO: Implement theme switching logic
     _showSuccessSnackBar(value ? 'Dark mode enabled' : 'Light mode enabled');
-  }
-
-  /// Toggle auto sync setting
-  void _toggleAutoSync(bool value) {
-    setState(() {
-      _autoSyncEnabled = value;
-    });
-    // TODO: Save to SharedPreferences or backend
-    _showSuccessSnackBar(value ? 'Auto sync enabled' : 'Auto sync disabled');
   }
 }
 

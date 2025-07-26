@@ -286,10 +286,19 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           return task.dueDate.isBefore(today) && !task.isCompleted;
         }).length;
 
+        // Modified logic: Only count incomplete tasks in progress
         final allTasks = taskProvider.tasks.length;
         final completedAllTasks = taskProvider.tasks
             .where((task) => task.isCompleted)
             .length;
+        final incompleteTasks = taskProvider.tasks
+            .where((task) => !task.isCompleted)
+            .length;
+
+        // Progress calculation: if all tasks completed, show 0/0 100%
+        final displayTotalTasks = incompleteTasks > 0 ? incompleteTasks : 0;
+        final displayCompletedTasks = 0; // Always 0 for incomplete tasks
+        final isAllCompleted = allTasks > 0 && completedAllTasks == allTasks;
 
         return Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -332,7 +341,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              '$completedAllTasks',
+                              isAllCompleted ? '0' : '$displayCompletedTasks',
                               style: AppTypography.headlineLarge.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
@@ -340,7 +349,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                               ),
                             ),
                             Text(
-                              ' / $allTasks',
+                              isAllCompleted ? ' / 0' : ' / $displayTotalTasks',
                               style: AppTypography.titleMedium.copyWith(
                                 color: Theme.of(
                                   context,
@@ -366,9 +375,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             child: AnimatedBuilder(
                               animation: _progressAnimation,
                               builder: (context, child) {
-                                final targetProgress = allTasks > 0
-                                    ? completedAllTasks / allTasks
-                                    : 0;
+                                final targetProgress = isAllCompleted
+                                    ? 1.0
+                                    : (displayTotalTasks > 0
+                                          ? displayCompletedTasks /
+                                                displayTotalTasks
+                                          : 0.0);
                                 final animatedProgress =
                                     targetProgress * _progressAnimation.value;
 
@@ -376,13 +388,14 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                   value: animatedProgress,
                                   backgroundColor: Colors.transparent,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    allTasks > 0 && completedAllTasks > 0
-                                        ? (completedAllTasks == allTasks
-                                              ? AppColors.successColor
-                                              : AppColors.primaryColor)
-                                        : Theme.of(
-                                            context,
-                                          ).colorScheme.surfaceContainerHighest,
+                                    isAllCompleted
+                                        ? AppColors.successColor
+                                        : (displayTotalTasks > 0 &&
+                                                  displayCompletedTasks > 0
+                                              ? AppColors.primaryColor
+                                              : Theme.of(context)
+                                                    .colorScheme
+                                                    .surfaceContainerHighest),
                                   ),
                                   minHeight: 8,
                                 );
@@ -419,9 +432,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           child: AnimatedBuilder(
                             animation: _progressAnimation,
                             builder: (context, child) {
-                              final targetProgress = allTasks > 0
-                                  ? completedAllTasks / allTasks
-                                  : 0;
+                              final targetProgress = isAllCompleted
+                                  ? 1.0
+                                  : (displayTotalTasks > 0
+                                        ? displayCompletedTasks /
+                                              displayTotalTasks
+                                        : 0.0);
                               final animatedProgress =
                                   targetProgress * _progressAnimation.value;
 
@@ -430,13 +446,14 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                 strokeWidth: 4,
                                 backgroundColor: Colors.transparent,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  allTasks > 0 && completedAllTasks > 0
-                                      ? (completedAllTasks == allTasks
-                                            ? AppColors.successColor
-                                            : AppColors.primaryColor)
-                                      : Theme.of(
-                                          context,
-                                        ).colorScheme.surfaceContainerHighest,
+                                  isAllCompleted
+                                      ? AppColors.successColor
+                                      : (displayTotalTasks > 0 &&
+                                                displayCompletedTasks > 0
+                                            ? AppColors.primaryColor
+                                            : Theme.of(context)
+                                                  .colorScheme
+                                                  .surfaceContainerHighest),
                                 ),
                               );
                             },
@@ -447,10 +464,14 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           child: AnimatedBuilder(
                             animation: _progressAnimation,
                             builder: (context, child) {
-                              final targetPercentage = allTasks > 0
-                                  ? ((completedAllTasks / allTasks) * 100)
-                                        .round()
-                                  : 0;
+                              final targetPercentage = isAllCompleted
+                                  ? 100
+                                  : (displayTotalTasks > 0
+                                        ? ((displayCompletedTasks /
+                                                      displayTotalTasks) *
+                                                  100)
+                                              .round()
+                                        : 0);
                               final animatedPercentage =
                                   (targetPercentage * _progressAnimation.value)
                                       .round();

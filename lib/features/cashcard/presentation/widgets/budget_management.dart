@@ -6,6 +6,7 @@ import 'package:myapp/utils/design_system/app_spacing.dart';
 import 'package:myapp/utils/design_system/app_typography.dart';
 import 'package:myapp/utils/design_system/app_components.dart';
 import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
+import 'package:myapp/features/cashcard/domain/entities/budget_models.dart';
 
 // Input formatter for thousands separator
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
@@ -33,26 +34,6 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return oldValue;
     }
   }
-}
-
-class BudgetCategory {
-  final String name;
-  final double budgetAmount;
-  final double spentAmount;
-  final Color color;
-  final IconData icon;
-
-  BudgetCategory({
-    required this.name,
-    required this.budgetAmount,
-    required this.spentAmount,
-    required this.color,
-    required this.icon,
-  });
-
-  double get remainingAmount => budgetAmount - spentAmount;
-  double get progressPercentage => spentAmount / budgetAmount;
-  bool get isOverBudget => spentAmount > budgetAmount;
 }
 
 class BudgetManagement extends StatefulWidget {

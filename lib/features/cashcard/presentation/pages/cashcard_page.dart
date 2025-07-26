@@ -9,7 +9,8 @@ import 'package:myapp/utils/design_system/app_typography.dart';
 import 'package:myapp/utils/design_system/app_components.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/financial_charts.dart';
 import 'package:myapp/utils/navigation_helper_v2.dart' as nav;
-import 'package:myapp/features/cashcard/presentation/widgets/budget_management.dart';
+import 'package:myapp/features/cashcard/presentation/widgets/enhanced_budget_management.dart';
+import 'package:myapp/features/cashcard/presentation/widgets/budget_notification_widgets.dart';
 import 'package:myapp/features/cashcard/presentation/widgets/export_functions.dart';
 import 'package:myapp/presentation/widgets/standard_app_bar.dart';
 
@@ -510,7 +511,7 @@ class _CashcardPageState extends State<CashcardPage>
     double expense,
   ) {
     return Container(
-      margin: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Stack(
         children: [
           // Background with sophisticated gradient
@@ -673,8 +674,8 @@ class _CashcardPageState extends State<CashcardPage>
   Widget _buildProfessionalTransactionList(List<Transaction> transactions) {
     if (transactions.isEmpty) {
       return Container(
-        margin: const EdgeInsets.all(AppSpacing.md),
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: AppComponents.standardBorderRadius,
@@ -708,200 +709,413 @@ class _CashcardPageState extends State<CashcardPage>
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
-      ),
-      child: Column(
-        children: [
-          // Transaction header
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.greyExtraLightColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppComponents.standardRadius),
-                topRight: Radius.circular(AppComponents.standardRadius),
+    return Column(
+      children: [
+        // Transaction list without redundant header
+        ...transactions.asMap().entries.map((entry) {
+          final index = entry.key;
+          final transaction = entry.value;
+          return Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: _buildMinimalistTransactionTile(transaction),
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Recent Transactions',
-                  style: AppTypography.titleMedium.copyWith(
-                    fontWeight: FontWeight.w600,
+              if (index < transactions.length - 1)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Divider(
+                    height: 1,
+                    color: AppColors.greyLightColor.withOpacity(0.5),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(
-                      AppComponents.smallRadius,
-                    ),
-                  ),
-                  child: Text(
-                    '${transactions.length} items',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.primaryColor,
-                      fontWeight: FontWeight.w500,
-                    ),
+            ],
+          );
+        }).toList(),
+
+        // Show count indicator at bottom if needed
+        if (transactions.length > 5)
+          Container(
+            margin: const EdgeInsets.only(
+              top: AppSpacing.sm,
+              left: AppSpacing.sm,
+              right: AppSpacing.sm,
+            ),
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.xs,
+              horizontal: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.greyExtraLightColor,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.info_outline, size: 16, color: AppColors.greyColor),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  'Showing ${transactions.length} transactions',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.greyColor,
                   ),
                 ),
               ],
             ),
           ),
+      ],
+    );
+  }
 
-          // Transaction list
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: transactions.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              color: AppColors.greyLightColor,
-              indent: AppSpacing.xl,
+  // Helper method to calculate previous month balance for growth rate
+  double _calculatePreviousMonthBalance(CashcardProvider provider) {
+    // If showing all time, compare with last month's balance
+    if (provider.showAllTime) {
+      final now = DateTime.now();
+      final previousMonth = DateTime(now.year, now.month - 1);
+
+      double previousBalance = 0.0;
+      for (final transaction in provider.transactions) {
+        if (transaction.date.year < previousMonth.year ||
+            (transaction.date.year == previousMonth.year &&
+                transaction.date.month <= previousMonth.month)) {
+          if (transaction.type == TransactionType.income) {
+            previousBalance += transaction.amount;
+          } else {
+            previousBalance -= transaction.amount;
+          }
+        }
+      }
+      return previousBalance;
+    } else {
+      // If filtering by specific month/year, compare with previous month
+      final currentYear = provider.selectedYear;
+      final currentMonth = provider.selectedMonth;
+
+      int previousYear = currentYear;
+      int previousMonth = currentMonth - 1;
+
+      if (previousMonth <= 0) {
+        previousMonth = 12;
+        previousYear = currentYear - 1;
+      }
+
+      double previousBalance = 0.0;
+      for (final transaction in provider.transactions) {
+        if (transaction.date.year < previousYear ||
+            (transaction.date.year == previousYear &&
+                transaction.date.month <= previousMonth)) {
+          if (transaction.type == TransactionType.income) {
+            previousBalance += transaction.amount;
+          } else {
+            previousBalance -= transaction.amount;
+          }
+        }
+      }
+      return previousBalance;
+    }
+  }
+
+  // Combined Financial & Budget Insights Widget
+  Widget _buildCombinedInsights(CashcardProvider provider) {
+    return Consumer<CashcardProvider>(
+      builder: (context, cashcardProvider, child) {
+        // Financial metrics
+        final totalTransactions = provider.transactions.length;
+        final avgDailyExpense = provider.totalExpense / 30;
+
+        // Monthly Growth Rate calculation
+        final currentBalance = provider.balance;
+        final previousMonthBalance = _calculatePreviousMonthBalance(provider);
+        final monthlyGrowthRate = previousMonthBalance > 0
+            ? ((currentBalance - previousMonthBalance) /
+                  previousMonthBalance *
+                  100)
+            : 0.0;
+
+        final savingsRate = provider.totalIncome > 0
+            ? ((provider.totalIncome - provider.totalExpense) /
+                  provider.totalIncome *
+                  100)
+            : 0.0;
+
+        // Budget metrics
+        final budgetCategories = cashcardProvider.budgetCategories;
+        final totalBudget = budgetCategories.fold(
+          0.0,
+          (sum, cat) => sum + cat.budgetAmount,
+        );
+        final totalSpent = budgetCategories.fold(
+          0.0,
+          (sum, cat) => sum + cat.spentAmount,
+        );
+        final overBudgetCount = budgetCategories
+            .where((c) => c.isOverBudget)
+            .length;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Minimalist header
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.analytics,
+                    color: AppColors.primaryColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Financial & Budget Overview',
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            itemBuilder: (context, index) {
-              final transaction = transactions[index];
-              return _buildProfessionalTransactionTile(transaction);
-            },
-          ),
-        ],
-      ),
+            const SizedBox(height: AppSpacing.sm),
+
+            // First row - Core metrics (most important overview)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildInsightCard(
+                      'Monthly Growth',
+                      totalTransactions > 0
+                          ? '${monthlyGrowthRate >= 0 ? '+' : ''}${monthlyGrowthRate.toStringAsFixed(1)}%'
+                          : 'No Data',
+                      Icons.trending_up,
+                      totalTransactions > 0
+                          ? (monthlyGrowthRate >= 0
+                                ? AppColors.successColor
+                                : AppColors.errorColor)
+                          : AppColors.greyColor,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: _buildInsightCard(
+                      'Savings Rate',
+                      '${savingsRate.toStringAsFixed(1)}%',
+                      Icons.savings,
+                      savingsRate >= 20
+                          ? AppColors.successColor
+                          : AppColors.errorColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.sm),
+
+            // Budget section - if budget is set, show budget-specific insights
+            if (budgetCategories.isNotEmpty) ...[
+              // Second row - Budget Total and Total Spent
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Budget Total',
+                        'Rp ${_formatNumber(totalBudget)}',
+                        Icons.account_balance_wallet,
+                        AppColors.successColor,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Total Spent',
+                        'Rp ${_formatNumber(totalSpent)}',
+                        Icons.trending_down,
+                        totalSpent > totalBudget
+                            ? AppColors.errorColor
+                            : AppColors.successColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              // Third row - Budget performance (remaining and alerts)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Remaining',
+                        'Rp ${_formatNumber(totalBudget - totalSpent)}',
+                        Icons.account_balance,
+                        totalBudget - totalSpent > 0
+                            ? AppColors.successColor
+                            : AppColors.errorColor,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Over Budget',
+                        '$overBudgetCount categories',
+                        Icons.warning,
+                        overBudgetCount > 0
+                            ? AppColors.errorColor
+                            : AppColors.successColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              // If no budget set, show enhanced financial insights
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Savings Rate',
+                        '${savingsRate.toStringAsFixed(1)}%',
+                        Icons.savings,
+                        savingsRate >= 20
+                            ? AppColors.successColor
+                            : AppColors.errorColor,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Daily Average',
+                        NumberFormat.currency(
+                          locale: 'id',
+                          symbol: 'Rp ',
+                          decimalDigits: 0,
+                        ).format(avgDailyExpense),
+                        Icons.calendar_today,
+                        AppColors.warningColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              // Third row for non-budget scenario
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Monthly Growth',
+                        totalTransactions > 0
+                            ? '${monthlyGrowthRate >= 0 ? '+' : ''}${monthlyGrowthRate.toStringAsFixed(1)}%'
+                            : 'No Data',
+                        Icons.trending_up,
+                        totalTransactions > 0
+                            ? (monthlyGrowthRate >= 0
+                                  ? AppColors.successColor
+                                  : AppColors.errorColor)
+                            : AppColors.greyColor,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _buildInsightCard(
+                        'Balance Status',
+                        provider.balance >= 0 ? 'Positive' : 'Negative',
+                        provider.balance >= 0
+                            ? Icons.trending_up
+                            : Icons.trending_down,
+                        provider.balance >= 0
+                            ? AppColors.successColor
+                            : AppColors.errorColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 
-  // Financial Insights Widget
-  Widget _buildFinancialInsights(CashcardProvider provider) {
-    final totalTransactions = provider.transactions.length;
-    final avgDailyExpense = provider.totalExpense / 30;
-    final savingsRate = provider.totalIncome > 0
-        ? ((provider.totalIncome - provider.totalExpense) /
-              provider.totalIncome *
-              100)
-        : 0.0;
-
-    return Container(
-      margin: const EdgeInsets.all(AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.greyLightColor, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.insights, color: AppColors.primaryColor, size: 20),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                'Financial Insights',
-                style: AppTypography.titleMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-
-          // Insights Grid
-          Row(
-            children: [
-              Expanded(
-                child: _buildInsightCard(
-                  'Total Transactions',
-                  totalTransactions.toString(),
-                  Icons.receipt_long,
-                  AppColors.infoColor,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: _buildInsightCard(
-                  'Daily Average',
-                  NumberFormat.currency(
-                    locale: 'id',
-                    symbol: 'Rp ',
-                    decimalDigits: 0,
-                  ).format(avgDailyExpense),
-                  Icons.calendar_today,
-                  AppColors.warningColor,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppSpacing.sm),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildInsightCard(
-                  'Savings Rate',
-                  '${savingsRate.toStringAsFixed(1)}%',
-                  Icons.savings,
-                  savingsRate >= 20
-                      ? AppColors.successColor
-                      : AppColors.errorColor,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: _buildInsightCard(
-                  'Balance Status',
-                  provider.balance >= 0 ? 'Positive' : 'Negative',
-                  provider.balance >= 0
-                      ? Icons.trending_up
-                      : Icons.trending_down,
-                  provider.balance >= 0
-                      ? AppColors.successColor
-                      : AppColors.errorColor,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  // Helper method for number formatting with proper currency formatting
+  String _formatNumber(double number) {
+    // Use proper Indonesian currency formatting with thousand separators
+    return NumberFormat.currency(
+      locale: 'id',
+      symbol: '',
+      decimalDigits: 0,
+    ).format(number).trim();
   }
 
-  // Insight Card Widget
+  // Professional Insight Card Widget with Enhanced Colors
   Widget _buildInsightCard(
     String title,
     String value,
     IconData icon,
     Color color,
   ) {
+    // Professional color treatment for better visual hierarchy
+    final bool isPositiveMetric = _isPositiveMetric(title, value);
+    final cardColor = _getOptimizedCardColor(color, isPositiveMetric);
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.greyLightColor.withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.greyColor.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Enhanced header with premium icon treatment
           Row(
             children: [
-              Icon(icon, color: color, size: 16),
-              const SizedBox(width: AppSpacing.xs),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: cardColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: cardColor, size: 16),
+              ),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   title,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: color,
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.greyDarkColor,
                     fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -909,12 +1123,14 @@ class _CashcardPageState extends State<CashcardPage>
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.sm),
+          // Enhanced value with professional typography
           Text(
             value,
             style: AppTypography.titleSmall.copyWith(
-              color: color,
+              color: cardColor,
               fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -924,32 +1140,87 @@ class _CashcardPageState extends State<CashcardPage>
     );
   }
 
-  // Professional Transaction Tile Widget
-  Widget _buildProfessionalTransactionTile(Transaction transaction) {
+  // Helper method to determine if metric is positive/neutral/negative
+  bool _isPositiveMetric(String title, String value) {
+    // Positive indicators
+    if (title.contains('Savings Rate') && value.contains('%')) {
+      final rate = double.tryParse(value.replaceAll('%', '')) ?? 0;
+      return rate >= 20;
+    }
+    if (title.contains('Monthly Growth') && value.contains('%')) {
+      final rate =
+          double.tryParse(value.replaceAll('%', '').replaceAll('+', '')) ?? 0;
+      return rate >= 0;
+    }
+    if (title.contains('Remaining') && value.contains('Rp')) {
+      return !value.contains('-');
+    }
+    if (title.contains('Balance Status')) {
+      return value.contains('Positive');
+    }
+    if (title.contains('Over Budget')) {
+      return value.contains('0 categories');
+    }
+
+    // Neutral indicators
+    if (title.contains('Budget Total') || title.contains('Daily Average')) {
+      return true; // Neutral, use primary color
+    }
+
+    return true; // Default to neutral
+  }
+
+  // Optimized color selection based on metric context
+  Color _getOptimizedCardColor(Color originalColor, bool isPositive) {
+    // If already using semantic colors, keep them
+    if (originalColor == AppColors.successColor ||
+        originalColor == AppColors.errorColor) {
+      return originalColor;
+    }
+
+    // Enhanced primary color for neutral metrics
+    if (originalColor == AppColors.primaryColor ||
+        originalColor == AppColors.infoColor) {
+      return AppColors.primaryColor;
+    }
+
+    // Enhanced warning color
+    if (originalColor == AppColors.warningColor) {
+      return AppColors.warningColor;
+    }
+
+    return originalColor;
+  }
+
+  // Minimalist Transaction Tile Widget
+  Widget _buildMinimalistTransactionTile(Transaction transaction) {
     final isIncome = transaction.type == TransactionType.income;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xs,
+      ),
       child: Row(
         children: [
-          // Transaction icon with background
+          // Minimalist transaction icon
           Container(
-            width: 48,
-            height: 48,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: isIncome
-                  ? AppColors.successLightColor
-                  : AppColors.errorLightColor,
-              borderRadius: BorderRadius.circular(12),
+                  ? AppColors.successColor.withOpacity(0.1)
+                  : AppColors.errorColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              isIncome ? Icons.south_west : Icons.north_east,
+              isIncome ? Icons.trending_up : Icons.trending_down,
               color: isIncome ? AppColors.successColor : AppColors.errorColor,
-              size: 20,
+              size: 18,
             ),
           ),
 
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.sm),
 
           // Transaction details
           Expanded(
@@ -968,7 +1239,7 @@ class _CashcardPageState extends State<CashcardPage>
                 Row(
                   children: [
                     Text(
-                      DateFormat('dd-MM-yy').format(transaction.date),
+                      DateFormat('dd MMM').format(transaction.date),
                       style: AppTypography.labelSmall.copyWith(
                         color: AppColors.greyColor,
                       ),
@@ -982,24 +1253,13 @@ class _CashcardPageState extends State<CashcardPage>
                         ),
                       ),
                       Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
+                        child: Text(
+                          transaction.getCategoryDisplayName(),
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.primaryColor.withOpacity(0.7),
                           ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: Text(
-                            transaction.getCategoryDisplayName(),
-                            style: AppTypography.labelSmall.copyWith(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -1009,44 +1269,15 @@ class _CashcardPageState extends State<CashcardPage>
             ),
           ),
 
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.sm),
 
-          // Amount with proper formatting
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${isIncome ? '+' : '-'}${NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0).format(transaction.amount)}',
-                style: AppTypography.titleSmall.copyWith(
-                  color: isIncome
-                      ? AppColors.successColor
-                      : AppColors.errorColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: isIncome
-                      ? AppColors.successColor.withOpacity(0.1)
-                      : AppColors.errorColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  isIncome ? 'Income' : 'Expense',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: isIncome
-                        ? AppColors.successColor
-                        : AppColors.errorColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
+          // Amount with minimalist design
+          Text(
+            '${isIncome ? '+' : '-'}${NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0).format(transaction.amount)}',
+            style: AppTypography.titleSmall.copyWith(
+              color: isIncome ? AppColors.successColor : AppColors.errorColor,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -1195,31 +1426,45 @@ class _CashcardPageState extends State<CashcardPage>
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Displaying Income, Expense, and Balance in a single credit card like widget
+            // Budget Notification - Contextual alert (minimal spacing)
+            const BudgetNotificationWidget(),
+            const SizedBox(height: AppSpacing.sm),
+
+            // Financial Card - Primary hero element (generous spacing)
             _buildPremiumFinancialCard(
               context,
               cashcardProvider.balance,
               cashcardProvider.totalIncome,
               cashcardProvider.totalExpense,
             ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Combined Insights - Secondary information (moderate spacing)
+            _buildCombinedInsights(cashcardProvider),
             const SizedBox(height: AppSpacing.md),
 
-            // Financial Insights Section
-            _buildFinancialInsights(cashcardProvider),
-            const SizedBox(height: AppSpacing.md),
-
-            // Transaction Period Header
+            // Transaction Activity Header - Modern contextual title
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Text(
-                'Transactions (${cashcardProvider.showAllTime ? 'All Time' : '$_selectedMonth $_selectedYear'})',
-                style: AppTypography.titleMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              child: Row(
+                children: [
+                  Icon(Icons.history, color: AppColors.primaryColor, size: 20),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Transaction Activity (${cashcardProvider.showAllTime ? 'All Time' : '$_selectedMonth $_selectedYear'})',
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -1243,19 +1488,7 @@ class _CashcardPageState extends State<CashcardPage>
   }
 
   Widget _buildBudgetTab(CashcardProvider cashcardProvider) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.only(top: AppSpacing.md),
-        child: BudgetManagement(
-          categories: cashcardProvider.budgetCategories,
-          onAddCategory: (category) =>
-              cashcardProvider.addBudgetCategory(category),
-          onUpdateBudget: (category, amount) =>
-              cashcardProvider.updateBudgetCategory(category, amount),
-        ),
-      ),
-    );
+    return const EnhancedBudgetManagement();
   }
 
   Widget _buildExportTab(CashcardProvider cashcardProvider) {

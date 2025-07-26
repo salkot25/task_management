@@ -17,12 +17,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Import Locale
 import 'package:intl/date_symbol_data_local.dart';
 
-// Import Sync Services
-import 'package:myapp/core/sync/providers/sync_provider.dart';
-import 'package:myapp/core/sync/services/connectivity_service.dart';
-import 'package:myapp/core/sync/services/local_sync_storage.dart';
-import 'package:myapp/core/sync/services/auto_sync_service.dart';
-
 // Import Auth Features
 import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart'
     as auth_remote_data_source;
@@ -55,6 +49,9 @@ import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_d
 import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart'
     as transaction_repository_impl;
 import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart';
+
+// Import Sync Services
+import 'package:myapp/core/sync/providers/sync_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,7 +104,7 @@ void main() async {
       );
 
   runApp(
-    // Wrap dengan SyncServiceProvider untuk menyediakan sync services
+    // Wrap with SyncServiceProvider untuk auto sync functionality
     SyncServiceProvider(
       profileRepository: profileRepository,
       transactionRepository: transactionRepository,

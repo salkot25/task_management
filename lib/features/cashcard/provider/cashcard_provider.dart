@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../domain/entities/transaction.dart' as entity;
 import '../domain/repositories/transaction_repository.dart';
-import '../presentation/widgets/budget_management.dart';
+import '../domain/entities/budget_models.dart';
 
 class CashcardProvider with ChangeNotifier {
   final TransactionRepository repository;
