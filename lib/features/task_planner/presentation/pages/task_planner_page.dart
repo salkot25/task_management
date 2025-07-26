@@ -119,11 +119,15 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
   }
 
   void _showAddTaskDialog() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     nav.NavigationHelper.safeShowDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: isDarkMode
+              ? const Color(0xFF2D2D2D)
+              : Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.md),
           ),
@@ -299,19 +303,26 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         final displayTotalTasks = incompleteTasks > 0 ? incompleteTasks : 0;
         final displayCompletedTasks = 0; // Always 0 for incomplete tasks
         final isAllCompleted = allTasks > 0 && completedAllTasks == allTasks;
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
         return Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: isDarkMode
+                ? const Color(0xFF2D2D2D)
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppComponents.largeRadius),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              color: isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : Theme.of(context).colorScheme.outline.withOpacity(0.1),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.3)
+                    : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
                 spreadRadius: 0,
@@ -419,10 +430,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           height: 64,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest
-                                .withOpacity(0.3),
+                            color: isDarkMode
+                                ? Colors.grey.withOpacity(0.2)
+                                : Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest
+                                      .withOpacity(0.3),
                           ),
                         ),
                         // Animated Progress circle
@@ -558,6 +571,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     required Color color,
     bool isActive = false,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(
         vertical: AppSpacing.md,
@@ -571,6 +586,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             decoration: BoxDecoration(
               color: isActive
                   ? color.withOpacity(0.1)
+                  : isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
                   : Theme.of(
                       context,
                     ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
@@ -616,18 +633,26 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
 
     return Consumer<TaskProvider>(
       builder: (context, taskProvider, child) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
         return Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: isDarkMode
+                ? const Color(0xFF2D2D2D)
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppComponents.largeRadius),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              color: isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : Theme.of(context).colorScheme.outline.withOpacity(0.1),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.3)
+                    : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
                 spreadRadius: 0,
@@ -642,9 +667,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                      color: isDarkMode
+                          ? Colors.grey.withOpacity(0.2)
+                          : Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -687,9 +715,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                      color: isDarkMode
+                          ? Colors.grey.withOpacity(0.2)
+                          : Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -1007,19 +1038,27 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     required List<Task> tasks,
     bool showPriority = false,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     if (tasks.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: isDarkMode
+              ? const Color(0xFF2D2D2D)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.grey.withOpacity(0.2)
+                : Theme.of(context).colorScheme.outline.withOpacity(0.1),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.3)
+                  : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
               blurRadius: 20,
               offset: const Offset(0, 8),
               spreadRadius: 0,
@@ -1175,7 +1214,28 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
 
     return Container(
       padding: AppSpacing.cardPadding,
-      decoration: AppComponents.cardDecoration(),
+      decoration: BoxDecoration(
+        color: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.2)
+              : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : Theme.of(context).colorScheme.shadow.withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1216,6 +1276,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
 
   /// Professional Task Card Design with Modern Aesthetic
   Widget _buildProfessionalTaskCard(Task task, [bool showPriority = false]) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isOverdue =
         task.dueDate.isBefore(DateTime.now()) && !task.isCompleted;
     final isToday = _isSameDay(task.dueDate, DateTime.now());
@@ -1232,17 +1293,25 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: task.isCompleted
-            ? Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withOpacity(0.3)
-            : Theme.of(context).colorScheme.surface,
+            ? (isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.3))
+            : (isDarkMode
+                  ? const Color(0xFF2D2D2D)
+                  : Theme.of(context).colorScheme.surface),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: task.isCompleted
               ? Colors.transparent
               : (isOverdue
                     ? AppColors.errorColor.withOpacity(0.2)
-                    : Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+                    : (isDarkMode
+                          ? Colors.grey.withOpacity(0.2)
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.1))),
           width: 1,
         ),
         boxShadow: task.isCompleted
@@ -1251,7 +1320,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 BoxShadow(
                   color: isOverdue
                       ? AppColors.errorColor.withOpacity(0.08)
-                      : Theme.of(context).colorScheme.shadow.withOpacity(0.04),
+                      : (isDarkMode
+                            ? Colors.black.withOpacity(0.3)
+                            : Theme.of(
+                                context,
+                              ).colorScheme.shadow.withOpacity(0.04)),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                   spreadRadius: 0,
@@ -1518,9 +1591,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: isDarkMode
+          ? const Color(0xFF1A1A1A)
+          : Theme.of(context).colorScheme.surface,
       appBar: StandardAppBar(
         title: 'Task Planner',
         subtitle: 'Organize your daily workflow',
@@ -1528,9 +1604,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           Container(
             margin: const EdgeInsets.only(right: AppSpacing.sm),
             decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+              color: isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ActionButton(
@@ -1604,12 +1682,16 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             return const SizedBox.shrink();
           }
 
+          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
           return Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryColor.withOpacity(0.3),
+                  color: AppColors.primaryColor.withOpacity(
+                    isDarkMode ? 0.4 : 0.3,
+                  ),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                   spreadRadius: 0,

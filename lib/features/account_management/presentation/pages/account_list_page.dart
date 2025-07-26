@@ -69,9 +69,12 @@ class _AccountListPageState extends State<AccountListPage> {
   Widget build(BuildContext context) {
     final accountProvider = Provider.of<AccountProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: isDarkMode
+          ? const Color(0xFF1A1A1A)
+          : Theme.of(context).colorScheme.surface,
       appBar: StandardAppBar(
         title: 'Secure Vault',
         subtitle: 'Your encrypted password manager',
@@ -382,12 +385,16 @@ class _AccountListPageState extends State<AccountListPage> {
 
   /// Secure Floating Action Button with Enhanced Design
   Widget _buildSecureFloatingActionButton(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.lg),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : Theme.of(context).colorScheme.primary.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
             spreadRadius: 2,
@@ -431,10 +438,14 @@ class _AccountListPageState extends State<AccountListPage> {
     Account account,
     AccountProvider provider,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.md),
         ),
@@ -503,10 +514,14 @@ class _AccountListPageState extends State<AccountListPage> {
 
   /// Security Tips Dialog
   void _showSecurityTips(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.md),
         ),
@@ -689,19 +704,26 @@ class _AccountListItemState extends State<AccountListItem> {
     final passwordStrength = _getPasswordStrength(widget.account.password);
     final strengthColor = _getPasswordStrengthColor(passwordStrength);
     final strengthLabel = _getPasswordStrengthLabel(passwordStrength);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: isDarkMode
+            ? const Color(0xFF2D2D2D)
+            : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.2)
+              : Theme.of(context).colorScheme.outline.withOpacity(0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.04),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : Theme.of(context).colorScheme.shadow.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -908,6 +930,8 @@ class _AccountListItemState extends State<AccountListItem> {
     VoidCallback? onToggleVisibility,
     required VoidCallback onCopy,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -938,12 +962,16 @@ class _AccountListItemState extends State<AccountListItem> {
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            color: isDarkMode
+                ? Colors.grey.withOpacity(0.1)
+                : Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
             borderRadius: BorderRadius.circular(AppSpacing.sm),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              color: isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : Theme.of(context).colorScheme.outline.withOpacity(0.1),
             ),
           ),
           child: Row(

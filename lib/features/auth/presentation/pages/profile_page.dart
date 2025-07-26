@@ -8,6 +8,8 @@ import 'package:myapp/utils/design_system/design_system.dart';
 import 'package:myapp/core/sync/widgets/sync_status_widget.dart';
 import 'package:myapp/core/sync/services/auto_sync_service.dart';
 import 'package:myapp/core/sync/services/connectivity_service.dart';
+import 'package:myapp/core/theme/theme_provider.dart';
+import 'package:myapp/core/theme/widgets/theme_selector.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,7 +24,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // App settings state
   bool _notificationsEnabled = true;
-  bool _isDarkMode = false;
 
   @override
   void initState() {
@@ -968,7 +969,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         const SizedBox(height: 12.0),
 
-        // Theme Toggle
+        // Theme Settings Card
         Card(
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -979,39 +980,53 @@ class _ProfilePageState extends State<ProfilePage> {
               horizontal: 16.0,
               vertical: 12.0,
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  _isDarkMode
-                      ? Icons.dark_mode_outlined
-                      : Icons.light_mode_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Dark Mode',
-                        style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    Icon(
+                      Icons.palette_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Theme Mode',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Consumer<ThemeProvider>(
+                            builder: (context, themeProvider, child) {
+                              return Text(
+                                themeProvider.getThemeModeName(),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey[700]),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _isDarkMode
-                            ? 'Switch to light theme'
-                            : 'Switch to dark theme',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Switch(
-                  value: _isDarkMode,
-                  onChanged: _toggleTheme,
-                  activeColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    Consumer<ThemeProvider>(
+                      builder: (context, themeProvider, child) {
+                        return IconButton(
+                          icon: Icon(themeProvider.getThemeIcon()),
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) =>
+                                  const ThemeSettingsBottomSheet(),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1264,15 +1279,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _showSuccessSnackBar(
       value ? 'Notifications enabled' : 'Notifications disabled',
     );
-  }
-
-  /// Toggle dark mode theme
-  void _toggleTheme(bool value) {
-    setState(() {
-      _isDarkMode = value;
-    });
-    // TODO: Implement theme switching logic
-    _showSuccessSnackBar(value ? 'Dark mode enabled' : 'Light mode enabled');
   }
 }
 

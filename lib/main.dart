@@ -4,7 +4,7 @@ import 'package:myapp/features/task_planner/domain/repositories/task_repository.
 import 'package:provider/provider.dart';
 
 // Import Theme
-import 'package:myapp/utils/design_system/design_system.dart';
+import 'package:myapp/core/theme/enhanced_app_theme.dart';
 
 // Import Router
 import 'package:myapp/core/routing/app_router.dart';
@@ -19,9 +19,6 @@ import 'package:intl/date_symbol_data_local.dart';
 
 // Import Sync Services
 import 'package:myapp/core/sync/providers/sync_provider.dart';
-import 'package:myapp/core/sync/services/connectivity_service.dart';
-import 'package:myapp/core/sync/services/local_sync_storage.dart';
-import 'package:myapp/core/sync/services/auto_sync_service.dart';
 
 // Import Auth Features
 import 'package:myapp/features/auth/data/datasources/auth_remote_data_source.dart'
@@ -55,6 +52,9 @@ import 'package:myapp/features/cashcard/data/datasources/transaction_firestore_d
 import 'package:myapp/features/cashcard/data/repositories/transaction_repository_impl.dart'
     as transaction_repository_impl;
 import 'package:myapp/features/cashcard/presentation/provider/cashcard_provider.dart';
+
+// Import Theme Provider
+import 'package:myapp/core/theme/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -106,6 +106,10 @@ void main() async {
         transactionFirestoreDataSource,
       );
 
+  // Initialize ThemeProvider
+  final themeProvider = ThemeProvider();
+  await themeProvider.initialize();
+
   runApp(
     // Wrap dengan SyncServiceProvider untuk menyediakan sync services
     SyncServiceProvider(
@@ -114,6 +118,8 @@ void main() async {
       accountRepository: accountRepository,
       child: MultiProvider(
         providers: [
+          // Theme Provider - harus di urutan pertama agar bisa diakses provider lain
+          ChangeNotifierProvider.value(value: themeProvider),
           ChangeNotifierProvider(
             create: (context) =>
                 AccountProvider(accountRepository: accountRepository),
@@ -165,13 +171,17 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Task Management',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      routerConfig: _appRouter.router,
-      debugShowCheckedModeBanner: false,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp.router(
+          title: 'Task Management',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          routerConfig: _appRouter.router,
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

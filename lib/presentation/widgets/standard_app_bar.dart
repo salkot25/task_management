@@ -28,9 +28,14 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return AppBar(
-      backgroundColor: backgroundColor ?? Colors.white,
-      foregroundColor: foregroundColor ?? AppColors.blackColor,
+      backgroundColor:
+          backgroundColor ??
+          (isDarkMode ? const Color(0xFF2D2D2D) : Colors.white),
+      foregroundColor:
+          foregroundColor ?? (isDarkMode ? Colors.white : AppColors.blackColor),
       elevation: elevation,
       centerTitle: centerTitle,
       leading: leading,
@@ -45,13 +50,17 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
                   title,
                   style: AppTypography.titleLarge.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: foregroundColor ?? AppColors.blackColor,
+                    color:
+                        foregroundColor ??
+                        (isDarkMode ? Colors.white : AppColors.blackColor),
                   ),
                 ),
                 Text(
                   subtitle!,
                   style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.greyDarkColor,
+                    color: isDarkMode
+                        ? Colors.grey[400]
+                        : AppColors.greyDarkColor,
                   ),
                 ),
               ],
@@ -60,7 +69,9 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
               title,
               style: AppTypography.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
-                color: foregroundColor ?? AppColors.blackColor,
+                color:
+                    foregroundColor ??
+                    (isDarkMode ? Colors.white : AppColors.blackColor),
               ),
             ),
       actions: actions != null
@@ -71,7 +82,9 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Container(
           height: 1,
           decoration: BoxDecoration(
-            color: AppColors.greyLightColor.withOpacity(0.3),
+            color: isDarkMode
+                ? Colors.grey.withOpacity(0.2)
+                : AppColors.greyLightColor.withOpacity(0.3),
           ),
         ),
       ),
@@ -145,15 +158,29 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(right: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: AppColors.greyExtraLightColor,
+        color: isDarkMode
+            ? Colors.grey.withOpacity(0.2)
+            : AppColors.greyExtraLightColor,
         borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-        border: Border.all(color: AppColors.greyLightColor.withOpacity(0.5)),
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.grey.withOpacity(0.3)
+              : AppColors.greyLightColor.withOpacity(0.5),
+        ),
       ),
       child: IconButton(
-        icon: Icon(icon, color: color ?? AppColors.greyDarkColor, size: 20),
+        icon: Icon(
+          icon,
+          color:
+              color ??
+              (isDarkMode ? Colors.grey[300] : AppColors.greyDarkColor),
+          size: 20,
+        ),
         onPressed: onPressed,
         tooltip: tooltip,
         padding: const EdgeInsets.all(AppSpacing.xs),
