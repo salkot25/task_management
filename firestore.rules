@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -233,6 +234,66 @@ service cloud.firestore {
       }
     }
     
+        // Notes collection
+    match /users/{userId}/notes/{noteId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+
+      allow create: if isAuthenticated() &&
+                   isOwner(userId) &&
+                   validateNote(request.resource.data);
+
+      allow update: if isAuthenticated() &&
+                   isOwner(userId) &&
+                   validateNote(request.resource.data) &&
+                   request.resource.data.createdAt == resource.data.createdAt;
+
+      function validateNote(data) {
+        return data.keys().hasAll(['title', 'content', 'createdAt', 'updatedAt']) &&
+               isValidString(data.title, 0, 200) && // Judul boleh kosong
+               isValidString(data.content, 0, 5000) &&
+               isValidTimestamp(data.createdAt) &&
+               isValidTimestamp(data.updatedAt) &&
+               // Optional fields
+               (!data.keys().hasAny(['category']) || isValidString(data.category, 1, 50)) &&
+               (!data.keys().hasAny(['isPinned']) || data.isPinned is bool) &&
+               (!data.keys().hasAny(['tags']) || (data.tags is list && data.tags.size() <= 10)) &&
+               (!data.keys().hasAny(['pinnedAt']) || isValidTimestamp(data.pinnedAt));
+      }
+    }
+
+    // Budget categories collection
+match /users/{userId}/budgets/{budgetId} {
+  allow read, write: if isAuthenticated() && isOwner(userId);
+
+  allow create: if isAuthenticated() && 
+               isOwner(userId) && 
+               validateBudget(request.resource.data);
+
+  allow update: if isAuthenticated() && 
+               isOwner(userId) && 
+               validateBudget(request.resource.data) &&
+               request.resource.data.createdAt == resource.data.createdAt;
+
+  function validateBudget(data) {
+    return data.keys().hasAll(['name', 'budgetAmount', 'spentAmount', 'period', 'createdAt', 'updatedAt']) &&
+           isValidString(data.name, 1, 100) &&
+           isValidNumber(data.budgetAmount, 0, 999999999) &&
+           isValidNumber(data.spentAmount, 0, 999999999) &&
+           data.period in ['monthly', 'weekly', 'yearly', 'custom'] &&
+           isValidTimestamp(data.createdAt) &&
+           isValidTimestamp(data.updatedAt) &&
+           // Optional fields
+           (!data.keys().hasAny(['startDate']) || isValidTimestamp(data.startDate)) &&
+           (!data.keys().hasAny(['endDate']) || isValidTimestamp(data.endDate)) &&
+           (!data.keys().hasAny(['color']) || isValidString(data.color, 6, 7)) && // hex color
+           (!data.keys().hasAny(['icon']) || isValidString(data.icon, 1, 50)) &&
+           (!data.keys().hasAny(['isActive']) || data.isActive is bool) &&
+           (!data.keys().hasAny(['alertThreshold']) || isValidNumber(data.alertThreshold, 0, 100));
+  }
+}
+
+
+
     // Audit logs (read-only for users, write for server)
     match /users/{userId}/audit_logs/{logId} {
       allow read: if isAuthenticated() && isOwner(userId);

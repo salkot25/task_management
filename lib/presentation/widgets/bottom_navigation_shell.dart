@@ -82,21 +82,27 @@ class BottomNavigationShell extends StatelessWidget {
         tooltip: 'Task Planner',
       ),
       BottomNavigationBarItem(
-        icon: _buildNavItemWithLabel(Icons.lock_outline, 1, 'Vault', context),
-        activeIcon: _buildNavItemWithLabel(Icons.lock, 1, 'Vault', context),
+        icon: _buildNavItemWithLabel(Icons.note_outlined, 1, 'Notes', context),
+        activeIcon: _buildNavItemWithLabel(Icons.note, 1, 'Notes', context),
+        label: '',
+        tooltip: 'Catatan',
+      ),
+      BottomNavigationBarItem(
+        icon: _buildNavItemWithLabel(Icons.lock_outline, 2, 'Vault', context),
+        activeIcon: _buildNavItemWithLabel(Icons.lock, 2, 'Vault', context),
         label: '',
         tooltip: 'Password Vault',
       ),
       BottomNavigationBarItem(
         icon: _buildNavItemWithLabel(
           Icons.account_balance_wallet_outlined,
-          2,
+          3,
           'Cashcard',
           context,
         ),
         activeIcon: _buildNavItemWithLabel(
           Icons.account_balance_wallet,
-          2,
+          3,
           'Cashcard',
           context,
         ),
@@ -106,11 +112,11 @@ class BottomNavigationShell extends StatelessWidget {
       BottomNavigationBarItem(
         icon: _buildNavItemWithLabel(
           Icons.person_outline,
-          3,
+          4,
           'Profile',
           context,
         ),
-        activeIcon: _buildNavItemWithLabel(Icons.person, 3, 'Profile', context),
+        activeIcon: _buildNavItemWithLabel(Icons.person, 4, 'Profile', context),
         label: '',
         tooltip: 'User Profile',
       ),

@@ -49,10 +49,10 @@ class Transaction {
   factory Transaction.fromMap(Map<String, dynamic> map) {
     try {
       // Log the types of each field before parsing
-      print('Transaction map data types:');
-      map.forEach((key, value) {
-        print('  $key: ${value.runtimeType}');
-      });
+      // print('Transaction map data types:');
+      // map.forEach((key, value) {
+      //   print('  $key: {value.runtimeType}');
+      // });
 
       // Use null-aware operators and explicit checks for safer parsing
       final id = map['id'] as String?;
@@ -71,13 +71,13 @@ class Transaction {
           dateString == null) {
         // Log or handle the error appropriately. Returning null might be an option
         // if the stream can handle nulls, or throwing a specific error.
-        print('Error: Missing or null field in transaction data: $map');
+        // print('Error: Missing or null field in transaction data: $map');
         throw FormatException('Missing or invalid data in transaction map.');
       }
 
       // Validate typeString before parsing
       if (typeString != 'income' && typeString != 'expense') {
-        print('Error: Invalid type string in transaction data: $map');
+        // print('Error: Invalid type string in transaction data: $map');
         throw FormatException('Invalid transaction type string.');
       }
 
@@ -111,8 +111,8 @@ class Transaction {
       );
     } catch (e) {
       // Log the error and the problematic data for debugging
-      print('Error parsing transaction from Firestore: $e');
-      print('Problematic data: $map');
+      // print('Error parsing transaction from Firestore: $e');
+      // print('Problematic data: $map');
       // Rethrow the error after logging
       rethrow;
     }

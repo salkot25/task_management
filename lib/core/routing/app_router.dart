@@ -11,6 +11,7 @@ import 'package:clarity/features/auth/presentation/pages/profile_page.dart';
 // Import Features
 import 'package:clarity/features/account_management/presentation/pages/account_list_page.dart';
 import 'package:clarity/features/task_planner/presentation/pages/task_planner_page.dart';
+import 'package:clarity/features/notes/presentation/pages/notes_page.dart';
 import 'package:clarity/features/cashcard/presentation/pages/cashcard_page.dart';
 import 'package:clarity/features/settings/presentation/pages/permission_settings_page.dart';
 import 'package:clarity/presentation/pages/about_page.dart';
@@ -89,6 +90,17 @@ class AppRouter {
               path: '/tasks',
               name: 'tasks',
               builder: (context, state) => const TaskPlannerPage(),
+            ),
+          ],
+        ),
+
+        // Notes branch
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/notes',
+              name: 'notes',
+              builder: (context, state) => const NotesPage(),
             ),
           ],
         ),
@@ -177,6 +189,7 @@ abstract class AppRoutes {
   static const String register = 'register';
   static const String forgotPassword = 'forgot-password';
   static const String tasks = 'tasks';
+  static const String notes = 'notes';
   static const String vault = 'vault';
   static const String cashcard = 'cashcard';
   static const String profile = 'profile';
@@ -198,6 +211,9 @@ extension AppNavigation on BuildContext {
 
   /// Navigate to tasks page
   void goToTasks() => go('/tasks');
+
+  /// Navigate to notes page
+  void goToNotes() => go('/notes');
 
   /// Navigate to vault page
   void goToVault() => go('/accounts');

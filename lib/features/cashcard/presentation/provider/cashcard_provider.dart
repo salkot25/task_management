@@ -4,11 +4,29 @@ import 'package:clarity/features/cashcard/domain/entities/transaction.dart'
     as entity;
 import 'package:clarity/features/cashcard/domain/repositories/transaction_repository.dart';
 import 'package:clarity/features/cashcard/domain/entities/budget_models.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
 class CashcardProvider with ChangeNotifier {
+  // Icon mapping for budget categories (const)
+  static const Map<String, IconData> iconMap = {
+    'restaurant': Icons.restaurant,
+    'directions_car': Icons.directions_car,
+    'shopping_bag': Icons.shopping_bag,
+    'local_hospital': Icons.local_hospital,
+    'movie': Icons.movie,
+    'receipt': Icons.receipt,
+    'school': Icons.school,
+    'card_giftcard': Icons.card_giftcard,
+    'category': Icons.category,
+  };
   final TransactionRepository repository;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   List<entity.Transaction> _transactions = [];
-  final List<BudgetCategory> _budgetCategories = [];
+  List<BudgetCategory> _budgetCategories = [];
+  StreamSubscription? _budgetSubscription;
 
   // Added for filtering
   int _selectedMonth = DateTime.now().month;
@@ -25,7 +43,7 @@ class CashcardProvider with ChangeNotifier {
 
   CashcardProvider(this.repository) {
     _listenToTransactions();
-    _initializeDefaultBudgetCategories();
+    _listenToBudgets();
   }
 
   List<entity.Transaction> get transactions {
@@ -100,6 +118,31 @@ class CashcardProvider with ChangeNotifier {
     });
   }
 
+  void _listenToBudgets() {
+    _budgetSubscription?.cancel();
+    final user = _auth.currentUser;
+    if (user == null) return;
+    _budgetSubscription = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('budgets')
+        .snapshots()
+        .listen((snapshot) {
+          _budgetCategories = snapshot.docs.map((doc) {
+            final data = doc.data();
+            return BudgetCategory(
+              name: data['name'] ?? '',
+              budgetAmount: (data['budgetAmount'] ?? 0).toDouble(),
+              spentAmount: (data['spentAmount'] ?? 0).toDouble(),
+              color: Color(data['colorValue'] ?? Colors.grey.value),
+              icon: iconMap[data['iconName']] ?? Icons.category,
+            );
+          }).toList();
+          _updateBudgetSpending();
+          notifyListeners();
+        });
+  }
+
   Future<void> addTransaction(entity.Transaction transaction) async {
     await repository.addTransaction(transaction);
     // Auto-update budget if it's an expense with category
@@ -142,120 +185,138 @@ class CashcardProvider with ChangeNotifier {
   }
 
   // Budget Management Methods
-  void addBudgetCategory(BudgetCategory category) {
-    _budgetCategories.add(category);
-    notifyListeners();
+  Future<void> addBudgetCategory(BudgetCategory category) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    final docRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('budgets')
+        .doc(category.name);
+    // Cari nama icon dari iconMap
+    final iconName = iconMap.entries
+        .firstWhere(
+          (e) => e.value == category.icon,
+          orElse: () => const MapEntry('category', Icons.category),
+        )
+        .key;
+    await docRef.set({
+      'name': category.name,
+      'budgetAmount': category.budgetAmount,
+      'spentAmount': category.spentAmount,
+      'colorValue': category.color.value,
+      'iconName': iconName,
+    });
   }
 
-  void updateBudgetCategory(BudgetCategory category, double newBudgetAmount) {
-    final index = _budgetCategories.indexWhere((c) => c.name == category.name);
-    if (index != -1) {
-      final updatedCategory = BudgetCategory(
-        name: category.name,
-        budgetAmount: newBudgetAmount,
-        spentAmount: category.spentAmount,
-        color: category.color,
-        icon: category.icon,
-      );
-      _budgetCategories[index] = updatedCategory;
-      notifyListeners();
+  Future<void> updateBudgetCategory(
+    BudgetCategory category,
+    double newBudgetAmount,
+  ) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    final docRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('budgets')
+        .doc(category.name);
+    await docRef.update({'budgetAmount': newBudgetAmount});
+  }
+
+  Future<void> removeBudgetCategory(String categoryName) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    final docRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('budgets')
+        .doc(categoryName);
+    await docRef.delete();
+  }
+
+  Future<void> resetBudgetSpending() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    final batch = _firestore.batch();
+    final budgetsRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('budgets');
+    for (final category in _budgetCategories) {
+      final docRef = budgetsRef.doc(category.name);
+      batch.update(docRef, {'spentAmount': 0});
     }
+    await batch.commit();
   }
 
-  void removeBudgetCategory(String categoryName) {
-    _budgetCategories.removeWhere((category) => category.name == categoryName);
-    notifyListeners();
-  }
-
-  void resetBudgetSpending() {
-    for (int i = 0; i < _budgetCategories.length; i++) {
-      final category = _budgetCategories[i];
-      _budgetCategories[i] = BudgetCategory(
-        name: category.name,
-        budgetAmount: category.budgetAmount,
-        spentAmount: 0, // Reset spending to 0
-        color: category.color,
-        icon: category.icon,
-      );
+  Future<void> _updateBudgetSpending() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    final batch = _firestore.batch();
+    final budgetsRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('budgets');
+    for (final category in _budgetCategories) {
+      final spent = _calculateCategorySpending(category.name);
+      final docRef = budgetsRef.doc(category.name);
+      batch.update(docRef, {'spentAmount': spent});
     }
-    notifyListeners();
+    await batch.commit();
   }
 
-  void _initializeDefaultBudgetCategories() {
-    if (_budgetCategories.isEmpty) {
-      // Add some default budget categories
-      final defaultCategories = [
-        BudgetCategory(
-          name: 'Food & Dining',
-          budgetAmount: 2000000, // 2 juta
-          spentAmount: 0,
-          color: _getCategoryColorByName('Food & Dining'),
-          icon: _getCategoryIconByName('Food & Dining'),
-        ),
-        BudgetCategory(
-          name: 'Transportation',
-          budgetAmount: 1000000, // 1 juta
-          spentAmount: 0,
-          color: _getCategoryColorByName('Transportation'),
-          icon: _getCategoryIconByName('Transportation'),
-        ),
-        BudgetCategory(
-          name: 'Entertainment',
-          budgetAmount: 500000, // 500 ribu
-          spentAmount: 0,
-          color: _getCategoryColorByName('Entertainment'),
-          icon: _getCategoryIconByName('Entertainment'),
-        ),
-      ];
-
-      _budgetCategories.addAll(defaultCategories);
-      // Update spending based on existing transactions
-      _updateBudgetSpending();
-    }
-  }
-
-  void _updateBudgetSpending() {
-    for (int i = 0; i < _budgetCategories.length; i++) {
-      final category = _budgetCategories[i];
-      final categorySpending = _calculateCategorySpending(category.name);
-
-      _budgetCategories[i] = BudgetCategory(
-        name: category.name,
-        budgetAmount: category.budgetAmount,
-        spentAmount: categorySpending,
-        color: category.color,
-        icon: category.icon,
-      );
-    }
-  }
-
-  // Auto-update budget spending when a new transaction is added
-  void _autoUpdateBudgetSpending(entity.Transaction transaction) {
+  Future<void> _autoUpdateBudgetSpending(entity.Transaction transaction) async {
     if (transaction.type == entity.TransactionType.expense) {
-      String categoryName;
-
-      // Get category name from transaction or description
       if (transaction.category != null) {
-        categoryName = transaction.getCategoryDisplayName();
+        // ignore: unused_local_variable
+        final _ = transaction.getCategoryDisplayName();
       } else {
-        categoryName = _getCategoryFromDescription(transaction.description);
+        // ignore: unused_local_variable
+        final _ = _getCategoryFromDescription(transaction.description);
       }
+      await _updateBudgetSpending();
+    }
+  }
 
-      // Update the corresponding budget category
-      for (int i = 0; i < _budgetCategories.length; i++) {
-        if (_budgetCategories[i].name == categoryName) {
-          final category = _budgetCategories[i];
-          _budgetCategories[i] = BudgetCategory(
-            name: category.name,
-            budgetAmount: category.budgetAmount,
-            spentAmount: category.spentAmount + transaction.amount,
-            color: category.color,
-            icon: category.icon,
-          );
-          break;
-        }
+  Future<void> autoCreateBudgetCategories() async {
+    final recommendations = getBudgetRecommendations()
+        .where((r) => r.type == RecommendationType.createBudget)
+        .toList();
+    final user = _auth.currentUser;
+    if (user == null) return;
+    final budgetsRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('budgets');
+    final batch = _firestore.batch();
+    for (final recommendation in recommendations) {
+      if (!_budgetCategories.any(
+        (b) => b.name == recommendation.categoryName,
+      )) {
+        final newCategory = BudgetCategory(
+          name: recommendation.categoryName,
+          budgetAmount: recommendation.recommendedAmount,
+          spentAmount: _calculateCategorySpending(recommendation.categoryName),
+          color: _getCategoryColorByName(recommendation.categoryName),
+          icon: _getCategoryIconByName(recommendation.categoryName),
+        );
+        final iconName = iconMap.entries
+            .firstWhere(
+              (e) => e.value == newCategory.icon,
+              orElse: () => const MapEntry('category', Icons.category),
+            )
+            .key;
+        final docRef = budgetsRef.doc(newCategory.name);
+        batch.set(docRef, {
+          'name': newCategory.name,
+          'budgetAmount': newCategory.budgetAmount,
+          'spentAmount': newCategory.spentAmount,
+          'colorValue': newCategory.color.value,
+          'iconName': iconName,
+        });
       }
     }
+    await batch.commit();
   }
 
   // Get budget status for a specific category
@@ -360,29 +421,6 @@ class CashcardProvider with ChangeNotifier {
     });
 
     return recommendations;
-  }
-
-  // Auto-create budget based on spending patterns
-  void autoCreateBudgetCategories() {
-    final recommendations = getBudgetRecommendations()
-        .where((r) => r.type == RecommendationType.createBudget)
-        .toList();
-
-    for (final recommendation in recommendations) {
-      if (!_budgetCategories.any(
-        (b) => b.name == recommendation.categoryName,
-      )) {
-        final newCategory = BudgetCategory(
-          name: recommendation.categoryName,
-          budgetAmount: recommendation.recommendedAmount,
-          spentAmount: _calculateCategorySpending(recommendation.categoryName),
-          color: _getCategoryColorByName(recommendation.categoryName),
-          icon: _getCategoryIconByName(recommendation.categoryName),
-        );
-        _budgetCategories.add(newCategory);
-      }
-    }
-    notifyListeners();
   }
 
   // Get budget alerts (notifications)

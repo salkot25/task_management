@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Add uuid dependency",
+			"type": "shell",
+			"command": "flutter pub add uuid",
+			"group": "build",
+			"isBackground": false
+		}
+	]
+}

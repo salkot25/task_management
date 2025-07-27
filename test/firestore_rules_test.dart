@@ -10,77 +10,77 @@ class FirestoreRulesTest {
 
   /// Test basic authentication dan user isolation
   static Future<void> testUserIsolation() async {
-    print('🧪 Testing User Isolation...');
+    // print('🧪 Testing User Isolation...');
 
     try {
       // Test 1: Authenticated user accessing own data
       final user1 = await _signInTestUser('test1@example.com');
       await _testUserCanAccessOwnData(user1.uid);
-      print('✅ User can access own data');
+      // print('✅ User can access own data');
 
       // Test 2: Authenticated user trying to access other user's data
       final user2 = await _signInTestUser('test2@example.com');
       await _testUserCannotAccessOtherData(user1.uid, user2.uid);
-      print('✅ User cannot access other user\'s data');
+      // print('✅ User cannot access other user\'s data');
 
       // Test 3: Unauthenticated access
       await auth.signOut();
       await _testUnauthenticatedAccess();
-      print('✅ Unauthenticated access denied');
+      // print('✅ Unauthenticated access denied');
     } catch (e) {
-      print('❌ User Isolation Test Failed: $e');
+      // print('❌ User Isolation Test Failed: $e');
       rethrow;
     }
   }
 
   /// Test data validation rules
   static Future<void> testDataValidation() async {
-    print('🧪 Testing Data Validation...');
+    // print('🧪 Testing Data Validation...');
 
     try {
       final user = await _signInTestUser('test@example.com');
 
       // Test valid data
       await _testValidAccountCreation(user.uid);
-      print('✅ Valid account creation works');
+      // print('✅ Valid account creation works');
 
       // Test invalid data
       await _testInvalidAccountCreation(user.uid);
-      print('✅ Invalid account creation rejected');
+      // print('✅ Invalid account creation rejected');
 
       // Test valid transaction
       await _testValidTransactionCreation(user.uid);
-      print('✅ Valid transaction creation works');
+      // print('✅ Valid transaction creation works');
 
       // Test invalid transaction
       await _testInvalidTransactionCreation(user.uid);
-      print('✅ Invalid transaction creation rejected');
+      // print('✅ Invalid transaction creation rejected');
     } catch (e) {
-      print('❌ Data Validation Test Failed: $e');
+      // print('❌ Data Validation Test Failed: $e');
       rethrow;
     }
   }
 
   /// Test field-specific validation
   static Future<void> testFieldValidation() async {
-    print('🧪 Testing Field Validation...');
+    // print('🧪 Testing Field Validation...');
 
     try {
       final user = await _signInTestUser('test@example.com');
 
       // Test string length validation
       await _testStringLengthValidation(user.uid);
-      print('✅ String length validation works');
+      // print('✅ String length validation works');
 
       // Test number range validation
       await _testNumberRangeValidation(user.uid);
-      print('✅ Number range validation works');
+      // print('✅ Number range validation works');
 
       // Test enum validation
       await _testEnumValidation(user.uid);
-      print('✅ Enum validation works');
+      // print('✅ Enum validation works');
     } catch (e) {
-      print('❌ Field Validation Test Failed: $e');
+      // print('❌ Field Validation Test Failed: $e');
       rethrow;
     }
   }
@@ -334,21 +334,21 @@ class FirestoreRulesTest {
 
   /// Run all tests
   static Future<void> runAllTests() async {
-    print('🚀 Starting Firestore Rules Tests...\n');
+    // print('🚀 Starting Firestore Rules Tests...\n');
 
     try {
       await testUserIsolation();
-      print('');
+      // print('');
 
       await testDataValidation();
-      print('');
+      // print('');
 
       await testFieldValidation();
-      print('');
+      // print('');
 
-      print('🎉 All Firestore Rules Tests Passed!');
+      // print('🎉 All Firestore Rules Tests Passed!');
     } catch (e) {
-      print('💥 Test Suite Failed: $e');
+      // print('💥 Test Suite Failed: $e');
       rethrow;
     }
   }

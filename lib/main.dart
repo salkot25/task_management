@@ -46,6 +46,9 @@ import 'package:clarity/features/task_planner/data/datasources/task_firestore_da
     as task_firestore_data_source;
 import 'package:clarity/features/task_planner/presentation/provider/task_provider.dart';
 
+// Import Notes Features
+import 'package:clarity/features/notes/presentation/provider/notes_provider.dart';
+
 // Import Cashcard Features
 import 'package:clarity/features/cashcard/data/datasources/transaction_firestore_data_source.dart'
     as transaction_firestore_data_source;
@@ -129,6 +132,7 @@ void main() async {
               taskRepository: taskRepository,
             ), // Provide taskRepository
           ),
+          ChangeNotifierProvider(create: (context) => NotesProvider()),
           ChangeNotifierProvider(
             create: (context) => CashcardProvider(
               transactionRepository,

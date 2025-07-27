@@ -38,7 +38,7 @@ dependencies:
   dartz: ^0.10.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  uuid: ^4.1.0 # Untuk menghasilkan ID unik
+  uuid: ^4.5.1 # Untuk menghasilkan ID unik
   provider: ^6.1.5 # Untuk state management (pilihan awal, bisa diganti nanti)
   intl: ^0.20.2
   firebase_core: ^3.15.2 # Add firebase_core dependency

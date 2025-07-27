@@ -51,15 +51,17 @@ class BudgetCategory {
 
   // Create from map
   factory BudgetCategory.fromMap(Map<String, dynamic> map) {
+    // Only allow constant icons for tree shaking
+    IconData icon = Icons.category;
+    // Optionally, you can map string/icon name to a constant icon here if needed
+    // Example: if (map['iconName'] == 'food') icon = Icons.fastfood;
+
     return BudgetCategory(
       name: map['name'] ?? '',
       budgetAmount: (map['budgetAmount'] ?? 0).toDouble(),
       spentAmount: (map['spentAmount'] ?? 0).toDouble(),
       color: Color(map['colorValue'] ?? Colors.grey.value),
-      icon: IconData(
-        map['iconCodePoint'] ?? Icons.category.codePoint,
-        fontFamily: 'MaterialIcons',
-      ),
+      icon: icon,
     );
   }
 }

@@ -95,11 +95,11 @@ class LoginPageState extends State<LoginPage> {
                     // Optimized logo size for better visual hierarchy
                     Image.asset(
                       'assets/images/logo.png',
-                      height: 120, // Reduced from 180px for better proportion
+                      height: 140, // Reduced from 180px for better proportion
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
-                      'TASKS MANAGEMENT',
+                      'Welcome Back!',
                       textAlign: TextAlign.center,
                       style: AppTypography.loginTitle.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,

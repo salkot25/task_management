@@ -11,7 +11,7 @@ class PermissionStatusWidget extends StatefulWidget {
 }
 
 class _PermissionStatusWidgetState extends State<PermissionStatusWidget> {
-  Map<Permission, PermissionStatus> _permissionStatuses = {};
+  final Map<Permission, PermissionStatus> _permissionStatuses = {};
   bool _isLoading = true;
 
   @override
