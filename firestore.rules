@@ -122,62 +122,31 @@ service cloud.firestore {
     // Transactions collection (Cashcard feature)
     match /users/{userId}/transactions/{transactionId} {
       allow read, write: if isAuthenticated() && isOwner(userId);
-      
-      allow create: if isAuthenticated() && 
-                   isOwner(userId) && 
-                   validateTransaction(request.resource.data);
-      
-      allow update: if isAuthenticated() && 
-                   isOwner(userId) && 
-                   validateTransaction(request.resource.data) &&
-                   request.resource.data.createdAt == resource.data.createdAt;
-      
+      allow create: if isAuthenticated() && isOwner(userId) && validateTransaction(request.resource.data);
+      allow update: if isAuthenticated() && isOwner(userId) && validateTransaction(request.resource.data);
       function validateTransaction(data) {
-        return data.keys().hasAll(['amount', 'type', 'description', 'date', 'createdAt', 'updatedAt']) &&
+        return data.keys().hasAll(['amount', 'type', 'description', 'date']) &&
                isValidNumber(data.amount, 0.01, 999999999) &&
                data.type in ['income', 'expense'] &&
                isValidString(data.description, 1, 255) &&
                isValidTimestamp(data.date) &&
-               isValidTimestamp(data.createdAt) &&
-               isValidTimestamp(data.updatedAt) &&
                // Optional fields
-               (!data.keys().hasAny(['category']) || isValidString(data.category, 1, 50)) &&
-               (!data.keys().hasAny(['accountId']) || isValidString(data.accountId, 1, 100)) &&
-               (!data.keys().hasAny(['tags']) || (data.tags is list && data.tags.size() <= 5)) &&
-               (!data.keys().hasAny(['location']) || isValidString(data.location, 1, 100)) &&
-               (!data.keys().hasAny(['notes']) || isValidString(data.notes, 0, 500)) &&
-               (!data.keys().hasAny(['receiptUrl']) || isValidString(data.receiptUrl, 1, 500));
+               (!data.keys().hasAny(['category']) || isValidString(data.category, 1, 50));
       }
     }
     
     // Budget categories collection
     match /users/{userId}/budgets/{budgetId} {
       allow read, write: if isAuthenticated() && isOwner(userId);
-      
-      allow create: if isAuthenticated() && 
-                   isOwner(userId) && 
-                   validateBudget(request.resource.data);
-      
-      allow update: if isAuthenticated() && 
-                   isOwner(userId) && 
-                   validateBudget(request.resource.data) &&
-                   request.resource.data.createdAt == resource.data.createdAt;
-      
+      allow create: if isAuthenticated() && isOwner(userId) && validateBudget(request.resource.data);
+      allow update: if isAuthenticated() && isOwner(userId) && validateBudget(request.resource.data);
       function validateBudget(data) {
-        return data.keys().hasAll(['name', 'budgetAmount', 'spentAmount', 'period', 'createdAt', 'updatedAt']) &&
+        return data.keys().hasAll(['name', 'budgetAmount', 'spentAmount', 'colorValue', 'iconName']) &&
                isValidString(data.name, 1, 100) &&
                isValidNumber(data.budgetAmount, 0, 999999999) &&
                isValidNumber(data.spentAmount, 0, 999999999) &&
-               data.period in ['monthly', 'weekly', 'yearly', 'custom'] &&
-               isValidTimestamp(data.createdAt) &&
-               isValidTimestamp(data.updatedAt) &&
-               // Optional fields
-               (!data.keys().hasAny(['startDate']) || isValidTimestamp(data.startDate)) &&
-               (!data.keys().hasAny(['endDate']) || isValidTimestamp(data.endDate)) &&
-               (!data.keys().hasAny(['color']) || isValidString(data.color, 6, 7)) && // hex color
-               (!data.keys().hasAny(['icon']) || isValidString(data.icon, 1, 50)) &&
-               (!data.keys().hasAny(['isActive']) || data.isActive is bool) &&
-               (!data.keys().hasAny(['alertThreshold']) || isValidNumber(data.alertThreshold, 0, 100));
+               data.colorValue is int &&
+               isValidString(data.iconName, 1, 50);
       }
     }
     

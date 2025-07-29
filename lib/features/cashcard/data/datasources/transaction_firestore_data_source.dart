@@ -31,13 +31,15 @@ class TransactionFirestoreDataSourceImpl
     if (_currentUserId == null) {
       throw Exception('User not authenticated');
     }
-
-    // Add timestamp and userId to transaction data
-    final transactionData = transaction.toMap();
-    transactionData['userId'] = _currentUserId;
-    transactionData['createdAt'] = FieldValue.serverTimestamp();
-    transactionData['updatedAt'] = FieldValue.serverTimestamp();
-
+    // Only send allowed fields to Firestore
+    final transactionData = {
+      'amount': transaction.amount,
+      'type': transaction.type.name,
+      'description': transaction.description,
+      'date': transaction.date.toIso8601String(),
+      if (transaction.category != null)
+        'category': transaction.category.toString().split('.').last,
+    };
     return _transactionsCollection.doc(transaction.id).set(transactionData);
   }
 
