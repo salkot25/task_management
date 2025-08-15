@@ -1602,7 +1602,10 @@ class _CashcardPageState extends State<CashcardPage>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${DateFormat('dd MMM yyyy HH:mm', 'id_ID').format(transaction.date)}',
+                  DateFormat(
+                    'dd MMM yyyy HH:mm',
+                    'id_ID',
+                  ).format(transaction.date),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.greyColor,
                   ),
