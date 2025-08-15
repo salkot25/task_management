@@ -418,23 +418,25 @@ class ExportFunctions extends StatelessWidget {
     if (!context.mounted) return;
 
     // Show a simple snackbar for loading feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            const SizedBox(width: 16),
-            Text('Generating $title PDF...'),
-          ],
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 16),
+              Text('Generating $title PDF...'),
+            ],
+          ),
+          duration: const Duration(seconds: 30), // Will be dismissed manually
+          backgroundColor: AppColors.primaryColor,
         ),
-        duration: const Duration(seconds: 30), // Will be dismissed manually
-        backgroundColor: AppColors.primaryColor,
-      ),
-    );
+      );
+    }
 
     try {
       // Generate PDF in background with timeout
@@ -446,7 +448,9 @@ class ExportFunctions extends StatelessWidget {
       );
 
       // Dismiss loading snackbar
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
 
       if (!context.mounted) return;
 
@@ -469,7 +473,9 @@ class ExportFunctions extends StatelessWidget {
       }
     } catch (e) {
       // Dismiss loading snackbar
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

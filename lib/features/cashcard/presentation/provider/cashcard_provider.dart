@@ -50,7 +50,7 @@ class CashcardProvider with ChangeNotifier {
     // Delay initial budget spending update to allow both listeners to initialize
     Future.delayed(const Duration(seconds: 2), () {
       if (_budgetCategories.isNotEmpty && _transactions.isNotEmpty) {
-        print('Initial budget spending update after delay...');
+        debugPrint('Initial budget spending update after delay...');
         _updateBudgetSpending();
       }
     });
@@ -129,12 +129,12 @@ class CashcardProvider with ChangeNotifier {
           // Only update budget spending if transactions changed AND we have budget categories
           if (_transactions.length != oldTransactionCount &&
               _budgetCategories.isNotEmpty) {
-            print('Transactions changed, updating budget spending...');
+            debugPrint('Transactions changed, updating budget spending...');
 
             // Immediately update budget categories with real-time calculations
             _budgetCategories = _budgetCategories.map((category) {
               final realTimeSpent = _calculateCategorySpending(category.name);
-              print(
+              debugPrint(
                 'Transaction change - Budget ${category.name}: ${category.spentAmount} -> $realTimeSpent',
               );
               return category.copyWith(spentAmount: realTimeSpent);
@@ -146,12 +146,12 @@ class CashcardProvider with ChangeNotifier {
 
           notifyListeners();
         } catch (e) {
-          print('Error processing transaction data: $e');
+          debugPrint('Error processing transaction data: $e');
           notifyListeners();
         }
       },
       onError: (error) {
-        print('Error listening to transactions: $error');
+        debugPrint('Error listening to transactions: $error');
         // Initialize empty transactions on error
         _transactions = [];
         notifyListeners();
@@ -192,7 +192,7 @@ class CashcardProvider with ChangeNotifier {
                   final realTimeSpent = _calculateCategorySpending(
                     category.name,
                   );
-                  print(
+                  debugPrint(
                     'Budget ${category.name}: DB=${category.spentAmount}, Calculated=$realTimeSpent',
                   );
 
@@ -200,7 +200,7 @@ class CashcardProvider with ChangeNotifier {
                   return category.copyWith(spentAmount: realTimeSpent);
                 } else {
                   // If no transactions yet, use the DB amount
-                  print(
+                  debugPrint(
                     'Budget ${category.name}: Using DB amount=${category.spentAmount} (no transactions yet)',
                   );
                   return category;
@@ -209,19 +209,21 @@ class CashcardProvider with ChangeNotifier {
 
               // If budget categories just loaded for the first time, force update database
               if (previousCategoryCount == 0 && _budgetCategories.isNotEmpty) {
-                print('Budget categories loaded, updating spending amounts...');
+                debugPrint(
+                  'Budget categories loaded, updating spending amounts...',
+                );
                 // Force update database with calculated amounts
                 Future.microtask(() => _forceUpdateAllBudgetSpending());
               }
 
               notifyListeners();
             } catch (e) {
-              print('Error processing budget data: $e');
+              debugPrint('Error processing budget data: $e');
               notifyListeners();
             }
           },
           onError: (error) {
-            print('Error listening to budgets: $error');
+            debugPrint('Error listening to budgets: $error');
             // Initialize empty budget categories on error
             _budgetCategories = [];
             notifyListeners();
@@ -426,11 +428,11 @@ class CashcardProvider with ChangeNotifier {
   Future<void> _updateBudgetSpending() async {
     // Prevent recursive calls
     if (_isUpdatingBudgetSpending) {
-      print('Budget spending update skipped - already in progress');
+      debugPrint('Budget spending update skipped - already in progress');
       return;
     }
 
-    print('Starting budget spending update...');
+    debugPrint('Starting budget spending update...');
 
     try {
       _isUpdatingBudgetSpending = true;
@@ -439,7 +441,7 @@ class CashcardProvider with ChangeNotifier {
 
       // Only update if we have budget categories
       if (_budgetCategories.isEmpty) {
-        print('No budget categories to update');
+        debugPrint('No budget categories to update');
         return;
       }
 
@@ -467,16 +469,16 @@ class CashcardProvider with ChangeNotifier {
 
       if (updatedCount > 0) {
         await batch.commit();
-        print('Budget spending updated for $updatedCount categories');
+        debugPrint('Budget spending updated for $updatedCount categories');
       } else {
-        print('No budget spending changes detected');
+        debugPrint('No budget spending changes detected');
       }
     } catch (e) {
-      print('Error updating budget spending: $e');
+      debugPrint('Error updating budget spending: $e');
       // Don't rethrow the error to prevent cascading failures
     } finally {
       _isUpdatingBudgetSpending = false;
-      print('Budget spending update completed');
+      debugPrint('Budget spending update completed');
     }
   }
 
@@ -484,11 +486,11 @@ class CashcardProvider with ChangeNotifier {
   Future<void> _forceUpdateAllBudgetSpending() async {
     // Prevent recursive calls
     if (_isUpdatingBudgetSpending) {
-      print('Force budget spending update skipped - already in progress');
+      debugPrint('Force budget spending update skipped - already in progress');
       return;
     }
 
-    print('Starting FORCE budget spending update...');
+    debugPrint('Starting FORCE budget spending update...');
 
     try {
       _isUpdatingBudgetSpending = true;
@@ -497,7 +499,7 @@ class CashcardProvider with ChangeNotifier {
 
       // Only update if we have budget categories
       if (_budgetCategories.isEmpty) {
-        print('No budget categories to force update');
+        debugPrint('No budget categories to force update');
         return;
       }
 
@@ -513,7 +515,7 @@ class CashcardProvider with ChangeNotifier {
 
         // Always update regardless of current value
         batch.set(docRef, {'spentAmount': spent}, SetOptions(merge: true));
-        print(
+        debugPrint(
           'Force updating ${category.name}: ${category.spentAmount} -> $spent',
         );
 
@@ -523,11 +525,11 @@ class CashcardProvider with ChangeNotifier {
       }
 
       await batch.commit();
-      print(
+      debugPrint(
         'Force budget spending update completed for ${_budgetCategories.length} categories',
       );
     } catch (e) {
-      print('Error in force updating budget spending: $e');
+      debugPrint('Error in force updating budget spending: $e');
       // Don't rethrow the error to prevent cascading failures
     } finally {
       _isUpdatingBudgetSpending = false;
@@ -792,9 +794,9 @@ class CashcardProvider with ChangeNotifier {
     final currentMonth = now.month;
     final currentYear = now.year;
 
-    print('=== Calculating spending for $categoryName ===');
-    print('Current month: $currentMonth, Current year: $currentYear');
-    print('Total transactions: ${_transactions.length}');
+    debugPrint('=== Calculating spending for $categoryName ===');
+    debugPrint('Current month: $currentMonth, Current year: $currentYear');
+    debugPrint('Total transactions: ${_transactions.length}');
 
     // Filter transactions for current month and year, and expense type only
     final monthlyExpenses = _transactions
@@ -806,9 +808,9 @@ class CashcardProvider with ChangeNotifier {
         )
         .toList();
 
-    print('Monthly expenses (${monthlyExpenses.length}):');
+    debugPrint('Monthly expenses (${monthlyExpenses.length}):');
     for (var tx in monthlyExpenses) {
-      print('  - ${tx.description}: ${tx.amount} (${tx.date})');
+      debugPrint('  - ${tx.description}: ${tx.amount} (${tx.date})');
     }
 
     // Filter by category
@@ -817,7 +819,7 @@ class CashcardProvider with ChangeNotifier {
           ? transaction.getCategoryDisplayName()
           : _getCategoryFromDescription(transaction.description);
 
-      print(
+      debugPrint(
         '  Transaction: ${transaction.description} -> Category: $txCategoryName',
       );
       return txCategoryName == categoryName;
@@ -828,11 +830,11 @@ class CashcardProvider with ChangeNotifier {
       (sum, transaction) => sum + transaction.amount,
     );
 
-    print(
+    debugPrint(
       'Found ${categoryTransactions.length} transactions for $categoryName this month',
     );
-    print('Total spent: Rp${totalSpent.toStringAsFixed(0)}');
-    print('===========================================');
+    debugPrint('Total spent: Rp${totalSpent.toStringAsFixed(0)}');
+    debugPrint('===========================================');
 
     return totalSpent;
   }
@@ -950,7 +952,7 @@ class CashcardProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       // Handle any errors during refresh
-      print('Error during refresh: $e');
+      debugPrint('Error during refresh: $e');
       // Still notify listeners to update UI
       notifyListeners();
     }
@@ -958,12 +960,12 @@ class CashcardProvider with ChangeNotifier {
 
   // Force update budget spending for debugging
   Future<void> forceUpdateBudgetSpending() async {
-    print('=== FORCE UPDATE BUDGET SPENDING ===');
-    print('Budget categories count: ${_budgetCategories.length}');
-    print('Transactions count: ${_transactions.length}');
+    debugPrint('=== FORCE UPDATE BUDGET SPENDING ===');
+    debugPrint('Budget categories count: ${_budgetCategories.length}');
+    debugPrint('Transactions count: ${_transactions.length}');
 
     for (var category in _budgetCategories) {
-      print(
+      debugPrint(
         'Category: ${category.name} - Current spent: ${category.spentAmount}',
       );
     }

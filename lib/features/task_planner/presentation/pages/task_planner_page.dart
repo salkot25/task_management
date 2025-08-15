@@ -86,6 +86,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     BuildContext context,
     StateSetter setDialogState,
   ) async {
+    if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -117,7 +118,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                         final interval = await _showCustomIntervalDialog(
                           context,
                         );
-                        if (interval != null) {
+                        if (interval != null && context.mounted) {
                           setState(() {
                             _selectedRecurrence = value;
                             _recurrenceInterval = interval;
@@ -127,15 +128,19 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           });
                         }
                       } else {
-                        setState(() {
-                          _selectedRecurrence = value;
-                          _recurrenceInterval = 1; // Reset to default
-                        });
-                        setDialogState(() {
-                          // Update dialog state as well
-                        });
+                        if (context.mounted) {
+                          setState(() {
+                            _selectedRecurrence = value;
+                            _recurrenceInterval = 1; // Reset to default
+                          });
+                          setDialogState(() {
+                            // Update dialog state as well
+                          });
+                        }
                       }
-                      Navigator.of(context).pop();
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
                     }
                   },
                 );

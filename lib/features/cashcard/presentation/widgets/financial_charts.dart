@@ -422,7 +422,7 @@ class FinancialCharts extends StatelessWidget {
           final previousMonth = targetMonth == 1 ? 12 : targetMonth - 1;
           final previousYear = targetMonth == 1 ? year - 1 : year;
 
-          print(
+          debugPrint(
             'Previous Period Debug: Selected=$selectedPeriod -> Previous=${monthNamesEnglish[previousMonth - 1]} $previousYear',
           );
 
@@ -446,7 +446,7 @@ class FinancialCharts extends StatelessWidget {
               )
               .fold(0.0, (sum, t) => sum + t.amount);
 
-          print(
+          debugPrint(
             'Previous Period Debug: Income=$prevIncome, Expense=$prevExpense',
           );
 
@@ -478,7 +478,7 @@ class FinancialCharts extends StatelessWidget {
         )
         .fold(0.0, (sum, t) => sum + t.amount);
 
-    print(
+    debugPrint(
       'Previous Period Debug: Fallback 30-60 days ago - Income=$prevIncome, Expense=$prevExpense',
     );
 
@@ -608,8 +608,10 @@ class FinancialCharts extends StatelessWidget {
     final targetMonth = monthIndex + 1;
     final daysInMonth = DateTime(year, targetMonth + 1, 0).day;
 
-    print('Weekly Debug: targetMonth=$targetMonth, daysInMonth=$daysInMonth');
-    print(
+    debugPrint(
+      'Weekly Debug: targetMonth=$targetMonth, daysInMonth=$daysInMonth',
+    );
+    debugPrint(
       'Weekly Debug: transactions count for filtering=${transactions.length}',
     );
 
@@ -655,14 +657,16 @@ class FinancialCharts extends StatelessWidget {
       cumulativeBalance += (weekIncome - weekExpense);
       weeklyBalances.add(FlSpot(week.toDouble(), cumulativeBalance));
 
-      print(
+      debugPrint(
         'Weekly Debug: Week $week -> income=$weekIncome, expense=$weekExpense, cumulative=$cumulativeBalance',
       );
     }
 
-    print('Weekly Debug: Final weeklyBalances length=${weeklyBalances.length}');
+    debugPrint(
+      'Weekly Debug: Final weeklyBalances length=${weeklyBalances.length}',
+    );
     for (var spot in weeklyBalances) {
-      print('Weekly Debug: Week ${spot.x}: Balance=${spot.y}');
+      debugPrint('Weekly Debug: Week ${spot.x}: Balance=${spot.y}');
     }
 
     // Debug chart range
@@ -671,7 +675,7 @@ class FinancialCharts extends StatelessWidget {
     final interval = _getHorizontalInterval(
       weeklyBalances.isNotEmpty ? weeklyBalances.last.y : 100000,
     );
-    print(
+    debugPrint(
       'Weekly Debug: Chart range - minY=$minY, maxY=$maxY, interval=$interval',
     );
 
@@ -981,17 +985,19 @@ class FinancialCharts extends StatelessWidget {
 
   // Enhanced chart data methods
   LineChartData _buildEnhancedSpendingTrendsData(BuildContext context) {
-    print('Chart Debug: isAllTime=$isAllTime, selectedPeriod=$selectedPeriod');
-    print('Chart Debug: transactions count=${transactions.length}');
+    debugPrint(
+      'Chart Debug: isAllTime=$isAllTime, selectedPeriod=$selectedPeriod',
+    );
+    debugPrint('Chart Debug: transactions count=${transactions.length}');
 
     // Check if we should show weekly trends (when monthly filter is active)
     if (!isAllTime && selectedPeriod != null) {
-      print('Chart Debug: Building weekly trends');
+      debugPrint('Chart Debug: Building weekly trends');
       return _buildWeeklyTrendsData(context);
     }
 
     // Default: show monthly trends for all time or general view
-    print('Chart Debug: Building monthly trends');
+    debugPrint('Chart Debug: Building monthly trends');
     return _buildMonthlyTrendsData(context);
   }
 
@@ -1178,7 +1184,7 @@ class FinancialCharts extends StatelessWidget {
 
     final lastDayOfMonth = DateTime(targetYear, targetMonth + 1, 0).day;
 
-    print(
+    debugPrint(
       'Comparison Debug: Using targetMonth=$targetMonth, targetYear=$targetYear, lastDay=$lastDayOfMonth',
     );
 
@@ -1234,7 +1240,7 @@ class FinancialCharts extends StatelessWidget {
         weekExpense += dayExpense;
       }
 
-      print(
+      debugPrint(
         'Comparison Debug: Week $week ($weekStart-$weekEnd) -> income=$weekIncome, expense=$weekExpense',
       );
 

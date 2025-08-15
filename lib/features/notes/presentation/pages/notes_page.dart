@@ -1113,12 +1113,14 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
     bool isPinned,
   ) async {
     if (title.trim().isEmpty && content.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Judul atau isi catatan harus diisi'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Judul atau isi catatan harus diisi'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return;
     }
 
@@ -1145,24 +1147,28 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
         await notesProvider.addNote(newNote);
       }
 
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            existingNote != null
-                ? 'Catatan berhasil diperbarui'
-                : 'Catatan berhasil disimpan',
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              existingNote != null
+                  ? 'Catatan berhasil diperbarui'
+                  : 'Catatan berhasil disimpan',
+            ),
+            backgroundColor: AppColors.successColor,
           ),
-          backgroundColor: AppColors.successColor,
-        ),
-      );
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal menyimpan catatan: $e'),
-          backgroundColor: AppColors.errorColor,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menyimpan catatan: $e'),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
+      }
     }
   }
 

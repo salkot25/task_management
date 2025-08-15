@@ -11,11 +11,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Camera Permission',
-        'Camera access is required to take photos. Please enable it in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Camera Permission',
+          'Camera access is required to take photos. Please enable it in Settings.',
+        );
+      }
     }
     return false;
   }
@@ -27,11 +29,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Photos Permission',
-        'Photo library access is required to select images. Please enable it in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Photos Permission',
+          'Photo library access is required to select images. Please enable it in Settings.',
+        );
+      }
     }
     return false;
   }
@@ -45,11 +49,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Notification Permission',
-        'Notifications are required for task reminders. Please enable them in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Notification Permission',
+          'Notifications are required for task reminders. Please enable them in Settings.',
+        );
+      }
     }
     return false;
   }
@@ -61,11 +67,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Location Permission',
-        'Location access is required for location-based features. Please enable it in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Location Permission',
+          'Location access is required for location-based features. Please enable it in Settings.',
+        );
+      }
     }
     return false;
   }
@@ -77,11 +85,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Storage Permission',
-        'Storage access is required to save files. Please enable it in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Storage Permission',
+          'Storage access is required to save files. Please enable it in Settings.',
+        );
+      }
     }
     return false;
   }
@@ -93,11 +103,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Calendar Permission',
-        'Calendar access is required to sync tasks. Please enable it in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Calendar Permission',
+          'Calendar access is required to sync tasks. Please enable it in Settings.',
+        );
+      }
     }
     return false;
   }
@@ -109,11 +121,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Microphone Permission',
-        'Microphone access is required for voice notes. Please enable it in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Microphone Permission',
+          'Microphone access is required for voice notes. Please enable it in Settings.',
+        );
+      }
     }
     return false;
   }
@@ -125,11 +139,13 @@ class PermissionUtils {
     if (status.isGranted) {
       return true;
     } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog(
-        context,
-        'Contacts Permission',
-        'Contacts access is required for sharing features. Please enable it in Settings.',
-      );
+      if (context.mounted) {
+        _showPermissionDeniedDialog(
+          context,
+          'Contacts Permission',
+          'Contacts access is required for sharing features. Please enable it in Settings.',
+        );
+      }
     }
     return false;
   }
