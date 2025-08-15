@@ -25,7 +25,7 @@ class SyncStatusWidget extends StatelessWidget {
               color: _getStatusColor(
                 autoSyncService,
                 connectivityService,
-              ).withOpacity(0.1),
+              ).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(
                 12,
               ), // Match ActionButton border radius
@@ -33,7 +33,7 @@ class SyncStatusWidget extends StatelessWidget {
                 color: _getStatusColor(
                   autoSyncService,
                   connectivityService,
-                ).withOpacity(0.3),
+                ).withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

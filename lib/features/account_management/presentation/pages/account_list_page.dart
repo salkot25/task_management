@@ -83,9 +83,9 @@ class _AccountListPageState extends State<AccountListPage> {
             margin: const EdgeInsets.only(right: AppSpacing.sm),
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Colors.white.withOpacity(
-                      0.8,
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Colors.white.withValues(
+                      alpha: 0.8,
                     ), // Background putih untuk action button
               borderRadius: BorderRadius.circular(12),
             ),
@@ -163,7 +163,7 @@ class _AccountListPageState extends State<AccountListPage> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: AppColors.primaryColor.withOpacity(0.1),
+              color: AppColors.primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: CircularProgressIndicator(
@@ -199,8 +199,8 @@ class _AccountListPageState extends State<AccountListPage> {
               padding: const EdgeInsets.all(AppSpacing.xl),
               decoration: BoxDecoration(
                 color: hasFilter
-                    ? AppColors.warningColor.withOpacity(0.1)
-                    : AppColors.primaryColor.withOpacity(0.1),
+                    ? AppColors.warningColor.withValues(alpha: 0.1)
+                    : AppColors.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -325,9 +325,9 @@ class _AccountListPageState extends State<AccountListPage> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSpacing.md),
-        border: Border.all(color: color.withOpacity(0.2), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -682,16 +682,16 @@ class _AccountListItemState extends State<AccountListItem> {
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
-              : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              ? Colors.grey.withValues(alpha: 0.2)
+              : Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(
-                    0.1,
+                ? Colors.black.withValues(alpha: 0.4)
+                : Colors.black.withValues(
+                    alpha: 0.1,
                   ), // Shadow lebih gelap untuk account card
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -711,7 +711,7 @@ class _AccountListItemState extends State<AccountListItem> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: strengthColor.withOpacity(0.1),
+                    color: strengthColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppSpacing.sm),
                   ),
                   child: Icon(
@@ -748,7 +748,7 @@ class _AccountListItemState extends State<AccountListItem> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: strengthColor.withOpacity(0.1),
+                              color: strengthColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -773,7 +773,7 @@ class _AccountListItemState extends State<AccountListItem> {
                               decoration: BoxDecoration(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.primary.withOpacity(0.1),
+                                ).colorScheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -933,15 +933,17 @@ class _AccountListItemState extends State<AccountListItem> {
           ),
           decoration: BoxDecoration(
             color: isDarkMode
-                ? Colors.grey.withOpacity(0.1)
-                : Colors.grey.withOpacity(
-                    0.05,
+                ? Colors.grey.withValues(alpha: 0.1)
+                : Colors.grey.withValues(
+                    alpha: 0.05,
                   ), // Background lebih subtle untuk credential field
             borderRadius: BorderRadius.circular(AppSpacing.sm),
             border: Border.all(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.1),
             ),
           ),
           child: Row(

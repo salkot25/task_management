@@ -36,8 +36,8 @@ class TaskDetailDialog extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: isDarkMode
-                    ? Colors.black.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.15),
+                    ? Colors.black.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.15),
                 blurRadius: 24,
                 offset: const Offset(0, 12),
                 spreadRadius: -2,
@@ -65,8 +65,8 @@ class TaskDetailDialog extends StatelessWidget {
                   Container(
                     decoration: BoxDecoration(
                       color: isDarkMode
-                          ? Colors.grey.withOpacity(0.2)
-                          : Colors.grey.withOpacity(0.1),
+                          ? Colors.grey.withValues(alpha: 0.2)
+                          : Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(

@@ -26,10 +26,10 @@ class BudgetNotificationWidget extends StatelessWidget {
           margin: const EdgeInsets.all(AppSpacing.md),
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: criticalAlert.alertColor.withOpacity(0.1),
+            color: criticalAlert.alertColor.withValues(alpha: 0.1),
             borderRadius: AppComponents.standardBorderRadius,
             border: Border.all(
-              color: criticalAlert.alertColor.withOpacity(0.3),
+              color: criticalAlert.alertColor.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -239,9 +239,9 @@ class BudgetInsightsWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

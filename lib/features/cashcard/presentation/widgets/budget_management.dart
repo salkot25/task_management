@@ -105,13 +105,13 @@ class _BudgetManagementState extends State<BudgetManagement> {
           end: Alignment.bottomRight,
           colors: [
             AppColors.primaryColor,
-            AppColors.primaryColor.withOpacity(0.8),
+            AppColors.primaryColor.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: AppComponents.standardBorderRadius,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryColor.withOpacity(0.3),
+            color: AppColors.primaryColor.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -145,7 +145,7 @@ class _BudgetManagementState extends State<BudgetManagement> {
                   Text(
                     'Total Budget',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   Text(
@@ -167,7 +167,7 @@ class _BudgetManagementState extends State<BudgetManagement> {
                   Text(
                     isOverBudget ? 'Over Budget' : 'Remaining',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   Text(
@@ -200,7 +200,7 @@ class _BudgetManagementState extends State<BudgetManagement> {
                   Text(
                     'Spent: ${(progress * 100).toStringAsFixed(1)}%',
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                   Text(
@@ -210,7 +210,7 @@ class _BudgetManagementState extends State<BudgetManagement> {
                       decimalDigits: 0,
                     ).format(totalSpent),
                     style: AppTypography.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
@@ -219,7 +219,7 @@ class _BudgetManagementState extends State<BudgetManagement> {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: FractionallySizedBox(
@@ -313,9 +313,12 @@ class _BudgetManagementState extends State<BudgetManagement> {
       ),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: category.color.withOpacity(0.05),
+        color: category.color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-        border: Border.all(color: category.color.withOpacity(0.2), width: 1),
+        border: Border.all(
+          color: category.color.withValues(alpha: 0.2),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,7 +328,7 @@ class _BudgetManagementState extends State<BudgetManagement> {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: category.color.withOpacity(0.1),
+                  color: category.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Icon(category.icon, color: category.color, size: 16),
@@ -469,10 +472,10 @@ class _BudgetManagementState extends State<BudgetManagement> {
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.infoColor.withOpacity(0.1),
+        color: AppColors.infoColor.withValues(alpha: 0.1),
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
-          color: AppColors.infoColor.withOpacity(0.3),
+          color: AppColors.infoColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -669,7 +672,7 @@ class _BudgetManagementState extends State<BudgetManagement> {
             Container(
               padding: const EdgeInsets.all(AppSpacing.xs),
               decoration: BoxDecoration(
-                color: category.color.withOpacity(0.1),
+                color: category.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Icon(category.icon, color: category.color, size: 20),

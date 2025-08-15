@@ -114,7 +114,7 @@ class _AccountDetailDialogContentState
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryColor.withOpacity(0.1),
+              color: AppColors.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -355,22 +355,22 @@ class _AccountDetailDialogContentState
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: isDarkMode
-          ? Colors.grey.withOpacity(0.1)
-          : Colors.grey.withOpacity(0.05),
+          ? Colors.grey.withValues(alpha: 0.1)
+          : Colors.grey.withValues(alpha: 0.05),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.3)
-              : Colors.grey.withOpacity(0.3),
+              ? Colors.grey.withValues(alpha: 0.3)
+              : Colors.grey.withValues(alpha: 0.3),
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.3)
-              : Colors.grey.withOpacity(0.3),
+              ? Colors.grey.withValues(alpha: 0.3)
+              : Colors.grey.withValues(alpha: 0.3),
         ),
       ),
       focusedBorder: OutlineInputBorder(

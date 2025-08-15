@@ -28,14 +28,14 @@ class TaskProviderWithSync extends ChangeNotifier {
   Future<void> loadTasks(BuildContext context) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    if (context.mounted) notifyListeners();
 
     try {
       // 1. Load offline data terlebih dahulu untuk UI yang responsif
       final offlineTasks = OfflineDataHelper.loadTasksOffline(context);
       if (offlineTasks.isNotEmpty) {
         _tasks = offlineTasks;
-        notifyListeners();
+        if (context.mounted) notifyListeners();
       }
 
       // 2. Jika online, load data fresh dari backend
@@ -56,19 +56,21 @@ class TaskProviderWithSync extends ChangeNotifier {
             );
           }
 
-          notifyListeners();
+          if (context.mounted) notifyListeners();
         } catch (e) {
           // Jika gagal load online tapi ada offline data, tetap pakai offline
           if (offlineTasks.isEmpty) {
             _errorMessage = 'Failed to load tasks: $e';
+            if (context.mounted) notifyListeners();
           }
         }
       }
     } catch (e) {
       _errorMessage = 'Failed to load tasks: $e';
+      if (context.mounted) notifyListeners();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (context.mounted) notifyListeners();
     }
   }
 
@@ -84,7 +86,7 @@ class TaskProviderWithSync extends ChangeNotifier {
 
       // 1. Tambahkan ke local list untuk UI immediate update
       _tasks.add(taskData);
-      notifyListeners();
+      if (context.mounted) notifyListeners();
 
       // 2. Simpan offline
       await OfflineDataHelper.saveTaskOffline(
@@ -122,7 +124,7 @@ class TaskProviderWithSync extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Failed to create task: $e';
-      notifyListeners();
+      if (context.mounted) notifyListeners();
     }
   }
 
@@ -137,7 +139,7 @@ class TaskProviderWithSync extends ChangeNotifier {
       final index = _tasks.indexWhere((task) => task['id'] == taskId);
       if (index != -1) {
         _tasks[index] = {..._tasks[index], ...updatedData};
-        notifyListeners();
+        if (context.mounted) notifyListeners();
       }
 
       // 2. Simpan offline
@@ -176,7 +178,7 @@ class TaskProviderWithSync extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Failed to update task: $e';
-      notifyListeners();
+      if (context.mounted) notifyListeners();
     }
   }
 
@@ -188,7 +190,7 @@ class TaskProviderWithSync extends ChangeNotifier {
     try {
       // 1. Remove dari local list untuk UI immediate update
       _tasks.removeWhere((task) => task['id'] == taskId);
-      notifyListeners();
+      if (context.mounted) notifyListeners();
 
       // 2. Jika online, coba delete dari backend
       if (OfflineDataHelper.isOnline(context)) {
@@ -222,7 +224,7 @@ class TaskProviderWithSync extends ChangeNotifier {
       // Implementasi tergantung pada storage structure Anda
     } catch (e) {
       _errorMessage = 'Failed to delete task: $e';
-      notifyListeners();
+      if (context.mounted) notifyListeners();
     }
   }
 
@@ -240,7 +242,7 @@ class TaskProviderWithSync extends ChangeNotifier {
         _tasks[index]['completedAt'] = !isCompleted
             ? DateTime.now().toIso8601String()
             : null;
-        notifyListeners();
+        if (context.mounted) notifyListeners();
 
         // 2. Update dengan auto sync
         await updateTask(
@@ -256,7 +258,7 @@ class TaskProviderWithSync extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Failed to toggle task completion: $e';
-      notifyListeners();
+      if (context.mounted) notifyListeners();
     }
   }
 

@@ -139,8 +139,8 @@ class _PermissionStatusWidgetState extends State<PermissionStatusWidget> {
                   ),
                   decoration: BoxDecoration(
                     color: grantedCount == totalCount
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.orange.withOpacity(0.1),
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -162,7 +162,7 @@ class _PermissionStatusWidgetState extends State<PermissionStatusWidget> {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: totalCount > 0 ? grantedCount / totalCount : 0.0,
-                backgroundColor: Colors.grey.withOpacity(0.2),
+                backgroundColor: Colors.grey.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   grantedCount == totalCount ? Colors.green : Colors.orange,
                 ),

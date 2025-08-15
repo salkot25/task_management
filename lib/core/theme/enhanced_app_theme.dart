@@ -119,7 +119,7 @@ class AppTheme {
       // Card Theme
       cardTheme: CardThemeData(
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: Colors.white, // Tetap putih murni untuk card
         surfaceTintColor: Colors.transparent,
@@ -131,7 +131,7 @@ class AppTheme {
           backgroundColor: AppColors.primaryColor,
           foregroundColor: Colors.white,
           elevation: 2,
-          shadowColor: AppColors.primaryColor.withOpacity(0.3),
+          shadowColor: AppColors.primaryColor.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
           textStyle: GoogleFonts.inter(
@@ -185,7 +185,7 @@ class AppTheme {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.primaryColor,
         selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white.withOpacity(0.7),
+        unselectedItemColor: Colors.white.withValues(alpha: 0.7),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
         selectedLabelStyle: GoogleFonts.inter(
@@ -203,8 +203,8 @@ class AppTheme {
         backgroundColor: Colors.grey.shade100,
         deleteIconColor: Colors.grey.shade600,
         disabledColor: Colors.grey.shade200,
-        selectedColor: AppColors.primaryColor.withOpacity(0.2),
-        secondarySelectedColor: AppColors.secondaryColor.withOpacity(0.2),
+        selectedColor: AppColors.primaryColor.withValues(alpha: 0.2),
+        secondarySelectedColor: AppColors.secondaryColor.withValues(alpha: 0.2),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         labelStyle: GoogleFonts.inter(
           fontSize: 12,
@@ -346,7 +346,7 @@ class AppTheme {
       // Card Theme for Dark Mode
       cardTheme: CardThemeData(
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.3),
+        shadowColor: Colors.black.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: const Color(0xFF2D2D2D),
         surfaceTintColor: Colors.transparent,
@@ -358,7 +358,7 @@ class AppTheme {
           backgroundColor: AppColors.primaryColor,
           foregroundColor: Colors.white,
           elevation: 2,
-          shadowColor: AppColors.primaryColor.withOpacity(0.3),
+          shadowColor: AppColors.primaryColor.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
           textStyle: GoogleFonts.inter(
@@ -430,8 +430,8 @@ class AppTheme {
         backgroundColor: Colors.grey.shade700,
         deleteIconColor: Colors.grey.shade400,
         disabledColor: Colors.grey.shade800,
-        selectedColor: AppColors.primaryColor.withOpacity(0.3),
-        secondarySelectedColor: AppColors.secondaryColor.withOpacity(0.3),
+        selectedColor: AppColors.primaryColor.withValues(alpha: 0.3),
+        secondarySelectedColor: AppColors.secondaryColor.withValues(alpha: 0.3),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         labelStyle: GoogleFonts.inter(
           fontSize: 12,

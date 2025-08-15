@@ -130,8 +130,8 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ).copyWith(
                             filled: true,
                             fillColor: isDarkMode
-                                ? Colors.grey.withOpacity(0.1)
-                                : Colors.grey.withOpacity(0.05),
+                                ? Colors.grey.withValues(alpha: 0.1)
+                                : Colors.grey.withValues(alpha: 0.05),
                             labelStyle: TextStyle(
                               color: isDarkMode
                                   ? Colors.grey[400]
@@ -189,7 +189,9 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             'Sign In',
                             style: AppTypography.linkText.copyWith(
                               color: isDarkMode
-                                  ? AppColors.primaryColor.withOpacity(0.9)
+                                  ? AppColors.primaryColor.withValues(
+                                      alpha: 0.9,
+                                    )
                                   : Theme.of(context).colorScheme.primary,
                             ),
                           ),

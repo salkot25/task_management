@@ -197,8 +197,8 @@ class _PermissionSettingsPageState extends State<PermissionSettingsPage> {
           height: 48,
           decoration: BoxDecoration(
             color: isGranted
-                ? Colors.green.withOpacity(0.1)
-                : Colors.orange.withOpacity(0.1),
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
@@ -223,7 +223,7 @@ class _PermissionSettingsPageState extends State<PermissionSettingsPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -256,8 +256,8 @@ class _PermissionSettingsPageState extends State<PermissionSettingsPage> {
                   ),
                   decoration: BoxDecoration(
                     color: isGranted
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.red.withOpacity(0.1),
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
@@ -352,10 +352,12 @@ class _PermissionSettingsPageState extends State<PermissionSettingsPage> {
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
                       color: isDarkMode
-                          ? Colors.blue.withOpacity(0.1)
-                          : Colors.blue.withOpacity(0.05),
+                          ? Colors.blue.withValues(alpha: 0.1)
+                          : Colors.blue.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                      border: Border.all(
+                        color: Colors.blue.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -445,8 +447,8 @@ class _PermissionSettingsPageState extends State<PermissionSettingsPage> {
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
                       color: isDarkMode
-                          ? Colors.grey.withOpacity(0.1)
-                          : Colors.grey.withOpacity(0.05),
+                          ? Colors.grey.withValues(alpha: 0.1)
+                          : Colors.grey.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(

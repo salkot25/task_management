@@ -89,8 +89,8 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
           height: 1,
           decoration: BoxDecoration(
             color: isDarkMode
-                ? Colors.grey.withOpacity(0.2)
-                : AppColors.greyLightColor.withOpacity(0.3),
+                ? Colors.grey.withValues(alpha: 0.2)
+                : AppColors.greyLightColor.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -126,11 +126,11 @@ class AppBarFilterChip extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(
           12,
         ), // Match ActionButton border radius
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -173,13 +173,13 @@ class ActionButton extends StatelessWidget {
       margin: const EdgeInsets.only(right: AppSpacing.xs),
       decoration: BoxDecoration(
         color: isDarkMode
-            ? Colors.grey.withOpacity(0.2)
+            ? Colors.grey.withValues(alpha: 0.2)
             : AppColors.greyExtraLightColor,
         borderRadius: BorderRadius.circular(AppComponents.smallRadius),
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.3)
-              : AppColors.greyLightColor.withOpacity(0.5),
+              ? Colors.grey.withValues(alpha: 0.3)
+              : AppColors.greyLightColor.withValues(alpha: 0.5),
         ),
       ),
       child: IconButton(

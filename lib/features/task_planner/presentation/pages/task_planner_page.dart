@@ -267,7 +267,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryColor.withOpacity(0.1),
+                      color: AppColors.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -328,22 +328,22 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             ).copyWith(
                               filled: true,
                               fillColor: isDarkMode
-                                  ? Colors.grey.withOpacity(0.1)
-                                  : Colors.grey.withOpacity(0.05),
+                                  ? Colors.grey.withValues(alpha: 0.1)
+                                  : Colors.grey.withValues(alpha: 0.05),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
                                   color: isDarkMode
-                                      ? Colors.grey.withOpacity(0.3)
-                                      : Colors.grey.withOpacity(0.3),
+                                      ? Colors.grey.withValues(alpha: 0.3)
+                                      : Colors.grey.withValues(alpha: 0.3),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
                                   color: isDarkMode
-                                      ? Colors.grey.withOpacity(0.3)
-                                      : Colors.grey.withOpacity(0.3),
+                                      ? Colors.grey.withValues(alpha: 0.3)
+                                      : Colors.grey.withValues(alpha: 0.3),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -392,22 +392,22 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             ).copyWith(
                               filled: true,
                               fillColor: isDarkMode
-                                  ? Colors.grey.withOpacity(0.1)
-                                  : Colors.grey.withOpacity(0.05),
+                                  ? Colors.grey.withValues(alpha: 0.1)
+                                  : Colors.grey.withValues(alpha: 0.05),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
                                   color: isDarkMode
-                                      ? Colors.grey.withOpacity(0.3)
-                                      : Colors.grey.withOpacity(0.3),
+                                      ? Colors.grey.withValues(alpha: 0.3)
+                                      : Colors.grey.withValues(alpha: 0.3),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
                                   color: isDarkMode
-                                      ? Colors.grey.withOpacity(0.3)
-                                      : Colors.grey.withOpacity(0.3),
+                                      ? Colors.grey.withValues(alpha: 0.3)
+                                      : Colors.grey.withValues(alpha: 0.3),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -436,12 +436,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                       Container(
                         decoration: BoxDecoration(
                           color: isDarkMode
-                              ? Colors.grey.withOpacity(0.1)
-                              : Colors.grey.withOpacity(0.05),
+                              ? Colors.grey.withValues(alpha: 0.1)
+                              : Colors.grey.withValues(alpha: 0.05),
                           border: Border.all(
                             color: isDarkMode
-                                ? Colors.grey.withOpacity(0.3)
-                                : Colors.grey.withOpacity(0.3),
+                                ? Colors.grey.withValues(alpha: 0.3)
+                                : Colors.grey.withValues(alpha: 0.3),
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -449,7 +449,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor.withOpacity(0.1),
+                              color: AppColors.primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -511,12 +513,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                       Container(
                         decoration: BoxDecoration(
                           color: isDarkMode
-                              ? Colors.grey.withOpacity(0.1)
-                              : Colors.grey.withOpacity(0.05),
+                              ? Colors.grey.withValues(alpha: 0.1)
+                              : Colors.grey.withValues(alpha: 0.05),
                           border: Border.all(
                             color: isDarkMode
-                                ? Colors.grey.withOpacity(0.3)
-                                : Colors.grey.withOpacity(0.3),
+                                ? Colors.grey.withValues(alpha: 0.3)
+                                : Colors.grey.withValues(alpha: 0.3),
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -524,7 +526,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor.withOpacity(0.1),
+                              color: AppColors.primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -574,8 +578,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
                                       color: isDarkMode
-                                          ? Colors.grey.withOpacity(0.3)
-                                          : Colors.grey.withOpacity(0.3),
+                                          ? Colors.grey.withValues(alpha: 0.3)
+                                          : Colors.grey.withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Icon(
@@ -621,12 +625,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                       Container(
                         decoration: BoxDecoration(
                           color: isDarkMode
-                              ? Colors.grey.withOpacity(0.1)
-                              : Colors.grey.withOpacity(0.05),
+                              ? Colors.grey.withValues(alpha: 0.1)
+                              : Colors.grey.withValues(alpha: 0.05),
                           border: Border.all(
                             color: isDarkMode
-                                ? Colors.grey.withOpacity(0.3)
-                                : Colors.grey.withOpacity(0.3),
+                                ? Colors.grey.withValues(alpha: 0.3)
+                                : Colors.grey.withValues(alpha: 0.3),
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -634,7 +638,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor.withOpacity(0.1),
+                              color: AppColors.primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -849,7 +855,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.successColor.withOpacity(0.1),
+                  color: AppColors.successColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -893,8 +899,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.successColor.withOpacity(0.1),
-                      AppColors.primaryColor.withOpacity(0.1),
+                      AppColors.successColor.withValues(alpha: 0.1),
+                      AppColors.primaryColor.withValues(alpha: 0.1),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -906,7 +912,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: AppColors.successColor.withOpacity(0.15),
+                      color: AppColors.successColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -949,15 +955,15 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.successColor.withOpacity(0.05),
-                      AppColors.primaryColor.withOpacity(0.05),
+                      AppColors.successColor.withValues(alpha: 0.05),
+                      AppColors.primaryColor.withValues(alpha: 0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.successColor.withOpacity(0.1),
+                    color: AppColors.successColor.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
@@ -1067,7 +1073,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.successColor.withOpacity(0.1),
+                    color: AppColors.successColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -1111,8 +1117,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.successColor.withOpacity(0.1),
-                        AppColors.primaryColor.withOpacity(0.1),
+                        AppColors.successColor.withValues(alpha: 0.1),
+                        AppColors.primaryColor.withValues(alpha: 0.1),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -1124,7 +1130,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                       width: 70,
                       height: 70,
                       decoration: BoxDecoration(
-                        color: AppColors.successColor.withOpacity(0.15),
+                        color: AppColors.successColor.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -1167,15 +1173,15 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.successColor.withOpacity(0.05),
-                        AppColors.primaryColor.withOpacity(0.05),
+                        AppColors.successColor.withValues(alpha: 0.05),
+                        AppColors.primaryColor.withValues(alpha: 0.05),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.successColor.withOpacity(0.1),
+                      color: AppColors.successColor.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -1293,7 +1299,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: AppColors.errorColor.withOpacity(0.1),
+                          color: AppColors.errorColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -1490,16 +1496,18 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             borderRadius: BorderRadius.circular(AppComponents.largeRadius),
             border: Border.all(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.1),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isDarkMode
-                    ? Colors.black.withOpacity(0.5)
-                    : Colors.black.withOpacity(
-                        0.15,
+                    ? Colors.black.withValues(alpha: 0.5)
+                    : Colors.black.withValues(
+                        alpha: 0.15,
                       ), // Shadow lebih gelap dan jelas
                 blurRadius: 24,
                 offset: const Offset(0, 12),
@@ -1556,7 +1564,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             color: Theme.of(context)
                                 .colorScheme
                                 .surfaceContainerHighest
-                                .withOpacity(0.6),
+                                .withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: ClipRRect(
@@ -1603,11 +1611,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: isDarkMode
-                                ? Colors.grey.withOpacity(0.2)
+                                ? Colors.grey.withValues(alpha: 0.2)
                                 : Theme.of(context)
                                       .colorScheme
                                       .surfaceContainerHighest
-                                      .withOpacity(0.3),
+                                      .withValues(alpha: 0.3),
                           ),
                         ),
                         // Animated Progress circle
@@ -1691,7 +1699,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     height: 40,
                     color: Theme.of(
                       context,
-                    ).colorScheme.outline.withOpacity(0.2),
+                    ).colorScheme.outline.withValues(alpha: 0.2),
                   ),
                   Expanded(
                     child: _buildMinimalistStatItem(
@@ -1707,7 +1715,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     height: 40,
                     color: Theme.of(
                       context,
-                    ).colorScheme.outline.withOpacity(0.2),
+                    ).colorScheme.outline.withValues(alpha: 0.2),
                   ),
                   Expanded(
                     child: _buildMinimalistStatItem(
@@ -1749,12 +1757,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             height: 32,
             decoration: BoxDecoration(
               color: isActive
-                  ? color.withOpacity(0.1)
+                  ? color.withValues(alpha: 0.1)
                   : isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -1808,16 +1815,18 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             borderRadius: BorderRadius.circular(AppComponents.largeRadius),
             border: Border.all(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.1),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isDarkMode
-                    ? Colors.black.withOpacity(0.5)
-                    : Colors.black.withOpacity(
-                        0.15,
+                    ? Colors.black.withValues(alpha: 0.5)
+                    : Colors.black.withValues(
+                        alpha: 0.15,
                       ), // Shadow lebih gelap dan jelas untuk calendar
                 blurRadius: 24,
                 offset: const Offset(0, 12),
@@ -1834,11 +1843,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   Container(
                     decoration: BoxDecoration(
                       color: isDarkMode
-                          ? Colors.grey.withOpacity(0.2)
+                          ? Colors.grey.withValues(alpha: 0.2)
                           : Theme.of(context)
                                 .colorScheme
                                 .surfaceContainerHighest
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -1882,11 +1891,11 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   Container(
                     decoration: BoxDecoration(
                       color: isDarkMode
-                          ? Colors.grey.withOpacity(0.2)
+                          ? Colors.grey.withValues(alpha: 0.2)
                           : Theme.of(context)
                                 .colorScheme
                                 .surfaceContainerHighest
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -2015,21 +2024,21 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       textColor = AppColors.whiteColor;
       borderColor = AppColors.primaryColor;
     } else if (hasOverdue) {
-      backgroundColor = AppColors.errorColor.withOpacity(0.08);
-      borderColor = AppColors.errorColor.withOpacity(0.3);
+      backgroundColor = AppColors.errorColor.withValues(alpha: 0.08);
+      borderColor = AppColors.errorColor.withValues(alpha: 0.3);
       textColor = AppColors.errorColor;
     } else if (totalTasks > 0 && completedTasks == totalTasks) {
-      backgroundColor = AppColors.successColor.withOpacity(0.08);
-      borderColor = AppColors.successColor.withOpacity(0.3);
+      backgroundColor = AppColors.successColor.withValues(alpha: 0.08);
+      borderColor = AppColors.successColor.withValues(alpha: 0.3);
       textColor = AppColors.successColor;
     } else if (totalTasks > 0) {
-      backgroundColor = AppColors.primaryColor.withOpacity(0.08);
-      borderColor = AppColors.primaryColor.withOpacity(0.3);
+      backgroundColor = AppColors.primaryColor.withValues(alpha: 0.08);
+      borderColor = AppColors.primaryColor.withValues(alpha: 0.3);
       textColor = AppColors.primaryColor;
     }
 
     if (isToday && !isSelected) {
-      borderColor = AppColors.primaryColor.withOpacity(0.6);
+      borderColor = AppColors.primaryColor.withValues(alpha: 0.6);
     }
 
     // Build the minimalist calendar day widget
@@ -2099,8 +2108,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.errorColor.withOpacity(
-                    0.5 * _blinkAnimation.value, // Shadow animasi lebih kuat
+                  color: AppColors.errorColor.withValues(
+                    alpha:
+                        0.5 *
+                        _blinkAnimation.value, // Shadow animasi lebih kuat
                   ),
                   blurRadius: 12 * _blinkAnimation.value,
                   spreadRadius: 3 * _blinkAnimation.value,
@@ -2196,16 +2207,16 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDarkMode
-                ? Colors.grey.withOpacity(0.2)
-                : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                ? Colors.grey.withValues(alpha: 0.2)
+                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isDarkMode
-                  ? Colors.black.withOpacity(0.5)
-                  : Colors.black.withOpacity(
-                      0.12,
+                  ? Colors.black.withValues(alpha: 0.5)
+                  : Colors.black.withValues(
+                      alpha: 0.12,
                     ), // Shadow lebih gelap untuk task section
               blurRadius: 20,
               offset: const Offset(0, 10),
@@ -2221,7 +2232,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 24),
@@ -2260,8 +2271,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.successColor.withOpacity(0.1),
-                    AppColors.primaryColor.withOpacity(0.1),
+                    AppColors.successColor.withValues(alpha: 0.1),
+                    AppColors.primaryColor.withValues(alpha: 0.1),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -2273,7 +2284,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.successColor.withOpacity(0.15),
+                    color: AppColors.successColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -2316,15 +2327,15 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryColor.withOpacity(0.05),
-                    AppColors.secondaryColor.withOpacity(0.05),
+                    AppColors.primaryColor.withValues(alpha: 0.05),
+                    AppColors.secondaryColor.withValues(alpha: 0.05),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.primaryColor.withOpacity(0.1),
+                  color: AppColors.primaryColor.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -2370,16 +2381,16 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
-              : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              ? Colors.grey.withValues(alpha: 0.2)
+              : Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.5)
-                : Colors.black.withOpacity(
-                    0.12,
+                ? Colors.black.withValues(alpha: 0.5)
+                : Colors.black.withValues(
+                    alpha: 0.12,
                   ), // Shadow lebih gelap untuk task section dengan tasks
             blurRadius: 20,
             offset: const Offset(0, 10),
@@ -2445,10 +2456,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       decoration: BoxDecoration(
         color: task.isCompleted
             ? (isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.3))
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3))
             : (isDarkMode
                   ? const Color(0xFF2D2D2D)
                   : Colors.white), // Gunakan putih murni untuk task card
@@ -2457,12 +2467,12 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           color: task.isCompleted
               ? Colors.transparent
               : (isOverdue
-                    ? AppColors.errorColor.withOpacity(0.2)
+                    ? AppColors.errorColor.withValues(alpha: 0.2)
                     : (isDarkMode
-                          ? Colors.grey.withOpacity(0.2)
+                          ? Colors.grey.withValues(alpha: 0.2)
                           : Theme.of(
                               context,
-                            ).colorScheme.outline.withOpacity(0.1))),
+                            ).colorScheme.outline.withValues(alpha: 0.1))),
           width: 1,
         ),
         boxShadow: task.isCompleted
@@ -2470,13 +2480,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             : [
                 BoxShadow(
                   color: isOverdue
-                      ? AppColors.errorColor.withOpacity(
-                          0.25,
+                      ? AppColors.errorColor.withValues(
+                          alpha: 0.25,
                         ) // Shadow lebih kuat untuk overdue
                       : (isDarkMode
-                            ? Colors.black.withOpacity(0.4)
-                            : Colors.black.withOpacity(
-                                0.1,
+                            ? Colors.black.withValues(alpha: 0.4)
+                            : Colors.black.withValues(
+                                alpha: 0.1,
                               )), // Shadow lebih gelap untuk task card
                   blurRadius: 16,
                   offset: const Offset(0, 6),
@@ -2507,7 +2517,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 border: Border.all(
                   color: task.isCompleted
                       ? AppColors.successColor
-                      : priorityColor.withOpacity(0.4),
+                      : priorityColor.withValues(alpha: 0.4),
                   width: 2,
                 ),
               ),
@@ -2549,9 +2559,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                     task.description,
                     style: AppTypography.bodyMedium.copyWith(
                       color: task.isCompleted
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant.withOpacity(0.7)
+                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.7)
                           : Theme.of(context).colorScheme.onSurfaceVariant,
                       height: 1.4,
                     ),
@@ -2574,7 +2583,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                         vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: priorityColor.withOpacity(0.1),
+                        color: priorityColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -2605,7 +2614,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: priorityColor.withOpacity(0.1),
+                          color: priorityColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -2636,7 +2645,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.infoColor.withOpacity(0.1),
+                          color: AppColors.infoColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -2705,7 +2714,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.successColor.withOpacity(0.1),
+                          color: AppColors.successColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -2822,22 +2831,21 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       decoration: BoxDecoration(
         color: task.isCompleted
             ? (isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.3))
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3))
             : (isDarkMode ? const Color(0xFF2D2D2D) : Colors.white),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: task.isCompleted
               ? Colors.transparent
               : (isOverdue
-                    ? AppColors.errorColor.withOpacity(0.2)
+                    ? AppColors.errorColor.withValues(alpha: 0.2)
                     : (isDarkMode
-                          ? Colors.grey.withOpacity(0.2)
+                          ? Colors.grey.withValues(alpha: 0.2)
                           : Theme.of(
                               context,
-                            ).colorScheme.outline.withOpacity(0.1))),
+                            ).colorScheme.outline.withValues(alpha: 0.1))),
           width: 1,
         ),
         boxShadow: task.isCompleted
@@ -2845,10 +2853,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
             : [
                 BoxShadow(
                   color: isOverdue
-                      ? AppColors.errorColor.withOpacity(0.25)
+                      ? AppColors.errorColor.withValues(alpha: 0.25)
                       : (isDarkMode
-                            ? Colors.black.withOpacity(0.4)
-                            : Colors.black.withOpacity(0.1)),
+                            ? Colors.black.withValues(alpha: 0.4)
+                            : Colors.black.withValues(alpha: 0.1)),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                   spreadRadius: -2,
@@ -2883,7 +2891,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 border: Border.all(
                   color: task.isCompleted
                       ? AppColors.successColor
-                      : priorityColor.withOpacity(0.4),
+                      : priorityColor.withValues(alpha: 0.4),
                   width: 2,
                 ),
               ),
@@ -2953,10 +2961,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: priorityColor.withOpacity(0.1),
+                        color: priorityColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: priorityColor.withOpacity(0.2),
+                          color: priorityColor.withValues(alpha: 0.2),
                           width: 1,
                         ),
                       ),
@@ -3004,7 +3012,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.errorColor.withOpacity(0.1),
+                          color: AppColors.errorColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -3054,10 +3062,9 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                 margin: const EdgeInsets.only(right: AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: isDarkMode
-                      ? Colors.grey.withOpacity(0.2)
-                      : Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                      ? Colors.grey.withValues(alpha: 0.2)
+                      : Theme.of(context).colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Stack(
@@ -3180,13 +3187,13 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(
-                0.12,
+              color: Colors.black.withValues(
+                alpha: 0.12,
               ), // Shadow lebih gelap untuk authentication widget
               blurRadius: 20,
               offset: const Offset(0, 10),
@@ -3201,7 +3208,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.warningColor.withOpacity(0.1),
+                color: AppColors.warningColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

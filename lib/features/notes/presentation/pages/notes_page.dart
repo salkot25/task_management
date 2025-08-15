@@ -148,15 +148,15 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(AppComponents.largeRadius),
           border: Border.all(
             color: isDarkMode
-                ? Colors.grey.withOpacity(0.15)
-                : Theme.of(context).colorScheme.outline.withOpacity(0.08),
+                ? Colors.grey.withValues(alpha: 0.15)
+                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.08),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isDarkMode
-                  ? Colors.black.withOpacity(0.10)
-                  : Colors.black.withOpacity(0.05),
+                  ? Colors.black.withValues(alpha: 0.10)
+                  : Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
               spreadRadius: 0,
@@ -185,7 +185,9 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
             Container(
               width: 1,
               height: 32,
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.12),
             ),
             Expanded(
               child: GestureDetector(
@@ -206,7 +208,9 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
             Container(
               width: 1,
               height: 32,
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.12),
             ),
             Expanded(
               child: GestureDetector(
@@ -250,7 +254,9 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
             width: 22,
             height: 22,
             decoration: BoxDecoration(
-              color: isActive ? color.withOpacity(0.13) : Colors.transparent,
+              color: isActive
+                  ? color.withValues(alpha: 0.13)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -299,7 +305,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               label: Text('Pencarian: "${notesProvider.searchQuery}"'),
               deleteIcon: const Icon(Icons.close, size: 18),
               onDeleted: () => notesProvider.setSearchQuery(''),
-              backgroundColor: AppColors.primaryColor.withOpacity(0.1),
+              backgroundColor: AppColors.primaryColor.withValues(alpha: 0.1),
               labelStyle: TextStyle(color: AppColors.primaryColor),
             ),
           if (notesProvider.selectedCategory != null)
@@ -307,7 +313,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               label: Text('Kategori: ${notesProvider.selectedCategory}'),
               deleteIcon: const Icon(Icons.close, size: 18),
               onDeleted: () => notesProvider.setSelectedCategory(null),
-              backgroundColor: AppColors.infoColor.withOpacity(0.1),
+              backgroundColor: AppColors.infoColor.withValues(alpha: 0.1),
               labelStyle: TextStyle(color: AppColors.infoColor),
             ),
         ],
@@ -357,19 +363,19 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: note.isPinned
-                    ? AppColors.warningColor.withOpacity(0.3)
+                    ? AppColors.warningColor.withValues(alpha: 0.3)
                     : (isDarkMode
-                          ? Colors.grey.withOpacity(0.2)
+                          ? Colors.grey.withValues(alpha: 0.2)
                           : Theme.of(
                               context,
-                            ).colorScheme.outline.withOpacity(0.1)),
+                            ).colorScheme.outline.withValues(alpha: 0.1)),
                 width: note.isPinned ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isDarkMode
-                      ? Colors.black.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.08),
+                      ? Colors.black.withValues(alpha: 0.3)
+                      : Colors.black.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                   spreadRadius: -2,
@@ -385,7 +391,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: AppColors.warningColor.withOpacity(0.1),
+                          color: AppColors.warningColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Icon(
@@ -492,7 +498,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.infoColor.withOpacity(0.1),
+                          color: AppColors.infoColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -524,69 +530,71 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
-    return SingleChildScrollView(
-      child: Container(
-        margin: AppSpacing.getPagePadding(MediaQuery.of(context).size.width),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryColor.withOpacity(0.1),
-                    AppColors.infoColor.withOpacity(0.1),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
+    return Center(
+      child: SingleChildScrollView(
+        child: Container(
+          margin: AppSpacing.getPagePadding(MediaQuery.of(context).size.width),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryColor.withValues(alpha: 0.1),
+                      AppColors.infoColor.withValues(alpha: 0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: Icon(
-                    Icons.note_add_outlined,
-                    size: 32,
-                    color: AppColors.primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.note_add_outlined,
+                      size: 32,
+                      color: AppColors.primaryColor,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Belum Ada Catatan',
-              style: AppTypography.headlineSmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.w700,
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Belum Ada Catatan',
+                style: AppTypography.headlineSmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Mulai menambahkan catatan untuk menyimpan ide, pemikiran, dan informasi penting Anda.',
-              style: AppTypography.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                height: 1.4,
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Mulai menambahkan catatan untuk menyimpan ide, pemikiran, dan informasi penting Anda.',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            ElevatedButton.icon(
-              onPressed: _showAddNoteDialog,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Buat Catatan Pertama'),
-              style: AppComponents.primaryButtonStyle(),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.lg),
+              ElevatedButton.icon(
+                onPressed: _showAddNoteDialog,
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Buat Catatan Pertama'),
+                style: AppComponents.primaryButtonStyle(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -703,7 +711,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                       bottom: BorderSide(
                         color: Theme.of(
                           context,
-                        ).colorScheme.outline.withOpacity(0.1),
+                        ).colorScheme.outline.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -797,8 +805,8 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                 border: Border.all(
                                   color: isDarkMode
-                                      ? Colors.grey.withOpacity(0.3)
-                                      : Colors.grey.withOpacity(0.3),
+                                      ? Colors.grey.withValues(alpha: 0.3)
+                                      : Colors.grey.withValues(alpha: 0.3),
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -865,8 +873,8 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                               boxShadow: [
                                 BoxShadow(
                                   color: isDarkMode
-                                      ? Colors.black.withOpacity(0.10)
-                                      : Colors.black.withOpacity(0.05),
+                                      ? Colors.black.withValues(alpha: 0.10)
+                                      : Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                   spreadRadius: 0,
@@ -984,7 +992,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                     bottom: BorderSide(
                       color: Theme.of(
                         context,
-                      ).colorScheme.outline.withOpacity(0.1),
+                      ).colorScheme.outline.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -1033,67 +1041,73 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Metadata
-                      Row(
-                        children: [
-                          if (note.category != null) ...[
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.sm,
-                                vertical: AppSpacing.xs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.infoColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                note.category!,
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.infoColor,
-                                  fontWeight: FontWeight.w600,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Metadata
+                        Row(
+                          children: [
+                            if (note.category != null) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.sm,
+                                  vertical: AppSpacing.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.infoColor.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  note.category!,
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: AppColors.infoColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
+                              const Spacer(),
+                            ],
+                            Text(
+                              _getDetailDateTime(note.updatedAt),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                             ),
-                            const Spacer(),
                           ],
-                          Text(
-                            _getDetailDateTime(note.updatedAt),
-                            style: AppTypography.labelSmall.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
 
-                      // Rich Text Content
-                      Container(
-                        decoration: BoxDecoration(
-                          // Border removed or made very subtle
-                          border: Border.all(
-                            color: Colors.transparent,
-                            width: 0.5,
+                        // Rich Text Content
+                        Container(
+                          decoration: BoxDecoration(
+                            // Border removed or made very subtle
+                            border: Border.all(
+                              color: Colors.transparent,
+                              width: 0.5,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: quill.QuillEditor.basic(
-                          controller: quill.QuillController(
-                            document: note.content.isNotEmpty
-                                ? quill.Document.fromJson(
-                                    _tryParseQuillContent(note.content),
-                                  )
-                                : quill.Document(),
-                            selection: const TextSelection.collapsed(offset: 0),
+                          child: quill.QuillEditor.basic(
+                            controller: quill.QuillController(
+                              document: note.content.isNotEmpty
+                                  ? quill.Document.fromJson(
+                                      _tryParseQuillContent(note.content),
+                                    )
+                                  : quill.Document(),
+                              selection: const TextSelection.collapsed(
+                                offset: 0,
+                              ),
+                            ),
+                            focusNode: FocusNode(),
                           ),
-                          focusNode: FocusNode(),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

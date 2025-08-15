@@ -39,16 +39,16 @@ class ExportFunctions extends StatelessWidget {
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.3)
+              ? Colors.grey.withValues(alpha: 0.3)
               : AppColors.greyLightColor,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(
-                    0.1,
+                ? Colors.black.withValues(alpha: 0.4)
+                : Colors.black.withValues(
+                    alpha: 0.1,
                   ), // Shadow lebih gelap untuk export functions
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -155,10 +155,14 @@ class ExportFunctions extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isDarkMode ? color.withOpacity(0.1) : color.withOpacity(0.05),
+          color: isDarkMode
+              ? color.withValues(alpha: 0.1)
+              : color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(AppComponents.smallRadius),
           border: Border.all(
-            color: isDarkMode ? color.withOpacity(0.4) : color.withOpacity(0.2),
+            color: isDarkMode
+                ? color.withValues(alpha: 0.4)
+                : color.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -168,8 +172,8 @@ class ExportFunctions extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: isDarkMode
-                    ? color.withOpacity(0.2)
-                    : color.withOpacity(0.1),
+                    ? color.withValues(alpha: 0.2)
+                    : color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppComponents.smallRadius),
               ),
               child: Icon(icon, color: color, size: 20),
@@ -276,10 +280,14 @@ class ExportFunctions extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: isDarkMode ? color.withOpacity(0.15) : color.withOpacity(0.1),
+          color: isDarkMode
+              ? color.withValues(alpha: 0.15)
+              : color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppComponents.smallRadius),
           border: Border.all(
-            color: isDarkMode ? color.withOpacity(0.5) : color.withOpacity(0.3),
+            color: isDarkMode
+                ? color.withValues(alpha: 0.5)
+                : color.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -392,9 +400,9 @@ class ExportFunctions extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: AppSpacing.xs),
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Colors.grey.withOpacity(
-                      0.05,
+                  ? Colors.grey.withValues(alpha: 0.2)
+                  : Colors.grey.withValues(
+                      alpha: 0.05,
                     ), // Background lebih subtle untuk dialog option
               borderRadius: BorderRadius.circular(AppComponents.smallRadius),
             ),
@@ -914,7 +922,7 @@ class ExportFunctions extends StatelessWidget {
     List<entity.Transaction> incomeTransactions,
   ) {
     final data = _getMonthlyIncomeSummary(incomeTransactions);
-    return pw.Table.fromTextArray(
+    return pw.TableHelper.fromTextArray(
       headers: ['Month', 'Total Income'],
       data: data,
       border: pw.TableBorder.all(),
@@ -928,7 +936,7 @@ class ExportFunctions extends StatelessWidget {
     List<entity.Transaction> expenseTransactions,
   ) {
     final data = _getCategoryExpenseSummary(expenseTransactions);
-    return pw.Table.fromTextArray(
+    return pw.TableHelper.fromTextArray(
       headers: ['Category', 'Total Amount'],
       data: data,
       border: pw.TableBorder.all(),
@@ -1114,7 +1122,7 @@ class ExportFunctions extends StatelessWidget {
     const int maxRowsPerPage = 30;
 
     if (transactionList.length <= maxRowsPerPage) {
-      return pw.Table.fromTextArray(
+      return pw.TableHelper.fromTextArray(
         headers: ['Date', 'Description', 'Type', 'Amount'],
         data: transactionList.map(_transactionToTableRow).toList(),
         border: pw.TableBorder.all(),
@@ -1130,7 +1138,7 @@ class ExportFunctions extends StatelessWidget {
         for (int i = 0; i < transactionList.length; i += maxRowsPerPage)
           pw.Container(
             margin: const pw.EdgeInsets.only(bottom: 16),
-            child: pw.Table.fromTextArray(
+            child: pw.TableHelper.fromTextArray(
               headers: i == 0
                   ? ['Date', 'Description', 'Type', 'Amount']
                   : null,

@@ -564,7 +564,7 @@ class _ProfilePageState extends State<ProfilePage> {
           gradient: LinearGradient(
             colors: [
               Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.primary.withOpacity(0.8),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
               Colors.white,
             ],
             begin: Alignment.topLeft,
@@ -573,7 +573,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -590,7 +592,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 150,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -602,7 +604,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -631,7 +633,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         blurRadius: 10,
                                         offset: const Offset(0, 5),
                                       ),
@@ -656,7 +660,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: Colors.black.withOpacity(0.3),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.3,
+                                        ),
                                       ),
                                       child: const Center(
                                         child: SizedBox(
@@ -703,7 +709,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.9),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                       child: Text(
@@ -728,7 +736,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.8),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.8,
+                                        ),
                                         borderRadius: BorderRadius.circular(15),
                                       ),
                                       child: Text(
@@ -754,7 +764,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.95),
+                            color: Colors.white.withValues(alpha: 0.95),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -833,7 +843,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         // Edit Button
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: IconButton(
@@ -861,7 +871,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               decoration: BoxDecoration(
                                 color: profile.isEmailVerified == true
                                     ? AppColors.successColor
-                                    : Colors.orange.withOpacity(0.9),
+                                    : Colors.orange.withValues(alpha: 0.9),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
@@ -896,7 +906,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -920,15 +930,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   'Since ${DateFormat('MMM yyyy').format(profile.createdAt!)}',
                                   style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary.withOpacity(0.8),
+                                    color: Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.8),
                                     fontSize: 9,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -1404,7 +1413,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withOpacity(0.1),
+                  color: AppColors.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -1626,10 +1635,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.errorColor.withOpacity(0.1),
+                        color: AppColors.errorColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: AppColors.errorColor.withOpacity(0.3),
+                          color: AppColors.errorColor.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),

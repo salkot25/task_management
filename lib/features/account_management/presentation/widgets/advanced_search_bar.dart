@@ -161,13 +161,13 @@ class _AdvancedSearchBarState extends State<AdvancedSearchBar>
         borderRadius: BorderRadius.circular(AppSpacing.lg),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -288,7 +288,7 @@ class _AdvancedSearchBarState extends State<AdvancedSearchBar>
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -340,7 +340,7 @@ class _AdvancedSearchBarState extends State<AdvancedSearchBar>
               ).colorScheme.surfaceContainerHighest,
               selectedColor: _getSecurityStrengthColor(
                 strength,
-              ).withOpacity(0.2),
+              ).withValues(alpha: 0.2),
               checkmarkColor: _getSecurityStrengthColor(strength),
               labelStyle: TextStyle(
                 color: isSelected
@@ -445,7 +445,7 @@ class _AdvancedSearchBarState extends State<AdvancedSearchBar>
               ).colorScheme.surfaceContainerHighest,
               selectedColor: Theme.of(
                 context,
-              ).colorScheme.primary.withOpacity(0.2),
+              ).colorScheme.primary.withValues(alpha: 0.2),
               checkmarkColor: Theme.of(context).colorScheme.primary,
             );
           }).toList(),

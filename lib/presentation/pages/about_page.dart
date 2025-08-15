@@ -52,12 +52,12 @@ class _AboutPageState extends State<AboutPage> {
             height: 40,
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? AppColors.primaryColor.withOpacity(0.25)
-                  : AppColors.primaryColor.withOpacity(0.15),
+                  ? AppColors.primaryColor.withValues(alpha: 0.25)
+                  : AppColors.primaryColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: AppColors.primaryColor.withOpacity(
-                  isDarkMode ? 0.3 : 0.2,
+                color: AppColors.primaryColor.withValues(
+                  alpha: isDarkMode ? 0.3 : 0.2,
                 ),
                 width: 1,
               ),
@@ -185,7 +185,7 @@ class _AboutPageState extends State<AboutPage> {
   Widget _buildAppHeader(bool isDarkMode) {
     return Card(
       elevation: 3,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       color: isDarkMode ? Theme.of(context).colorScheme.surface : Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -198,7 +198,7 @@ class _AboutPageState extends State<AboutPage> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -328,7 +328,7 @@ class _AboutPageState extends State<AboutPage> {
   }) {
     return Card(
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       margin: const EdgeInsets.only(bottom: 8),
       color: isDarkMode ? Theme.of(context).colorScheme.surface : Colors.white,
       child: Padding(
@@ -394,12 +394,12 @@ class _AboutPageState extends State<AboutPage> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? AppColors.primaryColor.withOpacity(0.15)
-                  : AppColors.primaryColor.withOpacity(0.05),
+                  ? AppColors.primaryColor.withValues(alpha: 0.15)
+                  : AppColors.primaryColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.primaryColor.withOpacity(
-                  isDarkMode ? 0.2 : 0.1,
+                color: AppColors.primaryColor.withValues(
+                  alpha: isDarkMode ? 0.2 : 0.1,
                 ),
                 width: 1,
               ),
@@ -414,8 +414,8 @@ class _AboutPageState extends State<AboutPage> {
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryColor.withOpacity(
-                          isDarkMode ? 0.4 : 0.3,
+                        color: AppColors.primaryColor.withValues(
+                          alpha: isDarkMode ? 0.4 : 0.3,
                         ),
                         blurRadius: 8,
                         offset: const Offset(0, 4),

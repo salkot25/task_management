@@ -216,7 +216,7 @@ class _MonthlyTransactionDetailPageState
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryColor.withOpacity(0.3),
+                      color: AppColors.primaryColor.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -259,7 +259,7 @@ class _MonthlyTransactionDetailPageState
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -302,7 +302,7 @@ class _MonthlyTransactionDetailPageState
                 decoration: BoxDecoration(
                   color: isDarkMode
                       ? const Color(0xFF2D2D2D)
-                      : AppColors.greyLightColor.withOpacity(0.3),
+                      : AppColors.greyLightColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -469,7 +469,7 @@ class _MonthlyTransactionDetailPageState
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -525,15 +525,15 @@ class _MonthlyTransactionDetailPageState
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
-              : AppColors.greyLightColor.withOpacity(0.5),
+              ? Colors.grey.withValues(alpha: 0.2)
+              : AppColors.greyLightColor.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.2)
-                : Colors.black.withOpacity(0.05),
+                ? Colors.black.withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -549,13 +549,13 @@ class _MonthlyTransactionDetailPageState
                 height: 48,
                 decoration: BoxDecoration(
                   color: isIncome
-                      ? AppColors.successColor.withOpacity(0.1)
-                      : AppColors.errorColor.withOpacity(0.1),
+                      ? AppColors.successColor.withValues(alpha: 0.1)
+                      : AppColors.errorColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isIncome
-                        ? AppColors.successColor.withOpacity(0.3)
-                        : AppColors.errorColor.withOpacity(0.3),
+                        ? AppColors.successColor.withValues(alpha: 0.3)
+                        : AppColors.errorColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -625,8 +625,8 @@ class _MonthlyTransactionDetailPageState
             ),
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.1)
-                  : AppColors.greyLightColor.withOpacity(0.3),
+                  ? Colors.grey.withValues(alpha: 0.1)
+                  : AppColors.greyLightColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -654,8 +654,8 @@ class _MonthlyTransactionDetailPageState
                   ),
                   decoration: BoxDecoration(
                     color: isIncome
-                        ? AppColors.successColor.withOpacity(0.1)
-                        : AppColors.errorColor.withOpacity(0.1),
+                        ? AppColors.successColor.withValues(alpha: 0.1)
+                        : AppColors.errorColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

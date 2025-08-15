@@ -195,7 +195,7 @@ class _CashcardPageState extends State<CashcardPage>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryColor.withOpacity(0.1),
+                      color: AppColors.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -330,13 +330,13 @@ class _CashcardPageState extends State<CashcardPage>
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: isDarkMode
-                    ? Colors.grey.withOpacity(0.1)
-                    : Colors.grey.withOpacity(0.05),
+                    ? Colors.grey.withValues(alpha: 0.1)
+                    : Colors.grey.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isDarkMode
-                      ? Colors.grey.withOpacity(0.3)
-                      : Colors.grey.withOpacity(0.3),
+                      ? Colors.grey.withValues(alpha: 0.3)
+                      : Colors.grey.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -391,13 +391,13 @@ class _CashcardPageState extends State<CashcardPage>
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: isDarkMode
-                      ? Colors.grey.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.05),
+                      ? Colors.grey.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDarkMode
-                        ? Colors.grey.withOpacity(0.3)
-                        : Colors.grey.withOpacity(0.3),
+                        ? Colors.grey.withValues(alpha: 0.3)
+                        : Colors.grey.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -493,12 +493,12 @@ class _CashcardPageState extends State<CashcardPage>
             Container(
               decoration: BoxDecoration(
                 color: isDarkMode
-                    ? Colors.grey.withOpacity(0.1)
-                    : Colors.grey.withOpacity(0.05),
+                    ? Colors.grey.withValues(alpha: 0.1)
+                    : Colors.grey.withValues(alpha: 0.05),
                 border: Border.all(
                   color: isDarkMode
-                      ? Colors.grey.withOpacity(0.3)
-                      : Colors.grey.withOpacity(0.3),
+                      ? Colors.grey.withValues(alpha: 0.3)
+                      : Colors.grey.withValues(alpha: 0.3),
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -506,7 +506,7 @@ class _CashcardPageState extends State<CashcardPage>
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
+                    color: AppColors.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -580,29 +580,29 @@ class _CashcardPageState extends State<CashcardPage>
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.primaryColor.withOpacity(0.1),
+          color: AppColors.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(prefixIcon, color: AppColors.primaryColor, size: 20),
       ),
       filled: true,
       fillColor: isDarkMode
-          ? Colors.grey.withOpacity(0.1)
-          : Colors.grey.withOpacity(0.05),
+          ? Colors.grey.withValues(alpha: 0.1)
+          : Colors.grey.withValues(alpha: 0.05),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.3)
-              : Colors.grey.withOpacity(0.3),
+              ? Colors.grey.withValues(alpha: 0.3)
+              : Colors.grey.withValues(alpha: 0.3),
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.3)
-              : Colors.grey.withOpacity(0.3),
+              ? Colors.grey.withValues(alpha: 0.3)
+              : Colors.grey.withValues(alpha: 0.3),
         ),
       ),
       focusedBorder: OutlineInputBorder(
@@ -632,12 +632,12 @@ class _CashcardPageState extends State<CashcardPage>
           horizontal: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
           border: Border.all(
             color: isSelected
                 ? color
                 : isDarkMode
-                ? Colors.grey.withOpacity(0.3)
+                ? Colors.grey.withValues(alpha: 0.3)
                 : AppColors.greyLightColor,
             width: isSelected ? 2 : 1,
           ),
@@ -694,19 +694,19 @@ class _CashcardPageState extends State<CashcardPage>
                 colors: [
                   AppColors.primaryDarkColor,
                   AppColors.primaryColor,
-                  AppColors.primaryLightColor.withOpacity(0.8),
+                  AppColors.primaryLightColor.withValues(alpha: 0.8),
                 ],
                 stops: const [0.0, 0.6, 1.0],
               ),
               borderRadius: AppComponents.largeBorderRadius,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryColor.withOpacity(0.3),
+                  color: AppColors.primaryColor.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 5,
                   offset: const Offset(0, 2),
                 ),
@@ -788,7 +788,7 @@ class _CashcardPageState extends State<CashcardPage>
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -855,7 +855,7 @@ class _CashcardPageState extends State<CashcardPage>
           borderRadius: AppComponents.standardBorderRadius,
           border: Border.all(
             color: isDarkMode
-                ? Colors.grey.withOpacity(0.2)
+                ? Colors.grey.withValues(alpha: 0.2)
                 : AppColors.greyLightColor,
             width: 1,
           ),
@@ -968,10 +968,14 @@ class _CashcardPageState extends State<CashcardPage>
                             vertical: AppSpacing.xs,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.1),
+                            color: AppColors.primaryColor.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppColors.primaryColor.withOpacity(0.3),
+                              color: AppColors.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
                               width: 1,
                             ),
                           ),
@@ -1013,15 +1017,15 @@ class _CashcardPageState extends State<CashcardPage>
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isDarkMode
-                          ? Colors.grey.withOpacity(0.2)
-                          : AppColors.greyLightColor.withOpacity(0.5),
+                          ? Colors.grey.withValues(alpha: 0.2)
+                          : AppColors.greyLightColor.withValues(alpha: 0.5),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isDarkMode
-                            ? Colors.black.withOpacity(0.2)
-                            : Colors.black.withOpacity(0.05),
+                            ? Colors.black.withValues(alpha: 0.2)
+                            : Colors.black.withValues(alpha: 0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -1055,13 +1059,17 @@ class _CashcardPageState extends State<CashcardPage>
                           ),
                           decoration: BoxDecoration(
                             color: isDarkMode
-                                ? Colors.grey.withOpacity(0.1)
-                                : AppColors.greyLightColor.withOpacity(0.3),
+                                ? Colors.grey.withValues(alpha: 0.1)
+                                : AppColors.greyLightColor.withValues(
+                                    alpha: 0.3,
+                                  ),
                             border: Border(
                               top: BorderSide(
                                 color: isDarkMode
-                                    ? Colors.grey.withOpacity(0.2)
-                                    : AppColors.greyLightColor.withOpacity(0.3),
+                                    ? Colors.grey.withValues(alpha: 0.2)
+                                    : AppColors.greyLightColor.withValues(
+                                        alpha: 0.3,
+                                      ),
                                 width: 0.5,
                               ),
                             ),
@@ -1415,15 +1423,15 @@ class _CashcardPageState extends State<CashcardPage>
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
-              : AppColors.greyLightColor.withOpacity(0.5),
+              ? Colors.grey.withValues(alpha: 0.2)
+              : AppColors.greyLightColor.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : AppColors.greyColor.withOpacity(0.08),
+                ? Colors.black.withValues(alpha: 0.3)
+                : AppColors.greyColor.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1438,7 +1446,7 @@ class _CashcardPageState extends State<CashcardPage>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: cardColor.withOpacity(0.1),
+                  color: cardColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: cardColor, size: 16),
@@ -1544,8 +1552,8 @@ class _CashcardPageState extends State<CashcardPage>
             : Border(
                 bottom: BorderSide(
                   color: isDarkMode
-                      ? Colors.grey.withOpacity(0.2)
-                      : AppColors.greyLightColor.withOpacity(0.3),
+                      ? Colors.grey.withValues(alpha: 0.2)
+                      : AppColors.greyLightColor.withValues(alpha: 0.3),
                   width: 0.5,
                 ),
               ),
@@ -1558,13 +1566,13 @@ class _CashcardPageState extends State<CashcardPage>
             height: 48,
             decoration: BoxDecoration(
               color: isIncome
-                  ? AppColors.successColor.withOpacity(0.1)
-                  : AppColors.errorColor.withOpacity(0.1),
+                  ? AppColors.successColor.withValues(alpha: 0.1)
+                  : AppColors.errorColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isIncome
-                    ? AppColors.successColor.withOpacity(0.3)
-                    : AppColors.errorColor.withOpacity(0.3),
+                    ? AppColors.successColor.withValues(alpha: 0.3)
+                    : AppColors.errorColor.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -1897,7 +1905,7 @@ class _CashcardPageState extends State<CashcardPage>
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: AppColors.errorColor.withOpacity(0.1),
+                          color: AppColors.errorColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -1947,10 +1955,14 @@ class _CashcardPageState extends State<CashcardPage>
                               vertical: AppSpacing.sm,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.errorColor.withOpacity(0.1),
+                              color: AppColors.errorColor.withValues(
+                                alpha: 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: AppColors.errorColor.withOpacity(0.3),
+                                color: AppColors.errorColor.withValues(
+                                  alpha: 0.3,
+                                ),
                                 width: 1,
                               ),
                             ),
@@ -1983,10 +1995,14 @@ class _CashcardPageState extends State<CashcardPage>
                               vertical: AppSpacing.sm,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.warningColor.withOpacity(0.1),
+                              color: AppColors.warningColor.withValues(
+                                alpha: 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: AppColors.warningColor.withOpacity(0.3),
+                                color: AppColors.warningColor.withValues(
+                                  alpha: 0.3,
+                                ),
                                 width: 1,
                               ),
                             ),
@@ -2141,7 +2157,7 @@ class _CashcardPageState extends State<CashcardPage>
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.successColor.withOpacity(0.1),
+                  color: AppColors.successColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -2185,8 +2201,8 @@ class _CashcardPageState extends State<CashcardPage>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.successColor.withOpacity(0.1),
-                      AppColors.primaryColor.withOpacity(0.1),
+                      AppColors.successColor.withValues(alpha: 0.1),
+                      AppColors.primaryColor.withValues(alpha: 0.1),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -2200,8 +2216,8 @@ class _CashcardPageState extends State<CashcardPage>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.successColor.withOpacity(0.2),
-                          AppColors.primaryColor.withOpacity(0.2),
+                          AppColors.successColor.withValues(alpha: 0.2),
+                          AppColors.primaryColor.withValues(alpha: 0.2),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -2223,10 +2239,10 @@ class _CashcardPageState extends State<CashcardPage>
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.successColor.withOpacity(0.05),
+                  color: AppColors.successColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.successColor.withOpacity(0.1),
+                    color: AppColors.successColor.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
@@ -2301,12 +2317,12 @@ class _CashcardPageState extends State<CashcardPage>
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF3D3D3D) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.3)
-                : color.withOpacity(0.08),
+                ? Colors.black.withValues(alpha: 0.3)
+                : color.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2321,7 +2337,7 @@ class _CashcardPageState extends State<CashcardPage>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(statusIcon, color: color, size: 20),
@@ -2418,8 +2434,8 @@ class _CashcardPageState extends State<CashcardPage>
             height: 8,
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.3)
-                  : AppColors.greyLightColor.withOpacity(0.5),
+                  ? Colors.grey.withValues(alpha: 0.3)
+                  : AppColors.greyLightColor.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(4),
             ),
             child: ClipRRect(
@@ -2438,10 +2454,10 @@ class _CashcardPageState extends State<CashcardPage>
             Container(
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.errorColor.withOpacity(0.1),
+                color: AppColors.errorColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: AppColors.errorColor.withOpacity(0.3),
+                  color: AppColors.errorColor.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),

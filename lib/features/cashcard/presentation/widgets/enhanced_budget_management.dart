@@ -107,16 +107,16 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 borderRadius: AppComponents.standardBorderRadius,
                 border: Border.all(
                   color: isDarkMode
-                      ? Colors.grey.withOpacity(0.2)
-                      : AppColors.greyLightColor.withOpacity(0.3),
+                      ? Colors.grey.withValues(alpha: 0.2)
+                      : AppColors.greyLightColor.withValues(alpha: 0.3),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: isDarkMode
-                        ? Colors.black.withOpacity(0.4)
-                        : Colors.black.withOpacity(
-                            0.08,
+                        ? Colors.black.withValues(alpha: 0.4)
+                        : Colors.black.withValues(
+                            alpha: 0.08,
                           ), // Shadow lebih gelap untuk tab bar
                     blurRadius: 12,
                     offset: const Offset(0, 4),
@@ -169,8 +169,8 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               setState(() => _currentTabIndex = index);
             },
             borderRadius: AppComponents.standardBorderRadius,
-            splashColor: AppColors.primaryColor.withOpacity(0.2),
-            highlightColor: AppColors.primaryColor.withOpacity(0.1),
+            splashColor: AppColors.primaryColor.withValues(alpha: 0.2),
+            highlightColor: AppColors.primaryColor.withValues(alpha: 0.1),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
@@ -182,13 +182,13 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 color: isSelected
                     ? AppColors.primaryColor
                     : isHovered
-                    ? AppColors.primaryColor.withOpacity(0.08)
+                    ? AppColors.primaryColor.withValues(alpha: 0.08)
                     : Colors.transparent,
                 borderRadius: AppComponents.standardBorderRadius,
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: AppColors.primaryColor.withOpacity(0.3),
+                          color: AppColors.primaryColor.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                           spreadRadius: 0,
@@ -197,7 +197,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                     : isHovered
                     ? [
                         BoxShadow(
-                          color: AppColors.primaryColor.withOpacity(0.15),
+                          color: AppColors.primaryColor.withValues(alpha: 0.15),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                           spreadRadius: 0,
@@ -206,7 +206,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                     : null,
                 border: isHovered && !isSelected
                     ? Border.all(
-                        color: AppColors.primaryColor.withOpacity(0.4),
+                        color: AppColors.primaryColor.withValues(alpha: 0.4),
                         width: 1.5,
                       )
                     : null,
@@ -299,15 +299,15 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
+              ? Colors.grey.withValues(alpha: 0.2)
               : AppColors.greyLightColor,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(
-                    0.1,
+                ? Colors.black.withValues(alpha: 0.4)
+                : Colors.black.withValues(
+                    alpha: 0.1,
                   ), // Shadow lebih gelap untuk quick actions
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -366,9 +366,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
           horizontal: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -401,13 +401,13 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
           end: Alignment.bottomRight,
           colors: [
             AppColors.primaryColor,
-            AppColors.primaryColor.withOpacity(0.8),
+            AppColors.primaryColor.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: AppComponents.standardBorderRadius,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryColor.withOpacity(0.3),
+            color: AppColors.primaryColor.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -472,7 +472,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
         Text(
           label,
           style: AppTypography.bodySmall.copyWith(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
         Text(
@@ -500,7 +500,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
             Text(
               'Spent: ${(progress * 100).toStringAsFixed(1)}%',
               style: AppTypography.bodySmall.copyWith(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
             Text(
@@ -510,7 +510,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 decimalDigits: 0,
               ).format(totalSpent),
               style: AppTypography.bodySmall.copyWith(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
           ],
@@ -519,7 +519,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
         Container(
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
           child: FractionallySizedBox(
@@ -552,15 +552,15 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
+              ? Colors.grey.withValues(alpha: 0.2)
               : AppColors.greyLightColor,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(
-                    0.1,
+                ? Colors.black.withValues(alpha: 0.4)
+                : Colors.black.withValues(
+                    alpha: 0.1,
                   ), // Shadow lebih gelap untuk progress summary
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -623,9 +623,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppComponents.smallRadius),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -661,15 +661,15 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
+              ? Colors.grey.withValues(alpha: 0.2)
               : AppColors.greyLightColor,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(
-                    0.1,
+                ? Colors.black.withValues(alpha: 0.4)
+                : Colors.black.withValues(
+                    alpha: 0.1,
                   ), // Shadow lebih gelap untuk recent activities
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -721,7 +721,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
             size: 48,
             color: isDarkMode
                 ? Colors.white30
-                : AppColors.greyColor.withOpacity(0.5),
+                : AppColors.greyColor.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -737,7 +737,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
             style: AppTypography.bodySmall.copyWith(
               color: isDarkMode
                   ? Colors.white54
-                  : AppColors.greyColor.withOpacity(0.8),
+                  : AppColors.greyColor.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -762,7 +762,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
           Container(
             padding: const EdgeInsets.all(AppSpacing.xs),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(icon, color: color, size: 16),
@@ -793,7 +793,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
             style: AppTypography.bodySmall.copyWith(
               color: isDarkMode
                   ? Colors.white54
-                  : AppColors.greyColor.withOpacity(0.8),
+                  : AppColors.greyColor.withValues(alpha: 0.8),
               fontSize: 11,
             ),
           ),
@@ -844,13 +844,13 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: isDarkMode
-            ? category.color.withOpacity(0.1)
-            : category.color.withOpacity(0.05),
+            ? category.color.withValues(alpha: 0.1)
+            : category.color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppComponents.smallRadius),
         border: Border.all(
           color: isDarkMode
-              ? category.color.withOpacity(0.3)
-              : category.color.withOpacity(0.2),
+              ? category.color.withValues(alpha: 0.3)
+              : category.color.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -862,7 +862,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: category.color.withOpacity(0.1),
+                  color: category.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Icon(category.icon, color: category.color, size: 16),
@@ -970,7 +970,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
             height: 6,
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.grey.withOpacity(0.3)
+                  ? Colors.grey.withValues(alpha: 0.3)
                   : AppColors.greyExtraLightColor,
               borderRadius: BorderRadius.circular(3),
             ),
@@ -1062,15 +1062,15 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
         borderRadius: AppComponents.standardBorderRadius,
         border: Border.all(
           color: isDarkMode
-              ? Colors.grey.withOpacity(0.2)
+              ? Colors.grey.withValues(alpha: 0.2)
               : AppColors.greyLightColor,
         ),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(
-                    0.1,
+                ? Colors.black.withValues(alpha: 0.4)
+                : Colors.black.withValues(
+                    alpha: 0.1,
                   ), // Shadow lebih gelap untuk recommendations
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -1144,13 +1144,13 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: isDarkMode
-            ? cardColor.withOpacity(0.1)
-            : cardColor.withOpacity(0.05),
+            ? cardColor.withValues(alpha: 0.1)
+            : cardColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppComponents.smallRadius),
         border: Border.all(
           color: isDarkMode
-              ? cardColor.withOpacity(0.3)
-              : cardColor.withOpacity(0.2),
+              ? cardColor.withValues(alpha: 0.3)
+              : cardColor.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -1203,9 +1203,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.infoColor.withOpacity(0.1),
+        color: AppColors.infoColor.withValues(alpha: 0.1),
         borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(color: AppColors.infoColor.withOpacity(0.3)),
+        border: Border.all(color: AppColors.infoColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1330,13 +1330,13 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: isDarkMode
-                              ? Colors.grey.withOpacity(0.3)
+                              ? Colors.grey.withValues(alpha: 0.3)
                               : AppColors.greyLightColor,
                         ),
                         borderRadius: BorderRadius.circular(8),
                         color: isDarkMode
-                            ? Colors.grey.withOpacity(0.1)
-                            : Colors.grey.withOpacity(0.05),
+                            ? Colors.grey.withValues(alpha: 0.1)
+                            : Colors.grey.withValues(alpha: 0.05),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<ExpenseCategory>(
@@ -1431,13 +1431,13 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
                             color: isDarkMode
-                                ? Colors.grey.withOpacity(0.3)
+                                ? Colors.grey.withValues(alpha: 0.3)
                                 : AppColors.greyLightColor,
                           ),
                         ),
                         fillColor: isDarkMode
-                            ? Colors.grey.withOpacity(0.1)
-                            : Colors.grey.withOpacity(0.05),
+                            ? Colors.grey.withValues(alpha: 0.1)
+                            : Colors.grey.withValues(alpha: 0.05),
                         filled: true,
                       ),
                     ),
@@ -1449,7 +1449,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isDarkMode
-                            ? Colors.grey.withOpacity(0.2)
+                            ? Colors.grey.withValues(alpha: 0.2)
                             : AppColors.greyExtraLightColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -1463,7 +1463,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                                   .getCategoryColorByName(
                                     categoryDisplayNames[selectedCategory]!,
                                   )
-                                  .withOpacity(0.1),
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -1619,7 +1619,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isDarkMode
-                      ? Colors.grey.withOpacity(0.15)
+                      ? Colors.grey.withValues(alpha: 0.15)
                       : AppColors.greyExtraLightColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -1629,7 +1629,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: category.color.withOpacity(0.1),
+                        color: category.color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -1695,8 +1695,8 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                   ),
                   filled: true,
                   fillColor: isDarkMode
-                      ? Colors.grey.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.05),
+                      ? Colors.grey.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.05),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(
