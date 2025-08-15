@@ -227,3 +227,213 @@ class SpendingPattern {
     required this.trendDescription,
   });
 }
+
+// Budget Activity model for tracking budget changes
+enum BudgetActivityType {
+  created,
+  updated,
+  deleted,
+  overBudget,
+  resetMonth,
+  autoCreated,
+}
+
+class BudgetActivity {
+  final String id;
+  final String categoryName;
+  final BudgetActivityType type;
+  final String description;
+  final DateTime timestamp;
+  final double? oldAmount;
+  final double? newAmount;
+  final IconData icon;
+  final Color color;
+
+  BudgetActivity({
+    required this.id,
+    required this.categoryName,
+    required this.type,
+    required this.description,
+    required this.timestamp,
+    this.oldAmount,
+    this.newAmount,
+    required this.icon,
+    required this.color,
+  });
+
+  // Create activity for budget creation
+  factory BudgetActivity.created({
+    required String categoryName,
+    required double amount,
+  }) {
+    return BudgetActivity(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      categoryName: categoryName,
+      type: BudgetActivityType.created,
+      description: 'New budget of ${_formatCurrency(amount)} created',
+      timestamp: DateTime.now(),
+      newAmount: amount,
+      icon: Icons.add_circle,
+      color: Colors.green,
+    );
+  }
+
+  // Create activity for budget update
+  factory BudgetActivity.updated({
+    required String categoryName,
+    required double oldAmount,
+    required double newAmount,
+  }) {
+    return BudgetActivity(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      categoryName: categoryName,
+      type: BudgetActivityType.updated,
+      description:
+          'Budget updated from ${_formatCurrency(oldAmount)} to ${_formatCurrency(newAmount)}',
+      timestamp: DateTime.now(),
+      oldAmount: oldAmount,
+      newAmount: newAmount,
+      icon: Icons.edit,
+      color: Colors.blue,
+    );
+  }
+
+  // Create activity for budget deletion
+  factory BudgetActivity.deleted({
+    required String categoryName,
+    required double amount,
+  }) {
+    return BudgetActivity(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      categoryName: categoryName,
+      type: BudgetActivityType.deleted,
+      description: 'Budget of ${_formatCurrency(amount)} deleted',
+      timestamp: DateTime.now(),
+      oldAmount: amount,
+      icon: Icons.delete,
+      color: Colors.red,
+    );
+  }
+
+  // Create activity for over budget alert
+  factory BudgetActivity.overBudget({
+    required String categoryName,
+    required double exceededAmount,
+  }) {
+    return BudgetActivity(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      categoryName: categoryName,
+      type: BudgetActivityType.overBudget,
+      description: 'Exceeded budget by ${_formatCurrency(exceededAmount)}',
+      timestamp: DateTime.now(),
+      newAmount: exceededAmount,
+      icon: Icons.warning,
+      color: Colors.orange,
+    );
+  }
+
+  // Create activity for month reset
+  factory BudgetActivity.resetMonth() {
+    return BudgetActivity(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      categoryName: 'All Categories',
+      type: BudgetActivityType.resetMonth,
+      description: 'Budget month reset - all spending amounts cleared',
+      timestamp: DateTime.now(),
+      icon: Icons.refresh,
+      color: Colors.purple,
+    );
+  }
+
+  // Create activity for auto creation
+  factory BudgetActivity.autoCreated({
+    required String categoryName,
+    required double amount,
+  }) {
+    return BudgetActivity(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      categoryName: categoryName,
+      type: BudgetActivityType.autoCreated,
+      description: 'Auto-created budget of ${_formatCurrency(amount)}',
+      timestamp: DateTime.now(),
+      newAmount: amount,
+      icon: Icons.auto_fix_high,
+      color: Colors.teal,
+    );
+  }
+
+  // Helper method to format currency
+  static String _formatCurrency(double amount) {
+    if (amount >= 1000000) {
+      final millions = amount / 1000000;
+      if (millions == millions.truncate()) {
+        return 'Rp${millions.truncate()} jt';
+      } else {
+        return 'Rp${millions.toStringAsFixed(1)} jt';
+      }
+    } else if (amount >= 1000) {
+      final thousands = amount / 1000;
+      if (thousands == thousands.truncate()) {
+        return 'Rp${thousands.truncate()} rb';
+      } else {
+        return 'Rp${thousands.toStringAsFixed(0)} rb';
+      }
+    } else {
+      return 'Rp${amount.toStringAsFixed(0)}';
+    }
+  }
+
+  // Get relative time description
+  String get timeAgo {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return '${(difference.inDays / 7).floor()}w ago';
+    }
+  }
+
+  // Convert to map for storage
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'categoryName': categoryName,
+      'type': type.name,
+      'description': description,
+      'timestamp': timestamp.toIso8601String(),
+      'oldAmount': oldAmount,
+      'newAmount': newAmount,
+      'iconCodePoint': icon.codePoint,
+      'colorValue': color.value,
+    };
+  }
+
+  // Create from map
+  factory BudgetActivity.fromMap(Map<String, dynamic> map) {
+    return BudgetActivity(
+      id: map['id'] ?? '',
+      categoryName: map['categoryName'] ?? '',
+      type: BudgetActivityType.values.firstWhere(
+        (e) => e.name == map['type'],
+        orElse: () => BudgetActivityType.created,
+      ),
+      description: map['description'] ?? '',
+      timestamp: DateTime.parse(map['timestamp']),
+      oldAmount: map['oldAmount']?.toDouble(),
+      newAmount: map['newAmount']?.toDouble(),
+      icon: IconData(
+        map['iconCodePoint'] ?? Icons.info.codePoint,
+        fontFamily: 'MaterialIcons',
+      ),
+      color: Color(map['colorValue'] ?? Colors.blue.value),
+    );
+  }
+}

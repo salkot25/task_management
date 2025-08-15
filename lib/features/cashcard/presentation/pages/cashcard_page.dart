@@ -11,6 +11,7 @@ import 'package:clarity/features/cashcard/presentation/widgets/financial_charts.
 import 'package:clarity/features/cashcard/presentation/widgets/enhanced_budget_management.dart';
 import 'package:clarity/features/cashcard/presentation/widgets/budget_notification_widgets.dart';
 import 'package:clarity/features/cashcard/presentation/widgets/export_functions.dart';
+import 'package:clarity/features/cashcard/presentation/pages/monthly_transaction_detail_page.dart';
 import 'package:clarity/presentation/widgets/standard_app_bar.dart';
 
 class CashcardPage extends StatefulWidget {
@@ -844,60 +845,210 @@ class _CashcardPageState extends State<CashcardPage>
       );
     }
 
+    // Group transactions by date
+    final groupedTransactions = <String, List<Transaction>>{};
+    for (final transaction in transactions) {
+      final dateKey = DateFormat('MMMM yyyy', 'id_ID').format(transaction.date);
+      if (!groupedTransactions.containsKey(dateKey)) {
+        groupedTransactions[dateKey] = [];
+      }
+      groupedTransactions[dateKey]!.add(transaction);
+    }
+
+    // Sort dates in descending order (newest first)
+    final sortedDates = groupedTransactions.keys.toList()
+      ..sort((a, b) {
+        final dateA = DateFormat('MMMM yyyy', 'id_ID').parse(a);
+        final dateB = DateFormat('MMMM yyyy', 'id_ID').parse(b);
+        return dateB.compareTo(dateA);
+      });
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Transaction list without redundant header
-        ...transactions.asMap().entries.map((entry) {
-          final index = entry.key;
-          final transaction = entry.value;
-          return Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                child: _buildMinimalistTransactionTile(transaction),
-              ),
-              if (index < transactions.length - 1)
+        ...sortedDates.map((dateKey) {
+          final dateTransactions = groupedTransactions[dateKey]!;
+          // Sort transactions within each date group by date descending
+          dateTransactions.sort((a, b) => b.date.compareTo(a.date));
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Date header with modern design and navigation
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  child: Divider(
-                    height: 1,
-                    color: AppColors.greyLightColor.withOpacity(0.5),
+                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dateKey,
+                              style: AppTypography.titleLarge.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: isDarkMode
+                                    ? Colors.white
+                                    : Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              '${dateTransactions.length} transaksi',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.greyColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Monthly navigation controls
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to detailed monthly view
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  MonthlyTransactionDetailPage(
+                                    monthYear: dateKey,
+                                    transactions: dateTransactions,
+                                  ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.primaryColor.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.visibility_outlined,
+                                size: 16,
+                                color: AppColors.primaryColor,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                'Lihat Per Bulan',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 12,
+                                color: AppColors.primaryColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          );
-        }),
 
-        // Show count indicator at bottom if needed
-        if (transactions.length > 5)
-          Container(
-            margin: const EdgeInsets.only(
-              top: AppSpacing.sm,
-              left: AppSpacing.sm,
-              right: AppSpacing.sm,
-            ),
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.xs,
-              horizontal: AppSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.greyExtraLightColor,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.info_outline, size: 16, color: AppColors.greyColor),
-                const SizedBox(width: AppSpacing.xs),
-                Text(
-                  'Showing ${transactions.length} transactions',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.greyColor,
+                // Transaction cards with modern timeline design
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDarkMode
+                          ? Colors.grey.withOpacity(0.2)
+                          : AppColors.greyLightColor.withOpacity(0.5),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDarkMode
+                            ? Colors.black.withOpacity(0.2)
+                            : Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Show only the last 3 transactions for each month
+                      ...dateTransactions.take(3).toList().asMap().entries.map((
+                        entry,
+                      ) {
+                        final index = entry.key;
+                        final transaction = entry.value;
+                        final isLast =
+                            index == dateTransactions.take(3).length - 1;
+
+                        return _buildModernTransactionTile(
+                          transaction,
+                          isLast,
+                          isDarkMode,
+                        );
+                      }),
+
+                      // Show "and X more" indicator if there are more than 3 transactions
+                      if (dateTransactions.length > 3)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.sm,
+                            horizontal: AppSpacing.md,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDarkMode
+                                ? Colors.grey.withOpacity(0.1)
+                                : AppColors.greyLightColor.withOpacity(0.3),
+                            border: Border(
+                              top: BorderSide(
+                                color: isDarkMode
+                                    ? Colors.grey.withOpacity(0.2)
+                                    : AppColors.greyLightColor.withOpacity(0.3),
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.more_horiz,
+                                size: 16,
+                                color: AppColors.greyColor,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                'dan ${dateTransactions.length - 3} transaksi lainnya',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.greyColor,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
+          );
+        }),
       ],
     );
   }
@@ -1334,34 +1485,42 @@ class _CashcardPageState extends State<CashcardPage>
   }
 
   // Minimalist Transaction Tile Widget
-  Widget _buildMinimalistTransactionTile(Transaction transaction) {
+  // Modern Transaction Tile Widget matching the design in the attachment
+  Widget _buildModernTransactionTile(
+    Transaction transaction,
+    bool isLast,
+    bool isDarkMode,
+  ) {
     final isIncome = transaction.type == TransactionType.income;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppSpacing.sm,
-        horizontal: AppSpacing.xs,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        border: isLast
+            ? null
+            : Border(
+                bottom: BorderSide(
+                  color: isDarkMode
+                      ? Colors.grey.withOpacity(0.2)
+                      : AppColors.greyLightColor.withOpacity(0.3),
+                  width: 0.5,
+                ),
+              ),
       ),
       child: Row(
         children: [
-          // Minimalist transaction icon
+          // Modern transaction icon with payment method styling
           Container(
-            width: 36,
-            height: 36,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: isIncome
-                  ? AppColors.successColor.withOpacity(0.1)
-                  : AppColors.errorColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.orange,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              isIncome ? Icons.trending_up : Icons.trending_down,
-              color: isIncome ? AppColors.successColor : AppColors.errorColor,
-              size: 18,
-            ),
+            child: Icon(Icons.qr_code, color: Colors.white, size: 24),
           ),
 
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: AppSpacing.md),
 
           // Transaction details
           Expanded(
@@ -1370,41 +1529,28 @@ class _CashcardPageState extends State<CashcardPage>
               children: [
                 Text(
                   transaction.description,
+                  style: AppTypography.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  transaction.getCategoryDisplayName(),
                   style: AppTypography.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w500,
+                    color: AppColors.greyColor,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      DateFormat('dd MMM').format(transaction.date),
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.greyColor,
-                      ),
-                    ),
-                    // Show category for expense transactions
-                    if (!isIncome && transaction.category != null) ...[
-                      Text(
-                        ' • ',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.greyColor,
-                        ),
-                      ),
-                      Flexible(
-                        child: Text(
-                          transaction.getCategoryDisplayName(),
-                          style: AppTypography.labelSmall.copyWith(
-                            color: AppColors.primaryColor.withOpacity(0.7),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ],
+                Text(
+                  '${DateFormat('dd MMM yyyy HH:mm', 'id_ID').format(transaction.date)} WIB',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.greyColor,
+                  ),
                 ),
               ],
             ),
@@ -1412,13 +1558,28 @@ class _CashcardPageState extends State<CashcardPage>
 
           const SizedBox(width: AppSpacing.sm),
 
-          // Amount with minimalist design
-          Text(
-            '${isIncome ? '+' : '-'}${NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0).format(transaction.amount)}',
-            style: AppTypography.titleSmall.copyWith(
-              color: isIncome ? AppColors.successColor : AppColors.errorColor,
-              fontWeight: FontWeight.w600,
-            ),
+          // Amount and category with modern styling
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${isIncome ? '+' : '-'} ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(transaction.amount)}',
+                style: AppTypography.titleMedium.copyWith(
+                  color: isIncome
+                      ? AppColors.successColor
+                      : AppColors.errorColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              if (!isIncome && transaction.category != null)
+                Text(
+                  transaction.getCategoryDisplayName(),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.greyColor,
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -1486,6 +1647,19 @@ class _CashcardPageState extends State<CashcardPage>
               ],
             ),
           ),
+          // Refresh Button
+          ActionButton(
+            icon: Icons.refresh_rounded,
+            onPressed: () async {
+              final cashcardProvider = Provider.of<CashcardProvider>(
+                context,
+                listen: false,
+              );
+              await cashcardProvider.refresh();
+            },
+            tooltip: 'Refresh Data',
+            color: AppColors.infoColor,
+          ),
           // Add Transaction Button
           ActionButton(
             icon: Icons.add_rounded,
@@ -1548,84 +1722,129 @@ class _CashcardPageState extends State<CashcardPage>
     CashcardProvider cashcardProvider,
     List<Transaction> transactions,
   ) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Budget Notification - Contextual alert (minimal spacing)
-            const BudgetNotificationWidget(),
-            const SizedBox(height: AppSpacing.sm),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await cashcardProvider.refresh();
+      },
+      color: AppColors.primaryColor,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Budget Notification - Contextual alert (minimal spacing)
+              const BudgetNotificationWidget(),
+              const SizedBox(height: AppSpacing.sm),
 
-            // Financial Card - Primary hero element (generous spacing)
-            _buildPremiumFinancialCard(
-              context,
-              cashcardProvider.balance,
-              cashcardProvider.totalIncome,
-              cashcardProvider.totalExpense,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Combined Insights - Secondary information (moderate spacing)
-            _buildCombinedInsights(cashcardProvider),
-            const SizedBox(height: AppSpacing.md),
-
-            // Transaction Activity Header - Modern contextual title
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              child: Row(
-                children: [
-                  Icon(Icons.history, color: AppColors.primaryColor, size: 20),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'Transaction Activity (${cashcardProvider.showAllTime ? 'All Time' : '$_selectedMonth $_selectedYear'})',
-                      style: AppTypography.titleMedium.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              // Financial Card - Primary hero element (generous spacing)
+              _buildPremiumFinancialCard(
+                context,
+                cashcardProvider.balance,
+                cashcardProvider.totalIncome,
+                cashcardProvider.totalExpense,
               ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.lg),
 
-            // Professional Transaction List
-            _buildProfessionalTransactionList(transactions),
+              // Combined Insights - Secondary information (moderate spacing)
+              _buildCombinedInsights(cashcardProvider),
+              const SizedBox(height: AppSpacing.md),
 
-            // Bottom spacing for FAB
-            const SizedBox(height: AppSpacing.xxxl),
-          ],
+              // Transaction Activity Header - Modern contextual title
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.history,
+                      color: AppColors.primaryColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'Transaction Activity (${cashcardProvider.showAllTime ? 'All Time' : '$_selectedMonth $_selectedYear'})',
+                        style: AppTypography.titleMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+
+              // Professional Transaction List
+              _buildProfessionalTransactionList(transactions),
+
+              // Bottom spacing for FAB
+              const SizedBox(height: AppSpacing.xxxl),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildAnalyticsTab(CashcardProvider cashcardProvider) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: FinancialCharts(transactions: cashcardProvider.transactions),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await cashcardProvider.refresh();
+      },
+      color: AppColors.primaryColor,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        child: FinancialCharts(
+          transactions: cashcardProvider.transactions,
+          isAllTime: cashcardProvider.showAllTime,
+          selectedPeriod: cashcardProvider.showAllTime
+              ? null
+              : DateFormat('MMMM yyyy', 'id_ID').format(
+                  DateTime(
+                    cashcardProvider.selectedYear,
+                    cashcardProvider.selectedMonth,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 
   Widget _buildBudgetTab(CashcardProvider cashcardProvider) {
-    return const EnhancedBudgetManagement();
+    return RefreshIndicator(
+      onRefresh: () async {
+        await cashcardProvider.refresh();
+      },
+      color: AppColors.primaryColor,
+      child: const EnhancedBudgetManagement(),
+    );
   }
 
   Widget _buildExportTab(CashcardProvider cashcardProvider) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.only(top: AppSpacing.md),
-        child: ExportFunctions(
-          transactions: cashcardProvider.transactions,
-          totalIncome: cashcardProvider.totalIncome,
-          totalExpense: cashcardProvider.totalExpense,
-          balance: cashcardProvider.balance,
+    return RefreshIndicator(
+      onRefresh: () async {
+        await cashcardProvider.refresh();
+      },
+      color: AppColors.primaryColor,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.md),
+          child: ExportFunctions(
+            transactions: cashcardProvider.transactions,
+            totalIncome: cashcardProvider.totalIncome,
+            totalExpense: cashcardProvider.totalExpense,
+            balance: cashcardProvider.balance,
+          ),
         ),
       ),
     );

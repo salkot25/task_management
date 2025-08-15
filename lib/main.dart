@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:clarity/features/task_planner/domain/repositories/task_repository.dart'
     as task_repository_impl;
 import 'package:provider/provider.dart';
@@ -184,6 +186,13 @@ class _MyAppState extends State<MyApp> {
           themeMode: themeProvider.themeMode,
           routerConfig: _appRouter.router,
           debugShowCheckedModeBanner: false,
+          localizationsDelegates: [
+            FlutterQuillLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en'), Locale('id')],
         );
       },
     );

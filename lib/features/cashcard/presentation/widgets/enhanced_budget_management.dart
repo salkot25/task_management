@@ -217,25 +217,29 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
       (sum, cat) => sum + cat.spentAmount,
     );
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        children: [
-          // Overall Budget Card
-          _buildOverallBudgetCard(totalBudget, totalSpent),
-          const SizedBox(height: AppSpacing.lg),
+    return RefreshIndicator(
+      onRefresh: () => provider.refresh(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Column(
+          children: [
+            // Overall Budget Card
+            _buildOverallBudgetCard(totalBudget, totalSpent),
+            const SizedBox(height: AppSpacing.lg),
 
-          // Budget Progress Summary
-          _buildBudgetProgressSummary(provider),
-          const SizedBox(height: AppSpacing.lg),
+            // Budget Progress Summary
+            _buildBudgetProgressSummary(provider),
+            const SizedBox(height: AppSpacing.lg),
 
-          // Quick Actions
-          _buildQuickActions(provider),
-          const SizedBox(height: AppSpacing.lg),
+            // Quick Actions
+            _buildQuickActions(provider),
+            const SizedBox(height: AppSpacing.lg),
 
-          // Recent Budget Activities
-          _buildRecentActivities(provider),
-        ],
+            // Recent Budget Activities
+            _buildRecentActivities(provider),
+          ],
+        ),
       ),
     );
   }
@@ -603,6 +607,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
 
   Widget _buildRecentActivities(CashcardProvider provider) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final activities = provider.budgetActivities;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -640,24 +645,58 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          // This would show recent transactions that affected budgets
-          _buildActivityItem(
-            'Food & Dining budget updated',
-            'Increased from Rp 1,500,000 to Rp 2,000,000',
-            Icons.restaurant,
-            AppColors.primaryColor,
+
+          // Show actual activities from provider
+          if (activities.isEmpty)
+            _buildEmptyActivities()
+          else
+            ...activities
+                .take(5)
+                .map(
+                  (activity) => _buildActivityItem(
+                    activity.categoryName,
+                    activity.description,
+                    activity.timeAgo,
+                    activity.icon,
+                    activity.color,
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyActivities() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Icon(
+            Icons.history,
+            size: 48,
+            color: isDarkMode
+                ? Colors.white30
+                : AppColors.greyColor.withOpacity(0.5),
           ),
-          _buildActivityItem(
-            'Transportation over budget',
-            'Exceeded by Rp 250,000 this month',
-            Icons.warning,
-            AppColors.errorColor,
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'No recent activities',
+            style: AppTypography.bodyMedium.copyWith(
+              color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          _buildActivityItem(
-            'Shopping budget created',
-            'New budget of Rp 800,000 added',
-            Icons.shopping_bag,
-            AppColors.successColor,
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Budget activities will appear here when you create, edit, or manage your budgets.',
+            style: AppTypography.bodySmall.copyWith(
+              color: isDarkMode
+                  ? Colors.white54
+                  : AppColors.greyColor.withOpacity(0.8),
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -665,8 +704,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
   }
 
   Widget _buildActivityItem(
-    String title,
-    String subtitle,
+    String categoryName,
+    String description,
+    String timeAgo,
     IconData icon,
     Color color,
   ) {
@@ -690,19 +730,28 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  categoryName,
                   style: AppTypography.bodyMedium.copyWith(
                     fontWeight: FontWeight.w500,
                     color: isDarkMode ? Colors.white : null,
                   ),
                 ),
                 Text(
-                  subtitle,
+                  description,
                   style: AppTypography.bodySmall.copyWith(
                     color: isDarkMode ? Colors.white70 : AppColors.greyColor,
                   ),
                 ),
               ],
+            ),
+          ),
+          Text(
+            timeAgo,
+            style: AppTypography.bodySmall.copyWith(
+              color: isDarkMode
+                  ? Colors.white54
+                  : AppColors.greyColor.withOpacity(0.8),
+              fontSize: 11,
             ),
           ),
         ],
@@ -711,28 +760,32 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
   }
 
   Widget _buildCategoriesTab(CashcardProvider provider) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        children: [
-          // Add Category Button
-          ElevatedButton.icon(
-            onPressed: () => _showAddBudgetDialog(provider),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Budget Category'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 48),
+    return RefreshIndicator(
+      onRefresh: () => provider.refresh(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Column(
+          children: [
+            // Add Category Button
+            ElevatedButton.icon(
+              onPressed: () => _showAddBudgetDialog(provider),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Budget Category'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 48),
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.lg),
 
-          // Categories List
-          ...provider.budgetCategories.map(
-            (category) => _buildEnhancedCategoryCard(category, provider),
-          ),
-        ],
+            // Categories List
+            ...provider.budgetCategories.map(
+              (category) => _buildEnhancedCategoryCard(category, provider),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -932,15 +985,19 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
   Widget _buildAlertsTab(CashcardProvider provider) {
     final alerts = provider.getBudgetAlerts();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        children: [
-          if (alerts.isEmpty)
-            _buildEmptyAlerts()
-          else
-            ...alerts.map((alert) => _buildAlertCard(alert)),
-        ],
+    return RefreshIndicator(
+      onRefresh: () => provider.refresh(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Column(
+          children: [
+            if (alerts.isEmpty)
+              _buildEmptyAlerts()
+            else
+              ...alerts.map((alert) => _buildAlertCard(alert)),
+          ],
+        ),
       ),
     );
   }
@@ -1035,17 +1092,21 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
   Widget _buildInsightsTab(CashcardProvider provider) {
     final recommendations = provider.getBudgetRecommendations();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        children: [
-          // Recommendations
-          _buildRecommendationsSection(recommendations, provider),
-          const SizedBox(height: AppSpacing.lg),
+    return RefreshIndicator(
+      onRefresh: () => provider.refresh(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Column(
+          children: [
+            // Recommendations
+            _buildRecommendationsSection(recommendations, provider),
+            const SizedBox(height: AppSpacing.lg),
 
-          // Budget Tips
-          _buildBudgetTips(),
-        ],
+            // Budget Tips
+            _buildBudgetTips(),
+          ],
+        ),
       ),
     );
   }

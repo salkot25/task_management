@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../provider/notes_provider.dart';
@@ -6,6 +8,20 @@ import '../../domain/entities/note.dart';
 import 'package:clarity/utils/design_system/design_system.dart';
 import 'package:clarity/presentation/widgets/standard_app_bar.dart';
 import 'package:clarity/utils/navigation_helper_v2.dart';
+
+// Helper: Try parse Quill content from JSON string, fallback to empty document
+List<dynamic> _tryParseQuillContent(String content) {
+  try {
+    return jsonDecode(content) as List<dynamic>;
+  } catch (_) {
+    return quill.Document().toDelta().toJson();
+  }
+}
+
+// Helper: Convert Quill document to JSON string for saving
+String _quillContentToJson(quill.Document doc) {
+  return jsonEncode(doc.toDelta().toJson());
+}
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -66,35 +82,6 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
             ),
             onPressed: _showSearchDialog,
             tooltip: 'Cari Catatan',
-          ),
-          PopupMenuButton<String>(
-            icon: Icon(
-              Icons.more_vert_rounded,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onSelected: _handleMenuAction,
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'categories',
-                child: Row(
-                  children: [
-                    Icon(Icons.category_outlined, size: 18),
-                    SizedBox(width: 12),
-                    Text('Kategori'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'clear_filters',
-                child: Row(
-                  children: [
-                    Icon(Icons.clear_all_rounded, size: 18),
-                    SizedBox(width: 12),
-                    Text('Hapus Filter'),
-                  ],
-                ),
-              ),
-            ],
           ),
           ActionButton(
             icon: Icons.add_rounded,
@@ -180,11 +167,19 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Expanded(
-              child: _buildCompactStatCard(
-                notesProvider.totalNotes.toString(),
-                'Total',
-                Icons.note_outlined,
-                AppColors.primaryColor,
+              child: GestureDetector(
+                onTap: () {
+                  Provider.of<NotesProvider>(
+                    context,
+                    listen: false,
+                  ).clearFilters();
+                },
+                child: _buildCompactStatCard(
+                  notesProvider.totalNotes.toString(),
+                  'Total',
+                  Icons.note_outlined,
+                  AppColors.primaryColor,
+                ),
               ),
             ),
             Container(
@@ -193,11 +188,19 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
             ),
             Expanded(
-              child: _buildCompactStatCard(
-                notesProvider.pinnedNotes.toString(),
-                'Pin',
-                Icons.push_pin_outlined,
-                AppColors.warningColor,
+              child: GestureDetector(
+                onTap: () {
+                  Provider.of<NotesProvider>(
+                    context,
+                    listen: false,
+                  ).setPinnedFilter(true);
+                },
+                child: _buildCompactStatCard(
+                  notesProvider.pinnedNotes.toString(),
+                  'Pin',
+                  Icons.push_pin_outlined,
+                  AppColors.warningColor,
+                ),
               ),
             ),
             Container(
@@ -206,11 +209,23 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
               color: Theme.of(context).colorScheme.outline.withOpacity(0.12),
             ),
             Expanded(
-              child: _buildCompactStatCard(
-                notesProvider.categories.length.toString(),
-                'Kategori',
-                Icons.category_outlined,
-                AppColors.infoColor,
+              child: GestureDetector(
+                onTap: () async {
+                  final notesProvider = Provider.of<NotesProvider>(
+                    context,
+                    listen: false,
+                  );
+                  if (notesProvider.categories.isNotEmpty) {
+                    // Tampilkan dialog kategori
+                    _showCategoriesDialog();
+                  }
+                },
+                child: _buildCompactStatCard(
+                  notesProvider.categories.length.toString(),
+                  'Kategori',
+                  Icons.category_outlined,
+                  AppColors.infoColor,
+                ),
               ),
             ),
           ],
@@ -301,7 +316,14 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
   }
 
   Widget _buildNotesList(NotesProvider notesProvider) {
-    final notes = notesProvider.notes;
+    // Sort notes: pinned first, then by updatedAt descending
+    final notes = List<Note>.from(notesProvider.notes);
+    notes.sort((a, b) {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      // If both are pinned or both are not pinned, sort by updatedAt descending
+      return b.updatedAt.compareTo(a.updatedAt);
+    });
 
     if (notes.isEmpty) {
       return SliverFillRemaining(child: _buildEmptyState());
@@ -442,14 +464,20 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
 
                 if (note.content.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    note.content,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      height: 1.4,
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 40),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+                    child: quill.QuillEditor.basic(
+                      controller: quill.QuillController(
+                        document: quill.Document.fromJson(
+                          _tryParseQuillContent(note.content),
+                        ),
+                        selection: const TextSelection.collapsed(offset: 0),
+                      ),
+                      focusNode: FocusNode(),
+                    ),
                   ),
                 ],
 
@@ -638,12 +666,18 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
   void _showNoteDialog({Note? note}) {
     final isEdit = note != null;
     final titleController = TextEditingController(text: note?.title ?? '');
-    final contentController = TextEditingController(text: note?.content ?? '');
     final categoryController = TextEditingController(
       text: note?.category ?? '',
     );
     bool isPinned = note?.isPinned ?? false;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    quill.QuillController quillController = quill.QuillController(
+      document: note?.content != null && note!.content.isNotEmpty
+          ? quill.Document.fromJson(_tryParseQuillContent(note.content))
+          : quill.Document(),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
 
     NavigationHelper.safeShowModalBottomSheet<void>(
       context: context,
@@ -718,86 +752,119 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: AppSpacing.md),
 
-                        // Category Field
-                        TextField(
-                          controller: categoryController,
-                          decoration: AppComponents.inputDecoration(
-                            labelText: 'Kategori (Opsional)',
-                            hintText: 'Masukkan kategori',
-                            prefixIcon: Icon(
-                              Icons.category_outlined,
-                              color: isDarkMode
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
-                            ),
-                            colorScheme: Theme.of(context).colorScheme,
-                          ),
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // Pin Toggle
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: isDarkMode
-                                  ? Colors.grey.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.3),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            leading: Icon(
-                              isPinned
-                                  ? Icons.push_pin
-                                  : Icons.push_pin_outlined,
-                              color: isPinned ? AppColors.warningColor : null,
-                            ),
-                            title: const Text('Sematkan Catatan'),
-                            subtitle: const Text(
-                              'Catatan yang disematkan akan muncul di atas',
-                            ),
-                            trailing: Switch(
-                              value: isPinned,
-                              onChanged: (value) {
-                                setState(() {
-                                  isPinned = value;
-                                });
-                              },
-                              activeColor: AppColors.warningColor,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // Content Field
-                        Expanded(
-                          child: TextField(
-                            controller: contentController,
-                            decoration:
-                                AppComponents.inputDecoration(
-                                  labelText: 'Isi Catatan',
-                                  hintText: 'Tulis catatan Anda di sini...',
-                                  colorScheme: Theme.of(context).colorScheme,
-                                ).copyWith(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: isDarkMode
-                                          ? Colors.grey.withOpacity(0.3)
-                                          : Colors.grey.withOpacity(0.3),
-                                    ),
+                        // Category Field & Pin Toggle Inline
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: categoryController,
+                                decoration: AppComponents.inputDecoration(
+                                  labelText: 'Kategori (Opsional)',
+                                  hintText: 'Masukkan kategori',
+                                  prefixIcon: Icon(
+                                    Icons.category_outlined,
+                                    color: isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
                                   ),
-                                  alignLabelWithHint: true,
+                                  colorScheme: Theme.of(context).colorScheme,
                                 ),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black87,
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
                             ),
-                            maxLines: null,
-                            expands: true,
-                            textAlignVertical: TextAlignVertical.top,
+                            const SizedBox(width: AppSpacing.md),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isDarkMode
+                                      ? Colors.grey.withOpacity(0.3)
+                                      : Colors.grey.withOpacity(0.3),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isPinned
+                                        ? Icons.push_pin
+                                        : Icons.push_pin_outlined,
+                                    color: isPinned
+                                        ? AppColors.warningColor
+                                        : null,
+                                  ),
+                                  Switch(
+                                    value: isPinned,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        isPinned = value;
+                                      });
+                                    },
+                                    activeColor: AppColors.warningColor,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Rich Text Editor & Toolbar
+                        Builder(
+                          builder: (context) {
+                            final isMobile =
+                                MediaQuery.of(context).size.width < 600;
+                            if (isMobile) {
+                              return SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    quill.QuillSimpleToolbar(
+                                      controller: quillController,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else {
+                              return quill.QuillSimpleToolbar(
+                                controller: quillController,
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? const Color(0xFF2D2D2D)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDarkMode
+                                      ? Colors.black.withOpacity(0.10)
+                                      : Colors.black.withOpacity(0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            child: quill.QuillEditor.basic(
+                              controller: quillController,
+                              focusNode: FocusNode(),
+                            ),
                           ),
                         ),
                       ],
@@ -836,7 +903,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                             context,
                             isEdit ? note : null,
                             titleController.text,
-                            contentController.text,
+                            _quillContentToJson(quillController.document),
                             categoryController.text.isEmpty
                                 ? null
                                 : categoryController.text,
@@ -975,14 +1042,21 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                     ),
                     IconButton(
                       onPressed: () {
-                        Navigator.pop(context);
-                        _showNoteDialog(note: note);
+                        Navigator.pop(context); // Close detail popup
+                        // Open edit dialog after closing
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _showNoteDialog(note: note);
+                        });
                       },
                       icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit Catatan',
                     ),
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        Navigator.pop(context); // Close detail popup
+                      },
                       icon: const Icon(Icons.close_rounded),
+                      tooltip: 'Tutup',
                     ),
                   ],
                 ),
@@ -990,7 +1064,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
 
               // Content
               Expanded(
-                child: SingleChildScrollView(
+                child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1030,16 +1104,26 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: AppSpacing.lg),
 
-                      // Content
-                      Text(
-                        note.content.isEmpty
-                            ? 'Tidak ada isi catatan.'
-                            : note.content,
-                        style: AppTypography.bodyLarge.copyWith(
-                          color: note.content.isEmpty
-                              ? Theme.of(context).colorScheme.onSurfaceVariant
-                              : Theme.of(context).colorScheme.onSurface,
-                          height: 1.6,
+                      // Rich Text Content
+                      Container(
+                        decoration: BoxDecoration(
+                          // Border removed or made very subtle
+                          border: Border.all(
+                            color: Colors.transparent,
+                            width: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: quill.QuillEditor.basic(
+                          controller: quill.QuillController(
+                            document: note.content.isNotEmpty
+                                ? quill.Document.fromJson(
+                                    _tryParseQuillContent(note.content),
+                                  )
+                                : quill.Document(),
+                            selection: const TextSelection.collapsed(offset: 0),
+                          ),
+                          focusNode: FocusNode(),
                         ),
                       ),
                     ],
@@ -1115,19 +1199,6 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
     }
   }
 
-  void _handleMenuAction(String action) {
-    final notesProvider = Provider.of<NotesProvider>(context, listen: false);
-
-    switch (action) {
-      case 'categories':
-        _showCategoriesDialog();
-        break;
-      case 'clear_filters':
-        notesProvider.clearFilters();
-        break;
-    }
-  }
-
   void _showCategoriesDialog() {
     final notesProvider = Provider.of<NotesProvider>(context, listen: false);
     final categories = notesProvider.categories;
@@ -1197,6 +1268,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
   }
 
   void _showDeleteConfirmation(Note note) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1217,14 +1289,14 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                   context,
                   listen: false,
                 ).deleteNote(note.id);
-                ScaffoldMessenger.of(context).showSnackBar(
+                scaffoldMessenger.showSnackBar(
                   SnackBar(
                     content: const Text('Catatan berhasil dihapus'),
                     backgroundColor: AppColors.successColor,
                   ),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                scaffoldMessenger.showSnackBar(
                   SnackBar(
                     content: Text('Gagal menghapus catatan: $e'),
                     backgroundColor: AppColors.errorColor,

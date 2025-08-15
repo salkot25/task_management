@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:async';
 import 'dart:developer' as developer;
 
 class TaskProvider with ChangeNotifier {
@@ -10,6 +11,8 @@ class TaskProvider with ChangeNotifier {
   List<Task> _tasks = [];
   bool _isLoading = false;
   String? _error;
+  StreamSubscription<List<Task>>? _tasksSubscription;
+  StreamSubscription<User?>? _authSubscription;
 
   TaskProvider({required this.taskRepository}) {
     _initializeTaskStream();
@@ -22,11 +25,16 @@ class TaskProvider with ChangeNotifier {
 
   void _initializeTaskStream() {
     // Listen to authentication state changes
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      User? user,
+    ) {
       if (user != null) {
         _setupTaskStream();
       } else {
+        // User signed out, clean up and stop listening
+        _tasksSubscription?.cancel();
         _tasks = [];
+        _isLoading = false;
         _error = null;
         notifyListeners();
       }
@@ -35,11 +43,14 @@ class TaskProvider with ChangeNotifier {
 
   void _setupTaskStream() {
     try {
+      // Cancel any existing subscription before creating a new one
+      _tasksSubscription?.cancel();
+
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      taskRepository.getTasks().listen(
+      _tasksSubscription = taskRepository.getTasks().listen(
         (taskList) {
           _tasks = taskList;
           _isLoading = false;
@@ -174,5 +185,12 @@ class TaskProvider with ChangeNotifier {
     } else {
       return 'An error occurred. Please try again.';
     }
+  }
+
+  @override
+  void dispose() {
+    _tasksSubscription?.cancel();
+    _authSubscription?.cancel();
+    super.dispose();
   }
 }

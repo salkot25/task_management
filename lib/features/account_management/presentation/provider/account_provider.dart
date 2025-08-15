@@ -3,6 +3,7 @@ import 'package:clarity/core/error/failures.dart';
 import 'package:clarity/features/account_management/domain/entities/account.dart';
 import 'package:clarity/features/account_management/domain/repositories/account_repository.dart';
 import 'package:clarity/features/account_management/presentation/widgets/advanced_search_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'dart:developer' as developer;
 
@@ -14,8 +15,30 @@ class AccountProvider with ChangeNotifier {
   bool _isLoading = false;
   SearchFilters _filters = const SearchFilters();
   StreamSubscription<List<Account>>? _accountsSubscription;
+  StreamSubscription<User?>? _authSubscription;
 
-  AccountProvider({required this.accountRepository});
+  AccountProvider({required this.accountRepository}) {
+    _initializeAuthListener();
+  }
+
+  void _initializeAuthListener() {
+    // Listen to authentication state changes
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      User? user,
+    ) {
+      if (user != null) {
+        // User is authenticated, start listening to accounts
+        startListening();
+      } else {
+        // User signed out, clean up and stop listening
+        _accountsSubscription?.cancel();
+        _accounts = [];
+        _isLoading = false;
+        _message = '';
+        notifyListeners();
+      }
+    });
+  }
 
   // Filtered list of accounts using SearchFilters
   List<Account> get accounts {
@@ -221,6 +244,7 @@ class AccountProvider with ChangeNotifier {
   void dispose() {
     developer.log('Disposing AccountProvider', name: 'AccountProvider');
     _accountsSubscription?.cancel();
+    _authSubscription?.cancel();
     super.dispose();
   }
 }

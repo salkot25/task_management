@@ -49,14 +49,25 @@ class TransactionFirestoreDataSourceImpl
       return Stream.value([]);
     }
 
-    return _transactionsCollection.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        // Ensure the document ID matches the transaction ID
-        data['id'] = doc.id;
-        return entity.Transaction.fromMap(data);
-      }).toList();
-    });
+    return _transactionsCollection
+        .snapshots()
+        .map((snapshot) {
+          try {
+            return snapshot.docs.map((doc) {
+              final data = doc.data();
+              // Ensure the document ID matches the transaction ID
+              data['id'] = doc.id;
+              return entity.Transaction.fromMap(data);
+            }).toList();
+          } catch (e) {
+            print('Error processing transaction documents: $e');
+            return <entity.Transaction>[];
+          }
+        })
+        .handleError((error) {
+          print('Error in transaction stream: $error');
+          return <entity.Transaction>[];
+        });
   }
 
   @override
@@ -69,7 +80,10 @@ class TransactionFirestoreDataSourceImpl
     transactionData['userId'] = _currentUserId;
     transactionData['updatedAt'] = FieldValue.serverTimestamp();
 
-    return _transactionsCollection.doc(transaction.id).update(transactionData);
+    // Use set with merge instead of update to handle non-existing documents
+    return _transactionsCollection
+        .doc(transaction.id)
+        .set(transactionData, SetOptions(merge: true));
   }
 
   @override
@@ -78,6 +92,16 @@ class TransactionFirestoreDataSourceImpl
       throw Exception('User not authenticated');
     }
 
-    return _transactionsCollection.doc(id).delete();
+    try {
+      return await _transactionsCollection.doc(id).delete();
+    } catch (e) {
+      // Log the error but don't throw if document doesn't exist
+      print('Error deleting transaction $id: $e');
+      if (e.toString().contains('not-found')) {
+        // Document already doesn't exist, consider this a successful deletion
+        return;
+      }
+      rethrow;
+    }
   }
 }

@@ -17,6 +17,10 @@ class NotesProvider with ChangeNotifier {
   String _searchQuery = '';
   String? _selectedCategory;
   StreamSubscription? _notesSubscription;
+  StreamSubscription? _authSubscription;
+
+  // Tambahkan di NotesProvider
+  bool? _pinnedFilter;
 
   // Getters
   List<Note> get notes => _filteredNotes();
@@ -45,7 +49,20 @@ class NotesProvider with ChangeNotifier {
 
   /// Initialize notes provider and start listening to Firestore
   Future<void> init() async {
-    await listenToNotes();
+    // Listen to authentication state changes
+    _authSubscription = _auth.authStateChanges().listen((User? user) {
+      if (user != null) {
+        // User is authenticated, start listening to notes
+        listenToNotes();
+      } else {
+        // User signed out, clean up and stop listening
+        _notesSubscription?.cancel();
+        _notes = [];
+        _isLoading = false;
+        _error = null;
+        notifyListeners();
+      }
+    });
   }
 
   /// Listen to notes collection in Firestore (real-time)
@@ -187,10 +204,17 @@ class NotesProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set pinned filter
+  void setPinnedFilter(bool pinned) {
+    _pinnedFilter = pinned;
+    notifyListeners();
+  }
+
   /// Clear all filters (local)
   void clearFilters() {
     _searchQuery = '';
     _selectedCategory = null;
+    _pinnedFilter = null;
     notifyListeners();
   }
 
@@ -207,6 +231,11 @@ class NotesProvider with ChangeNotifier {
     if (_selectedCategory != null) {
       filteredNotes = filteredNotes.where((note) {
         return note.category == _selectedCategory;
+      }).toList();
+    }
+    if (_pinnedFilter != null) {
+      filteredNotes = filteredNotes.where((note) {
+        return note.isPinned == _pinnedFilter;
       }).toList();
     }
     return filteredNotes;
@@ -310,7 +339,11 @@ class NotesProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    // Best practice: Tidak melakukan lookup ancestor (Provider.of, context, dsb) di sini!
+    // Semua reference ke ancestor (misal context, provider, dsb) harus diambil di didChangeDependencies/initState dan disimpan ke variabel.
+    // Cancel subscriptions untuk mencegah memory leaks
     _notesSubscription?.cancel();
+    _authSubscription?.cancel();
     super.dispose();
   }
 }

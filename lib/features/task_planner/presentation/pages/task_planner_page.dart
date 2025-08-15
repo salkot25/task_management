@@ -109,11 +109,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
       // Restart progress animation when task is added
       _restartProgressAnimation();
 
-      if (mounted) {
-        setState(() {
-          // Keep the selected date as is after adding a task for it
-        });
-      }
+      // Don't change the selected date - keep it as is for user convenience
       nav.NavigationHelper.safePopDialog(dialogContext);
     }
   }
@@ -124,310 +120,334 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     nav.NavigationHelper.safeShowDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: isDarkMode
-              ? const Color(0xFF2D2D2D)
-              : Colors.white, // Gunakan putih murni untuk dialog
-          surfaceTintColor: isDarkMode
-              ? Colors.transparent
-              : Colors.transparent, // Hapus surface tint untuk mode light
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: isDarkMode ? 8 : 4,
-          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.add_task_rounded,
-                  color: AppColors.primaryColor,
-                  size: 24,
-                ),
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return AlertDialog(
+              backgroundColor: isDarkMode
+                  ? const Color(0xFF2D2D2D)
+                  : Colors.white, // Gunakan putih murni untuk dialog
+              surfaceTintColor: isDarkMode
+                  ? Colors.transparent
+                  : Colors.transparent, // Hapus surface tint untuk mode light
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Tambah Tugas Baru',
-                      style: AppTypography.headlineSmall.copyWith(
-                        color: isDarkMode ? Colors.white : Colors.black87,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Buat tugas untuk ${_indonesianDayFormat.format(_selectedDate)}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const SizedBox(height: 8),
-                  // Enhanced Title Field
-                  TextFormField(
-                    controller: _titleController,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black87,
-                    ),
-                    decoration:
-                        AppComponents.inputDecoration(
-                          labelText: 'Judul Tugas',
-                          hintText: 'Masukkan judul tugas',
-                          prefixIcon: Icon(
-                            Icons.task_outlined,
-                            color: isDarkMode
-                                ? Colors.grey[400]
-                                : Colors.grey[600],
-                          ),
-                          colorScheme: Theme.of(context).colorScheme,
-                        ).copyWith(
-                          filled: true,
-                          fillColor: isDarkMode
-                              ? Colors.grey.withOpacity(0.1)
-                              : Colors.grey.withOpacity(0.05),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: isDarkMode
-                                  ? Colors.grey.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.3),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: isDarkMode
-                                  ? Colors.grey.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.3),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.primaryColor,
-                              width: 2,
-                            ),
-                          ),
-                          labelStyle: TextStyle(
-                            color: isDarkMode
-                                ? Colors.grey[400]
-                                : Colors.grey[600],
-                          ),
-                          hintStyle: TextStyle(
-                            color: isDarkMode
-                                ? Colors.grey[500]
-                                : Colors.grey[500],
-                          ),
-                        ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Harap masukkan judul tugas';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  // Enhanced Description Field
-                  TextFormField(
-                    controller: _descriptionController,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black87,
-                    ),
-                    decoration:
-                        AppComponents.inputDecoration(
-                          labelText: 'Deskripsi (Opsional)',
-                          hintText: 'Tambahkan deskripsi tugas',
-                          prefixIcon: Icon(
-                            Icons.description_outlined,
-                            color: isDarkMode
-                                ? Colors.grey[400]
-                                : Colors.grey[600],
-                          ),
-                          colorScheme: Theme.of(context).colorScheme,
-                        ).copyWith(
-                          filled: true,
-                          fillColor: isDarkMode
-                              ? Colors.grey.withOpacity(0.1)
-                              : Colors.grey.withOpacity(0.05),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: isDarkMode
-                                  ? Colors.grey.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.3),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: isDarkMode
-                                  ? Colors.grey.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.3),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.primaryColor,
-                              width: 2,
-                            ),
-                          ),
-                          labelStyle: TextStyle(
-                            color: isDarkMode
-                                ? Colors.grey[400]
-                                : Colors.grey[600],
-                          ),
-                          hintStyle: TextStyle(
-                            color: isDarkMode
-                                ? Colors.grey[500]
-                                : Colors.grey[500],
-                          ),
-                        ),
-                    maxLines: 3,
-                    minLines: 2,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  // Enhanced Date Picker
+              elevation: isDarkMode ? 8 : 4,
+              titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              title: Row(
+                children: [
                   Container(
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isDarkMode
-                          ? Colors.grey.withOpacity(0.1)
-                          : Colors.grey.withOpacity(0.05),
-                      border: Border.all(
-                        color: isDarkMode
-                            ? Colors.grey.withOpacity(0.3)
-                            : Colors.grey.withOpacity(0.3),
-                      ),
+                      color: AppColors.primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
+                    child: Icon(
+                      Icons.add_task_rounded,
+                      color: AppColors.primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tambah Tugas Baru',
+                          style: AppTypography.headlineSmall.copyWith(
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.calendar_today_outlined,
-                          color: AppColors.primaryColor,
-                          size: 20,
+                        Text(
+                          'Buat tugas untuk ${_indonesianDayFormat.format(_selectedDate)}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: isDarkMode
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                          ),
                         ),
-                      ),
-                      title: Text(
-                        'Tanggal Jatuh Tempo',
-                        style: AppTypography.labelMedium.copyWith(
-                          color: isDarkMode
-                              ? Colors.grey[400]
-                              : Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      subtitle: Text(
-                        _indonesianDateFormat.format(_selectedDate),
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: isDarkMode ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      trailing: Icon(
-                        Icons.edit_calendar_outlined,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                        size: 20,
-                      ),
-                      onTap: () => _selectDate(context),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-          actions: <Widget>[
-            // Enhanced Cancel Button
-            TextButton(
-              onPressed: () {
-                // Clear the form controllers when canceling
-                _titleController.clear();
-                _descriptionController.clear();
-                // Reset selected date to today
-                setState(() {
-                  _selectedDate = DateTime.now();
-                });
-                // Close the dialog
-                Navigator.of(dialogContext).pop();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: isDarkMode
-                    ? Colors.grey[400]
-                    : Colors.grey[600],
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const SizedBox(height: 8),
+                      // Enhanced Title Field
+                      TextFormField(
+                        controller: _titleController,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                        decoration:
+                            AppComponents.inputDecoration(
+                              labelText: 'Judul Tugas',
+                              hintText: 'Masukkan judul tugas',
+                              prefixIcon: Icon(
+                                Icons.task_outlined,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                              ),
+                              colorScheme: Theme.of(context).colorScheme,
+                            ).copyWith(
+                              filled: true,
+                              fillColor: isDarkMode
+                                  ? Colors.grey.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.05),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: isDarkMode
+                                      ? Colors.grey.withOpacity(0.3)
+                                      : Colors.grey.withOpacity(0.3),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: isDarkMode
+                                      ? Colors.grey.withOpacity(0.3)
+                                      : Colors.grey.withOpacity(0.3),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 2,
+                                ),
+                              ),
+                              labelStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                              ),
+                              hintStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[500]
+                                    : Colors.grey[500],
+                              ),
+                            ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Harap masukkan judul tugas';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      // Enhanced Description Field
+                      TextFormField(
+                        controller: _descriptionController,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                        decoration:
+                            AppComponents.inputDecoration(
+                              labelText: 'Deskripsi (Opsional)',
+                              hintText: 'Tambahkan deskripsi tugas',
+                              prefixIcon: Icon(
+                                Icons.description_outlined,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                              ),
+                              colorScheme: Theme.of(context).colorScheme,
+                            ).copyWith(
+                              filled: true,
+                              fillColor: isDarkMode
+                                  ? Colors.grey.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.05),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: isDarkMode
+                                      ? Colors.grey.withOpacity(0.3)
+                                      : Colors.grey.withOpacity(0.3),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: isDarkMode
+                                      ? Colors.grey.withOpacity(0.3)
+                                      : Colors.grey.withOpacity(0.3),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 2,
+                                ),
+                              ),
+                              labelStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                              ),
+                              hintStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[500]
+                                    : Colors.grey[500],
+                              ),
+                            ),
+                        maxLines: 3,
+                        minLines: 2,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      // Enhanced Date Picker
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? Colors.grey.withOpacity(0.1)
+                              : Colors.grey.withOpacity(0.05),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? Colors.grey.withOpacity(0.3)
+                                : Colors.grey.withOpacity(0.3),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.calendar_today_outlined,
+                              color: AppColors.primaryColor,
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(
+                            'Tanggal Jatuh Tempo',
+                            style: AppTypography.labelMedium.copyWith(
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            _indonesianDateFormat.format(_selectedDate),
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          trailing: Icon(
+                            Icons.edit_calendar_outlined,
+                            color: isDarkMode
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                            size: 20,
+                          ),
+                          onTap: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: _selectedDate,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+                            );
+                            if (picked != null && picked != _selectedDate) {
+                              setState(() {
+                                _selectedDate = picked;
+                                _focusedMonth = DateTime(
+                                  picked.year,
+                                  picked.month,
+                                );
+                              });
+                              setDialogState(() {
+                                // Update dialog state as well
+                              });
+                            }
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              child: Text(
-                'Batal',
-                style: AppTypography.labelLarge.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Enhanced Add Button
-            ElevatedButton(
-              onPressed: () => _addTask(dialogContext),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.add_rounded, size: 18),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Tambah Tugas',
+              actions: <Widget>[
+                // Enhanced Cancel Button
+                TextButton(
+                  onPressed: () {
+                    // Clear the form controllers when canceling
+                    _titleController.clear();
+                    _descriptionController.clear();
+                    // Don't reset the selected date - keep user's selection
+                    // Close the dialog
+                    Navigator.of(dialogContext).pop();
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: isDarkMode
+                        ? Colors.grey[400]
+                        : Colors.grey[600],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Batal',
                     style: AppTypography.labelLarge.copyWith(
-                      color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+                const SizedBox(width: 8),
+                // Enhanced Add Button
+                ElevatedButton(
+                  onPressed: () => _addTask(dialogContext),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add_rounded, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Tambah Tugas',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

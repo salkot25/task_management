@@ -26,7 +26,9 @@ class CashcardProvider with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   List<entity.Transaction> _transactions = [];
   List<BudgetCategory> _budgetCategories = [];
+  final List<BudgetActivity> _budgetActivities = [];
   StreamSubscription? _budgetSubscription;
+  bool _isUpdatingBudgetSpending = false;
 
   // Added for filtering
   int _selectedMonth = DateTime.now().month;
@@ -44,6 +46,14 @@ class CashcardProvider with ChangeNotifier {
   CashcardProvider(this.repository) {
     _listenToTransactions();
     _listenToBudgets();
+
+    // Delay initial budget spending update to allow both listeners to initialize
+    Future.delayed(const Duration(seconds: 2), () {
+      if (_budgetCategories.isNotEmpty && _transactions.isNotEmpty) {
+        print('Initial budget spending update after delay...');
+        _updateBudgetSpending();
+      }
+    });
   }
 
   List<entity.Transaction> get transactions {
@@ -108,14 +118,45 @@ class CashcardProvider with ChangeNotifier {
   }
 
   void _listenToTransactions() {
-    repository.getTransactions().listen((newTransactions) {
-      _transactions = newTransactions;
-      // Sort transactions by date in descending order
-      _transactions.sort((a, b) => b.date.compareTo(a.date));
-      // Update budget spending when transactions change
-      _updateBudgetSpending();
-      notifyListeners();
-    });
+    repository.getTransactions().listen(
+      (newTransactions) {
+        try {
+          final oldTransactionCount = _transactions.length;
+          _transactions = newTransactions;
+          // Sort transactions by date in descending order
+          _transactions.sort((a, b) => b.date.compareTo(a.date));
+
+          // Only update budget spending if transactions changed AND we have budget categories
+          if (_transactions.length != oldTransactionCount &&
+              _budgetCategories.isNotEmpty) {
+            print('Transactions changed, updating budget spending...');
+
+            // Immediately update budget categories with real-time calculations
+            _budgetCategories = _budgetCategories.map((category) {
+              final realTimeSpent = _calculateCategorySpending(category.name);
+              print(
+                'Transaction change - Budget ${category.name}: ${category.spentAmount} -> $realTimeSpent',
+              );
+              return category.copyWith(spentAmount: realTimeSpent);
+            }).toList();
+
+            // Also update the database asynchronously
+            _updateBudgetSpending();
+          }
+
+          notifyListeners();
+        } catch (e) {
+          print('Error processing transaction data: $e');
+          notifyListeners();
+        }
+      },
+      onError: (error) {
+        print('Error listening to transactions: $error');
+        // Initialize empty transactions on error
+        _transactions = [];
+        notifyListeners();
+      },
+    );
   }
 
   void _listenToBudgets() {
@@ -127,20 +168,65 @@ class CashcardProvider with ChangeNotifier {
         .doc(user.uid)
         .collection('budgets')
         .snapshots()
-        .listen((snapshot) {
-          _budgetCategories = snapshot.docs.map((doc) {
-            final data = doc.data();
-            return BudgetCategory(
-              name: data['name'] ?? '',
-              budgetAmount: (data['budgetAmount'] ?? 0).toDouble(),
-              spentAmount: (data['spentAmount'] ?? 0).toDouble(),
-              color: Color(data['colorValue'] ?? Colors.grey.value),
-              icon: iconMap[data['iconName']] ?? Icons.category,
-            );
-          }).toList();
-          _updateBudgetSpending();
-          notifyListeners();
-        });
+        .listen(
+          (snapshot) {
+            try {
+              final previousCategoryCount = _budgetCategories.length;
+
+              // Load budget categories from Firestore
+              final categoriesFromDb = snapshot.docs.map((doc) {
+                final data = doc.data();
+                return BudgetCategory(
+                  name: data['name'] ?? '',
+                  budgetAmount: (data['budgetAmount'] ?? 0).toDouble(),
+                  spentAmount: (data['spentAmount'] ?? 0).toDouble(),
+                  color: Color(data['colorValue'] ?? Colors.grey.value),
+                  icon: iconMap[data['iconName']] ?? Icons.category,
+                );
+              }).toList();
+
+              // Update the budget categories with real-time spending calculation
+              _budgetCategories = categoriesFromDb.map((category) {
+                // Only calculate real-time spending if we have transactions
+                if (_transactions.isNotEmpty) {
+                  final realTimeSpent = _calculateCategorySpending(
+                    category.name,
+                  );
+                  print(
+                    'Budget ${category.name}: DB=${category.spentAmount}, Calculated=$realTimeSpent',
+                  );
+
+                  // Use the real-time calculated amount instead of DB amount
+                  return category.copyWith(spentAmount: realTimeSpent);
+                } else {
+                  // If no transactions yet, use the DB amount
+                  print(
+                    'Budget ${category.name}: Using DB amount=${category.spentAmount} (no transactions yet)',
+                  );
+                  return category;
+                }
+              }).toList();
+
+              // If budget categories just loaded for the first time, force update database
+              if (previousCategoryCount == 0 && _budgetCategories.isNotEmpty) {
+                print('Budget categories loaded, updating spending amounts...');
+                // Force update database with calculated amounts
+                Future.microtask(() => _forceUpdateAllBudgetSpending());
+              }
+
+              notifyListeners();
+            } catch (e) {
+              print('Error processing budget data: $e');
+              notifyListeners();
+            }
+          },
+          onError: (error) {
+            print('Error listening to budgets: $error');
+            // Initialize empty budget categories on error
+            _budgetCategories = [];
+            notifyListeners();
+          },
+        );
   }
 
   Future<void> addTransaction(entity.Transaction transaction) async {
@@ -184,6 +270,49 @@ class CashcardProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Budget Activities Getter
+  List<BudgetActivity> get budgetActivities {
+    // Return recent activities (last 10)
+    final sortedActivities = List<BudgetActivity>.from(_budgetActivities)
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return sortedActivities.take(10).toList();
+  }
+
+  // Add budget activity
+  void _addBudgetActivity(BudgetActivity activity) {
+    _budgetActivities.add(activity);
+    // Keep only last 50 activities to prevent memory issues
+    if (_budgetActivities.length > 50) {
+      _budgetActivities.removeRange(0, _budgetActivities.length - 50);
+    }
+    notifyListeners();
+  }
+
+  // Check for over budget and create activity
+  void _checkOverBudgetAndCreateActivity(BudgetCategory category) {
+    if (category.isOverBudget) {
+      final exceededAmount = category.spentAmount - category.budgetAmount;
+      // Check if we already have a recent over budget activity for this category
+      final recentOverBudget = _budgetActivities
+          .where(
+            (activity) =>
+                activity.categoryName == category.name &&
+                activity.type == BudgetActivityType.overBudget &&
+                DateTime.now().difference(activity.timestamp).inHours < 1,
+          )
+          .isNotEmpty;
+
+      if (!recentOverBudget) {
+        _addBudgetActivity(
+          BudgetActivity.overBudget(
+            categoryName: category.name,
+            exceededAmount: exceededAmount,
+          ),
+        );
+      }
+    }
+  }
+
   // Budget Management Methods
   Future<void> addBudgetCategory(BudgetCategory category) async {
     final user = _auth.currentUser;
@@ -207,6 +336,14 @@ class CashcardProvider with ChangeNotifier {
       'colorValue': category.color.value,
       'iconName': iconName,
     });
+
+    // Add budget activity
+    _addBudgetActivity(
+      BudgetActivity.created(
+        categoryName: category.name,
+        amount: category.budgetAmount,
+      ),
+    );
   }
 
   Future<void> updateBudgetCategory(
@@ -220,18 +357,51 @@ class CashcardProvider with ChangeNotifier {
         .doc(user.uid)
         .collection('budgets')
         .doc(category.name);
-    await docRef.update({'budgetAmount': newBudgetAmount});
+    // Use set with merge instead of update to handle non-existing documents
+    await docRef.set({
+      'budgetAmount': newBudgetAmount,
+    }, SetOptions(merge: true));
+
+    // Add budget activity
+    _addBudgetActivity(
+      BudgetActivity.updated(
+        categoryName: category.name,
+        oldAmount: category.budgetAmount,
+        newAmount: newBudgetAmount,
+      ),
+    );
   }
 
   Future<void> removeBudgetCategory(String categoryName) async {
     final user = _auth.currentUser;
     if (user == null) return;
+
+    // Find the category to get the amount for activity
+    final category = _budgetCategories.firstWhere(
+      (cat) => cat.name == categoryName,
+      orElse: () => BudgetCategory(
+        name: categoryName,
+        budgetAmount: 0,
+        spentAmount: 0,
+        color: Colors.grey,
+        icon: Icons.category,
+      ),
+    );
+
     final docRef = _firestore
         .collection('users')
         .doc(user.uid)
         .collection('budgets')
         .doc(categoryName);
     await docRef.delete();
+
+    // Add budget activity
+    _addBudgetActivity(
+      BudgetActivity.deleted(
+        categoryName: categoryName,
+        amount: category.budgetAmount,
+      ),
+    );
   }
 
   Future<void> resetBudgetSpending() async {
@@ -244,25 +414,124 @@ class CashcardProvider with ChangeNotifier {
         .collection('budgets');
     for (final category in _budgetCategories) {
       final docRef = budgetsRef.doc(category.name);
-      batch.update(docRef, {'spentAmount': 0});
+      // Use set with merge instead of update to handle non-existing documents
+      batch.set(docRef, {'spentAmount': 0}, SetOptions(merge: true));
     }
     await batch.commit();
+
+    // Add budget activity for month reset
+    _addBudgetActivity(BudgetActivity.resetMonth());
   }
 
   Future<void> _updateBudgetSpending() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-    final batch = _firestore.batch();
-    final budgetsRef = _firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('budgets');
-    for (final category in _budgetCategories) {
-      final spent = _calculateCategorySpending(category.name);
-      final docRef = budgetsRef.doc(category.name);
-      batch.update(docRef, {'spentAmount': spent});
+    // Prevent recursive calls
+    if (_isUpdatingBudgetSpending) {
+      print('Budget spending update skipped - already in progress');
+      return;
     }
-    await batch.commit();
+
+    print('Starting budget spending update...');
+
+    try {
+      _isUpdatingBudgetSpending = true;
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      // Only update if we have budget categories
+      if (_budgetCategories.isEmpty) {
+        print('No budget categories to update');
+        return;
+      }
+
+      final batch = _firestore.batch();
+      final budgetsRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('budgets');
+
+      int updatedCount = 0;
+      for (final category in _budgetCategories) {
+        final spent = _calculateCategorySpending(category.name);
+
+        // Only update if spending amount has changed
+        if (spent != category.spentAmount) {
+          updatedCount++;
+          final docRef = budgetsRef.doc(category.name);
+          batch.set(docRef, {'spentAmount': spent}, SetOptions(merge: true));
+
+          // Check for over budget after updating spent amount
+          final updatedCategory = category.copyWith(spentAmount: spent);
+          _checkOverBudgetAndCreateActivity(updatedCategory);
+        }
+      }
+
+      if (updatedCount > 0) {
+        await batch.commit();
+        print('Budget spending updated for $updatedCount categories');
+      } else {
+        print('No budget spending changes detected');
+      }
+    } catch (e) {
+      print('Error updating budget spending: $e');
+      // Don't rethrow the error to prevent cascading failures
+    } finally {
+      _isUpdatingBudgetSpending = false;
+      print('Budget spending update completed');
+    }
+  }
+
+  // Force update all budget spending without checking for changes
+  Future<void> _forceUpdateAllBudgetSpending() async {
+    // Prevent recursive calls
+    if (_isUpdatingBudgetSpending) {
+      print('Force budget spending update skipped - already in progress');
+      return;
+    }
+
+    print('Starting FORCE budget spending update...');
+
+    try {
+      _isUpdatingBudgetSpending = true;
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      // Only update if we have budget categories
+      if (_budgetCategories.isEmpty) {
+        print('No budget categories to force update');
+        return;
+      }
+
+      final batch = _firestore.batch();
+      final budgetsRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('budgets');
+
+      for (final category in _budgetCategories) {
+        final spent = _calculateCategorySpending(category.name);
+        final docRef = budgetsRef.doc(category.name);
+
+        // Always update regardless of current value
+        batch.set(docRef, {'spentAmount': spent}, SetOptions(merge: true));
+        print(
+          'Force updating ${category.name}: ${category.spentAmount} -> $spent',
+        );
+
+        // Check for over budget after updating spent amount
+        final updatedCategory = category.copyWith(spentAmount: spent);
+        _checkOverBudgetAndCreateActivity(updatedCategory);
+      }
+
+      await batch.commit();
+      print(
+        'Force budget spending update completed for ${_budgetCategories.length} categories',
+      );
+    } catch (e) {
+      print('Error in force updating budget spending: $e');
+      // Don't rethrow the error to prevent cascading failures
+    } finally {
+      _isUpdatingBudgetSpending = false;
+    }
   }
 
   Future<void> _autoUpdateBudgetSpending(entity.Transaction transaction) async {
@@ -289,6 +558,10 @@ class CashcardProvider with ChangeNotifier {
         .doc(user.uid)
         .collection('budgets');
     final batch = _firestore.batch();
+
+    // Keep track of created categories for activity logging
+    final createdCategories = <BudgetCategory>[];
+
     for (final recommendation in recommendations) {
       if (!_budgetCategories.any(
         (b) => b.name == recommendation.categoryName,
@@ -300,6 +573,9 @@ class CashcardProvider with ChangeNotifier {
           color: _getCategoryColorByName(recommendation.categoryName),
           icon: _getCategoryIconByName(recommendation.categoryName),
         );
+
+        createdCategories.add(newCategory);
+
         final iconName = iconMap.entries
             .firstWhere(
               (e) => e.value == newCategory.icon,
@@ -317,6 +593,16 @@ class CashcardProvider with ChangeNotifier {
       }
     }
     await batch.commit();
+
+    // Add activities for all created categories
+    for (final category in createdCategories) {
+      _addBudgetActivity(
+        BudgetActivity.autoCreated(
+          categoryName: category.name,
+          amount: category.budgetAmount,
+        ),
+      );
+    }
   }
 
   // Get budget status for a specific category
@@ -502,16 +788,53 @@ class CashcardProvider with ChangeNotifier {
   }
 
   double _calculateCategorySpending(String categoryName) {
-    return _transactions
+    final now = DateTime.now();
+    final currentMonth = now.month;
+    final currentYear = now.year;
+
+    print('=== Calculating spending for $categoryName ===');
+    print('Current month: $currentMonth, Current year: $currentYear');
+    print('Total transactions: ${_transactions.length}');
+
+    // Filter transactions for current month and year, and expense type only
+    final monthlyExpenses = _transactions
         .where(
           (transaction) =>
               transaction.type == entity.TransactionType.expense &&
-              (transaction.category != null
-                  ? transaction.getCategoryDisplayName() == categoryName
-                  : _getCategoryFromDescription(transaction.description) ==
-                        categoryName),
+              transaction.date.month == currentMonth &&
+              transaction.date.year == currentYear,
         )
-        .fold(0.0, (sum, transaction) => sum + transaction.amount);
+        .toList();
+
+    print('Monthly expenses (${monthlyExpenses.length}):');
+    for (var tx in monthlyExpenses) {
+      print('  - ${tx.description}: ${tx.amount} (${tx.date})');
+    }
+
+    // Filter by category
+    final categoryTransactions = monthlyExpenses.where((transaction) {
+      final txCategoryName = transaction.category != null
+          ? transaction.getCategoryDisplayName()
+          : _getCategoryFromDescription(transaction.description);
+
+      print(
+        '  Transaction: ${transaction.description} -> Category: $txCategoryName',
+      );
+      return txCategoryName == categoryName;
+    }).toList();
+
+    final totalSpent = categoryTransactions.fold(
+      0.0,
+      (sum, transaction) => sum + transaction.amount,
+    );
+
+    print(
+      'Found ${categoryTransactions.length} transactions for $categoryName this month',
+    );
+    print('Total spent: Rp${totalSpent.toStringAsFixed(0)}');
+    print('===========================================');
+
+    return totalSpent;
   }
 
   String _getCategoryFromDescription(String description) {
@@ -616,6 +939,42 @@ class CashcardProvider with ChangeNotifier {
     } else {
       return entity.ExpenseCategory.others;
     }
+  }
+
+  // Refresh method to reload data with error handling
+  Future<void> refresh() async {
+    try {
+      // Re-setup listeners to get fresh data from Firestore
+      _listenToTransactions();
+      _listenToBudgets();
+      notifyListeners();
+    } catch (e) {
+      // Handle any errors during refresh
+      print('Error during refresh: $e');
+      // Still notify listeners to update UI
+      notifyListeners();
+    }
+  }
+
+  // Force update budget spending for debugging
+  Future<void> forceUpdateBudgetSpending() async {
+    print('=== FORCE UPDATE BUDGET SPENDING ===');
+    print('Budget categories count: ${_budgetCategories.length}');
+    print('Transactions count: ${_transactions.length}');
+
+    for (var category in _budgetCategories) {
+      print(
+        'Category: ${category.name} - Current spent: ${category.spentAmount}',
+      );
+    }
+
+    await _updateBudgetSpending();
+  }
+
+  @override
+  void dispose() {
+    _budgetSubscription?.cancel();
+    super.dispose();
   }
 
   // You might want a method to clear the filter later
