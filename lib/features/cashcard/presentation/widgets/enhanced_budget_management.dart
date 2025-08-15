@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:clarity/utils/design_system/app_colors.dart';
@@ -8,6 +9,37 @@ import 'package:clarity/utils/design_system/app_components.dart';
 import 'package:clarity/features/cashcard/presentation/provider/cashcard_provider.dart';
 import 'package:clarity/features/cashcard/domain/entities/budget_models.dart';
 import 'package:clarity/features/cashcard/domain/entities/transaction.dart';
+
+// Currency input formatter for thousands separator
+class CurrencyInputFormatter extends TextInputFormatter {
+  final NumberFormat _formatter = NumberFormat('#,###', 'id_ID');
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Remove all non-digit characters
+    String digits = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+
+    if (digits.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    // Parse and format with thousands separator
+    int value = int.parse(digits);
+    String formatted = _formatter.format(value);
+
+    return newValue.copyWith(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class EnhancedBudgetManagement extends StatefulWidget {
   const EnhancedBudgetManagement({super.key});
@@ -23,10 +55,23 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
   int _currentTabIndex = 0;
   int _hoveredTabIndex = -1;
 
+  // Helper function to parse amount from formatted text
+  double _parseAmount(String text) {
+    if (text.isEmpty) return 0.0;
+    // Remove all non-digit characters except decimal point
+    String cleanText = text.replaceAll(RegExp(r'[^\d]'), '');
+    return double.tryParse(cleanText) ?? 0.0;
+  }
+
+  // Helper function to format amount with thousands separator
+  String _formatAmount(double amount) {
+    return NumberFormat('#,###', 'id_ID').format(amount);
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this); // Ubah dari 4 ke 3
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() {
@@ -83,8 +128,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 children: [
                   _buildCustomTab('Overview', 0),
                   _buildCustomTab('Categories', 1),
-                  _buildCustomTab('Alerts', 2),
-                  _buildCustomTab('Insights', 3),
+                  _buildCustomTab('Insights', 2), // Ubah index dari 3 ke 2
                 ],
               ),
             ),
@@ -98,8 +142,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 children: [
                   _buildOverviewTab(provider),
                   _buildCategoriesTab(provider),
-                  _buildAlertsTab(provider),
-                  _buildInsightsTab(provider),
+                  _buildInsightsTab(provider), // Hapus _buildAlertsTab
                 ],
               ),
             ),
@@ -982,113 +1025,6 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
     );
   }
 
-  Widget _buildAlertsTab(CashcardProvider provider) {
-    final alerts = provider.getBudgetAlerts();
-
-    return RefreshIndicator(
-      onRefresh: () => provider.refresh(),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        child: Column(
-          children: [
-            if (alerts.isEmpty)
-              _buildEmptyAlerts()
-            else
-              ...alerts.map((alert) => _buildAlertCard(alert)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyAlerts() {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        children: [
-          Icon(
-            Icons.notifications_off,
-            size: 64,
-            color: isDarkMode ? Colors.white30 : AppColors.greyColor,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'No Budget Alerts',
-            style: AppTypography.titleMedium.copyWith(
-              color: isDarkMode ? Colors.white70 : AppColors.greyColor,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'All your budgets are on track!',
-            style: AppTypography.bodyMedium.copyWith(
-              color: isDarkMode ? Colors.white70 : AppColors.greyColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlertCard(BudgetAlert alert) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: isDarkMode
-            ? alert.alertColor.withOpacity(0.1)
-            : alert.alertColor.withOpacity(0.05),
-        borderRadius: AppComponents.standardBorderRadius,
-        border: Border.all(
-          color: isDarkMode
-              ? alert.alertColor.withOpacity(0.4)
-              : alert.alertColor.withOpacity(0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.xs),
-            decoration: BoxDecoration(
-              color: alert.alertColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(alert.alertIcon, color: alert.alertColor, size: 20),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  alert.categoryName,
-                  style: AppTypography.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: alert.alertColor,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  alert.message,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: isDarkMode ? Colors.white70 : AppColors.greyColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildInsightsTab(CashcardProvider provider) {
     final recommendations = provider.getBudgetRecommendations();
 
@@ -1360,13 +1296,17 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
             return AlertDialog(
               backgroundColor: isDarkMode
                   ? const Color(0xFF2D2D2D)
-                  : Colors.white, // Gunakan putih murni untuk dialog
+                  : Colors.white,
+              surfaceTintColor: isDarkMode ? Colors.transparent : null,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               title: Text(
                 'Add Budget Category',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 18,
-                  color: isDarkMode ? Colors.white : null,
+                  color: isDarkMode ? Colors.white : Colors.black87,
                 ),
               ),
               content: SizedBox(
@@ -1381,7 +1321,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
-                        color: isDarkMode ? Colors.white : null,
+                        color: isDarkMode ? Colors.white : Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1394,12 +1334,20 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                               : AppColors.greyLightColor,
                         ),
                         borderRadius: BorderRadius.circular(8),
-                        color: isDarkMode ? Colors.grey.withOpacity(0.1) : null,
+                        color: isDarkMode
+                            ? Colors.grey.withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.05),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<ExpenseCategory>(
                           value: selectedCategory,
                           isExpanded: true,
+                          dropdownColor: isDarkMode
+                              ? const Color(0xFF3D3D3D)
+                              : Colors.white,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
                           items: ExpenseCategory.values.map((
                             ExpenseCategory category,
                           ) {
@@ -1410,16 +1358,20 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                                 children: [
                                   Icon(
                                     provider.getCategoryIconByName(displayName),
-                                    color: provider.getCategoryColorByName(
-                                      displayName,
-                                    ),
+                                    color: isDarkMode
+                                        ? Colors.white70
+                                        : provider.getCategoryColorByName(
+                                            displayName,
+                                          ),
                                     size: 20,
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
                                     displayName,
                                     style: TextStyle(
-                                      color: isDarkMode ? Colors.white : null,
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black87,
                                     ),
                                   ),
                                 ],
@@ -1445,22 +1397,25 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
-                        color: isDarkMode ? Colors.white : null,
+                        color: isDarkMode ? Colors.white : Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: amountController,
                       keyboardType: TextInputType.number,
-                      style: TextStyle(color: isDarkMode ? Colors.white : null),
+                      inputFormatters: [CurrencyInputFormatter()],
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Enter budget amount',
                         hintStyle: TextStyle(
-                          color: isDarkMode ? Colors.white54 : null,
+                          color: isDarkMode ? Colors.white54 : Colors.grey[600],
                         ),
                         prefixText: 'Rp ',
                         prefixStyle: TextStyle(
-                          color: isDarkMode ? Colors.white : null,
+                          color: isDarkMode ? Colors.white : Colors.black87,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -1482,8 +1437,8 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                         ),
                         fillColor: isDarkMode
                             ? Colors.grey.withOpacity(0.1)
-                            : null,
-                        filled: isDarkMode,
+                            : Colors.grey.withOpacity(0.05),
+                        filled: true,
                       ),
                     ),
 
@@ -1515,9 +1470,11 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                               provider.getCategoryIconByName(
                                 categoryDisplayNames[selectedCategory]!,
                               ),
-                              color: provider.getCategoryColorByName(
-                                categoryDisplayNames[selectedCategory]!,
-                              ),
+                              color: isDarkMode
+                                  ? Colors.white70
+                                  : provider.getCategoryColorByName(
+                                      categoryDisplayNames[selectedCategory]!,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1535,7 +1492,7 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                                 Text(
                                   amountController.text.isEmpty
                                       ? 'Rp 0'
-                                      : 'Rp ${double.tryParse(amountController.text)?.toStringAsFixed(0) ?? '0'}',
+                                      : 'Rp ${_formatAmount(_parseAmount(amountController.text))}',
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? Colors.white70
@@ -1557,13 +1514,15 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     'Cancel',
-                    style: TextStyle(color: AppColors.greyColor),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+                    ),
                   ),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    final amount = double.tryParse(amountController.text);
-                    if (amount != null && amount > 0) {
+                    final amount = _parseAmount(amountController.text);
+                    if (amount > 0) {
                       final categoryDisplayName =
                           categoryDisplayNames[selectedCategory]!;
 
@@ -1633,18 +1592,23 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
     CashcardProvider provider,
   ) {
     final TextEditingController amountController = TextEditingController(
-      text: category.budgetAmount.toStringAsFixed(0),
+      text: _formatAmount(category.budgetAmount),
     );
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         return AlertDialog(
-          backgroundColor:
-              Colors.white, // Gunakan putih murni untuk edit dialog
-          title: const Text(
+          backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+          surfaceTintColor: Colors.transparent,
+          title: Text(
             'Edit Budget Category',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: isDarkMode ? Colors.white : Colors.black87,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1654,7 +1618,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.greyExtraLightColor,
+                  color: isDarkMode
+                      ? Colors.grey.withOpacity(0.15)
+                      : AppColors.greyExtraLightColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -1666,7 +1632,10 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                         color: category.color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(category.icon, color: category.color),
+                      child: Icon(
+                        category.icon,
+                        color: isDarkMode ? Colors.white70 : category.color,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -1675,12 +1644,17 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                         children: [
                           Text(
                             category.name,
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
                           ),
                           Text(
                             'Spent: Rp ${category.spentAmount.toStringAsFixed(0)}',
                             style: TextStyle(
-                              color: AppColors.greyColor,
+                              color: isDarkMode
+                                  ? Colors.white54
+                                  : AppColors.greyColor,
                               fontSize: 12,
                             ),
                           ),
@@ -1694,19 +1668,50 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               const SizedBox(height: 16),
 
               // New Budget Amount
-              const Text(
+              Text(
                 'New Budget Amount',
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [CurrencyInputFormatter()],
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Enter new budget amount',
+                  hintStyle: TextStyle(
+                    color: isDarkMode ? Colors.white38 : Colors.grey,
+                  ),
                   prefixText: 'Rp ',
+                  prefixStyle: TextStyle(
+                    color: isDarkMode ? Colors.white70 : Colors.black87,
+                  ),
+                  filled: true,
+                  fillColor: isDarkMode
+                      ? Colors.grey.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.05),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDarkMode
+                          ? Colors.grey.shade600
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDarkMode
+                          ? Colors.grey.shade600
+                          : Colors.grey.shade300,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -1724,13 +1729,15 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: AppColors.greyColor),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+                ),
               ),
             ),
             ElevatedButton(
               onPressed: () {
-                final amount = double.tryParse(amountController.text);
-                if (amount != null && amount > 0) {
+                final amount = _parseAmount(amountController.text);
+                if (amount > 0) {
                   provider.updateBudgetCategory(category, amount);
                   Navigator.of(context).pop();
 
@@ -1765,12 +1772,17 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         return AlertDialog(
-          backgroundColor:
-              Colors.white, // Gunakan putih murni untuk delete dialog
-          title: const Text(
+          backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+          surfaceTintColor: Colors.transparent,
+          title: Text(
             'Delete Budget Category',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: isDarkMode ? Colors.white : Colors.black87,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1780,13 +1792,19 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               Text(
                 'Are you sure you want to delete "${category.name}" budget category?',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'This action cannot be undone.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.greyColor, fontSize: 14),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white54 : AppColors.greyColor,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -1795,7 +1813,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: AppColors.greyColor),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+                ),
               ),
             ),
             ElevatedButton(
@@ -1826,12 +1846,17 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         return AlertDialog(
-          backgroundColor:
-              Colors.white, // Gunakan putih murni untuk reset dialog
-          title: const Text(
+          backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+          surfaceTintColor: Colors.transparent,
+          title: Text(
             'Reset Budget Month',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              color: isDarkMode ? Colors.white : Colors.black87,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1842,16 +1867,22 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
                 size: 48,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'This will reset all spending amounts to zero for all budget categories.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Budget amounts will remain unchanged.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.greyColor, fontSize: 14),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white54 : AppColors.greyColor,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -1860,7 +1891,9 @@ class _EnhancedBudgetManagementState extends State<EnhancedBudgetManagement>
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: AppColors.greyColor),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : AppColors.greyColor,
+                ),
               ),
             ),
             ElevatedButton(

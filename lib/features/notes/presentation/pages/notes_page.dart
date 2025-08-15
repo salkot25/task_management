@@ -719,6 +719,22 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                         ),
                       ),
                       IconButton(
+                        onPressed: () => _saveNote(
+                          context,
+                          isEdit ? note : null,
+                          titleController.text,
+                          _quillContentToJson(quillController.document),
+                          categoryController.text.isEmpty
+                              ? null
+                              : categoryController.text,
+                          isPinned,
+                        ),
+                        icon: Icon(
+                          isEdit ? Icons.update_rounded : Icons.save_rounded,
+                        ),
+                        tooltip: isEdit ? 'Perbarui Catatan' : 'Simpan Catatan',
+                      ),
+                      IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close_rounded),
                       ),
@@ -871,55 +887,6 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-
-                // Action Buttons
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.outline.withOpacity(0.1),
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: const Text('Batal'),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        flex: 2,
-                        child: ElevatedButton(
-                          onPressed: () => _saveNote(
-                            context,
-                            isEdit ? note : null,
-                            titleController.text,
-                            _quillContentToJson(quillController.document),
-                            categoryController.text.isEmpty
-                                ? null
-                                : categoryController.text,
-                            isPinned,
-                          ),
-                          style: AppComponents.primaryButtonStyle().copyWith(
-                            padding: const WidgetStatePropertyAll(
-                              EdgeInsets.symmetric(vertical: 16),
-                            ),
-                          ),
-                          child: Text(isEdit ? 'Perbarui' : 'Simpan'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           );
@@ -1049,7 +1016,7 @@ class _NotesPageState extends State<NotesPage> with TickerProviderStateMixin {
                         });
                       },
                       icon: const Icon(Icons.edit_outlined),
-                      tooltip: 'Edit Catatan',
+                      tooltip: 'Perbarui Catatan',
                     ),
                     IconButton(
                       onPressed: () {

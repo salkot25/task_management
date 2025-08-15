@@ -610,13 +610,6 @@ class _MonthlyTransactionDetailPageState
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    DateFormat('HH:mm').format(transaction.date),
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.greyColor,
-                    ),
-                  ),
                 ],
               ),
             ],

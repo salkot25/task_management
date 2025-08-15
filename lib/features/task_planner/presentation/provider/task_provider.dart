@@ -79,7 +79,11 @@ class TaskProvider with ChangeNotifier {
     String title,
     String description,
     DateTime dueDate,
-  ) async {
+    TimeOfDay? dueTime, {
+    RecurrenceType recurrenceType = RecurrenceType.none,
+    int recurrenceInterval = 1,
+    DateTime? recurrenceEndDate,
+  }) async {
     if (!isAuthenticated) {
       _error = 'Please sign in to add tasks';
       notifyListeners();
@@ -96,6 +100,10 @@ class TaskProvider with ChangeNotifier {
         title: title,
         description: description,
         dueDate: dueDate,
+        dueTime: dueTime,
+        recurrenceType: recurrenceType,
+        recurrenceInterval: recurrenceInterval,
+        recurrenceEndDate: recurrenceEndDate,
         createdAt: now,
         updatedAt: now,
       );
@@ -133,11 +141,89 @@ class TaskProvider with ChangeNotifier {
       );
 
       await taskRepository.updateTask(updatedTask);
+
+      // If this is a recurring task and it's being marked as completed,
+      // create the next instance
+      if (!taskToUpdate.isCompleted && taskToUpdate.isRecurring) {
+        await _createNextRecurringInstance(taskToUpdate);
+      }
+
       // The listener will update _tasks and notifyListeners()
     } catch (e) {
       developer.log(
         'Error toggling task status: $e',
         name: 'TaskProvider.toggleTaskStatus',
+        error: e,
+      );
+      _error = _formatError(e);
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Create the next instance of a recurring task
+  Future<void> _createNextRecurringInstance(Task completedTask) async {
+    try {
+      final nextInstance = completedTask.createNextInstance();
+      if (nextInstance != null) {
+        const uuid = Uuid();
+        final taskWithId = nextInstance.copyWith(id: uuid.v4());
+        await taskRepository.addTask(taskWithId);
+
+        developer.log(
+          'Created next recurring instance for task: ${completedTask.title}',
+          name: 'TaskProvider._createNextRecurringInstance',
+        );
+      }
+    } catch (e) {
+      developer.log(
+        'Error creating next recurring instance: $e',
+        name: 'TaskProvider._createNextRecurringInstance',
+        error: e,
+      );
+      // Don't rethrow here as we don't want to break the main toggle operation
+    }
+  }
+
+  /// Delete a recurring task and optionally all its future instances
+  Future<void> deleteRecurringTask(
+    String id, {
+    bool deleteAllInstances = false,
+  }) async {
+    if (!isAuthenticated) {
+      _error = 'Please sign in to delete tasks';
+      notifyListeners();
+      return;
+    }
+
+    try {
+      _error = null;
+
+      if (deleteAllInstances) {
+        final taskToDelete = _tasks.firstWhere((task) => task.id == id);
+        final parentId = taskToDelete.parentTaskId ?? id;
+
+        // Find all instances of this recurring task
+        final allInstances = _tasks
+            .where(
+              (task) => task.id == parentId || task.parentTaskId == parentId,
+            )
+            .toList();
+
+        // Delete all instances
+        for (final instance in allInstances) {
+          await taskRepository.deleteTask(instance.id);
+        }
+      } else {
+        // Delete only this instance
+        await taskRepository.deleteTask(id);
+      }
+
+      // The listener will update _tasks and notifyListeners()
+    } catch (e) {
+      developer.log(
+        'Error deleting recurring task: $e',
+        name: 'TaskProvider.deleteRecurringTask',
         error: e,
       );
       _error = _formatError(e);

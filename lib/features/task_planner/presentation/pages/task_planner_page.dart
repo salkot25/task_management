@@ -21,6 +21,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay? _selectedTime;
+  RecurrenceType _selectedRecurrence = RecurrenceType.none;
+  int _recurrenceInterval = 1;
+  DateTime? _recurrenceEndDate;
   late DateTime _focusedMonth;
   late AnimationController _blinkAnimationController;
   late Animation<double> _blinkAnimation;
@@ -78,22 +82,130 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     _progressAnimationController.forward();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _showRecurrenceDialog(
+    BuildContext context,
+    StateSetter setDialogState,
+  ) async {
+    await showDialog<void>(
       context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000), // Allow selecting past dates
-      lastDate: DateTime(2101),
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Pilih Pengulangan'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: RecurrenceType.values.map((type) {
+                return RadioListTile<RecurrenceType>(
+                  title: Row(
+                    children: [
+                      Icon(type.icon, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          type.displayName,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  value: type,
+                  groupValue: _selectedRecurrence,
+                  onChanged: (RecurrenceType? value) async {
+                    if (value != null) {
+                      if (value == RecurrenceType.customDays) {
+                        // Show interval selection dialog for custom days
+                        final interval = await _showCustomIntervalDialog(
+                          context,
+                        );
+                        if (interval != null) {
+                          setState(() {
+                            _selectedRecurrence = value;
+                            _recurrenceInterval = interval;
+                          });
+                          setDialogState(() {
+                            // Update dialog state as well
+                          });
+                        }
+                      } else {
+                        setState(() {
+                          _selectedRecurrence = value;
+                          _recurrenceInterval = 1; // Reset to default
+                        });
+                        setDialogState(() {
+                          // Update dialog state as well
+                        });
+                      }
+                      Navigator.of(context).pop();
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
-    if (picked != null && picked != _selectedDate && mounted) {
-      setState(() {
-        _selectedDate = picked;
-        _focusedMonth = DateTime(
-          picked.year,
-          picked.month,
-        ); // Update focused month when date is picked
-      });
-    }
+  }
+
+  Future<int?> _showCustomIntervalDialog(BuildContext context) async {
+    int selectedInterval = _recurrenceInterval;
+    final TextEditingController intervalController = TextEditingController(
+      text: selectedInterval.toString(),
+    );
+
+    return await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Pilih Interval Hari'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Berapa hari sekali tugas ini berulang?'),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: intervalController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Jumlah Hari',
+                  hintText: 'Contoh: 4 (untuk 4 hari sekali)',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  final parsed = int.tryParse(value);
+                  if (parsed != null && parsed >= 1 && parsed <= 365) {
+                    selectedInterval = parsed;
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Rentang: 1-365 hari',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final value = int.tryParse(intervalController.text);
+                if (value != null && value >= 1 && value <= 365) {
+                  Navigator.of(context).pop(value);
+                } else {
+                  // Show error or default to current value
+                  Navigator.of(context).pop(selectedInterval);
+                }
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _addTask(BuildContext dialogContext) {
@@ -102,9 +214,18 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         _titleController.text,
         _descriptionController.text,
         _selectedDate,
+        _selectedTime,
+        recurrenceType: _selectedRecurrence,
+        recurrenceInterval: _recurrenceInterval,
+        recurrenceEndDate: _recurrenceEndDate,
       );
       _titleController.clear();
       _descriptionController.clear();
+
+      // Reset recurrence settings
+      _selectedRecurrence = RecurrenceType.none;
+      _recurrenceInterval = 1;
+      _recurrenceEndDate = null;
 
       // Restart progress animation when task is added
       _restartProgressAnimation();
@@ -380,6 +501,179 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           ),
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.md),
+                      // Enhanced Time Picker
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? Colors.grey.withOpacity(0.1)
+                              : Colors.grey.withOpacity(0.05),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? Colors.grey.withOpacity(0.3)
+                                : Colors.grey.withOpacity(0.3),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.access_time_outlined,
+                              color: AppColors.primaryColor,
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(
+                            'Waktu (Opsional)',
+                            style: AppTypography.labelMedium.copyWith(
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            _selectedTime != null
+                                ? _selectedTime!.format(context)
+                                : 'Ketuk untuk mengatur waktu',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: _selectedTime != null
+                                  ? (isDarkMode ? Colors.white : Colors.black87)
+                                  : (isDarkMode
+                                        ? Colors.grey[500]
+                                        : Colors.grey[500]),
+                              fontWeight: _selectedTime != null
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_selectedTime != null)
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedTime = null;
+                                    });
+                                    setDialogState(() {
+                                      // Update dialog state as well
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: isDarkMode
+                                          ? Colors.grey.withOpacity(0.3)
+                                          : Colors.grey.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Icon(
+                                      Icons.clear,
+                                      color: isDarkMode
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.schedule_outlined,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                                size: 20,
+                              ),
+                            ],
+                          ),
+                          onTap: () async {
+                            final TimeOfDay? picked = await showTimePicker(
+                              context: context,
+                              initialTime: _selectedTime ?? TimeOfDay.now(),
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                _selectedTime = picked;
+                              });
+                              setDialogState(() {
+                                // Update dialog state as well
+                              });
+                            }
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      // Enhanced Recurrence Picker
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? Colors.grey.withOpacity(0.1)
+                              : Colors.grey.withOpacity(0.05),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? Colors.grey.withOpacity(0.3)
+                                : Colors.grey.withOpacity(0.3),
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              _selectedRecurrence.icon,
+                              color: AppColors.primaryColor,
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(
+                            'Pengulangan',
+                            style: AppTypography.labelMedium.copyWith(
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            _selectedRecurrence == RecurrenceType.customDays
+                                ? 'Setiap $_recurrenceInterval Hari'
+                                : _selectedRecurrence.displayName,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          trailing: Icon(
+                            Icons.keyboard_arrow_down_outlined,
+                            color: isDarkMode
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                            size: 20,
+                          ),
+                          onTap: () async {
+                            await _showRecurrenceDialog(
+                              context,
+                              setDialogState,
+                            );
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -462,10 +756,649 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     );
   }
 
+  Future<void> _showDeleteRecurringTaskDialog(Task task) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hapus Tugas Berulang'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tugas "${task.title}" adalah tugas berulang.'),
+              const SizedBox(height: 16),
+              const Text('Pilih opsi penghapusan:'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                Provider.of<TaskProvider>(
+                  context,
+                  listen: false,
+                ).deleteTask(task.id);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Hapus Hanya Ini'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Provider.of<TaskProvider>(
+                  context,
+                  listen: false,
+                ).deleteRecurringTask(task.id, deleteAllInstances: true);
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.errorColor,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Hapus Semua'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // Helper method to restart progress animation
   void _restartProgressAnimation() {
     _progressAnimationController.reset();
     _progressAnimationController.forward();
+  }
+
+  // Show success dialog for no overdue tasks
+  void _showNoOverdueTasksSuccessDialog() {
+    nav.NavigationHelper.safeShowDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+        return AlertDialog(
+          backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: isDarkMode ? 8 : 4,
+          titlePadding: const EdgeInsets.all(AppSpacing.lg),
+          contentPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.md,
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.successColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.check_circle_outline,
+                  color: AppColors.successColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tidak Ada Tugas Terlambat',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.successColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Semua tugas Anda up to date',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: AppSpacing.md),
+
+              // Minimalist Success Illustration
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.successColor.withOpacity(0.1),
+                      AppColors.primaryColor.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: AppColors.successColor.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.schedule_rounded,
+                      size: 35,
+                      color: AppColors.successColor,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              // Success Message
+              Text(
+                'Sempurna! 🎯',
+                style: AppTypography.headlineSmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              Text(
+                'Anda memiliki manajemen waktu yang baik! Tidak ada tugas yang terlambat dan semua berjalan sesuai jadwal.',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              // Action Suggestion
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.successColor.withOpacity(0.05),
+                      AppColors.primaryColor.withOpacity(0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.successColor.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.insights_rounded,
+                      color: AppColors.successColor,
+                      size: 24,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Tetap Konsisten',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.successColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Pertahankan disiplin waktu yang baik ini untuk produktivitas optimal!',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        height: 1.3,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.thumb_up_rounded, size: 18),
+              label: Text(
+                'Mantap!',
+                style: AppTypography.labelLarge.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.successColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Get overdue tasks count
+  int _getOverdueTasksCount(TaskProvider taskProvider) {
+    final today = DateTime.now();
+    return taskProvider.tasks.where((task) {
+      return task.dueDate.isBefore(today) && !task.isCompleted;
+    }).length;
+  }
+
+  // Show overdue tasks notification dialog
+  void _showOverdueTasksDialog(TaskProvider taskProvider) {
+    final today = DateTime.now();
+    final overdueTasks = taskProvider.tasks.where((task) {
+      return task.dueDate.isBefore(today) && !task.isCompleted;
+    }).toList();
+
+    if (overdueTasks.isEmpty) {
+      nav.NavigationHelper.safeShowDialog(
+        context: context,
+        builder: (BuildContext context) {
+          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+          return AlertDialog(
+            backgroundColor: isDarkMode
+                ? const Color(0xFF2D2D2D)
+                : Colors.white,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: isDarkMode ? 8 : 4,
+            titlePadding: const EdgeInsets.all(AppSpacing.lg),
+            contentPadding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.md,
+            ),
+            actionsPadding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.lg,
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.successColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.check_circle_outline,
+                    color: AppColors.successColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tidak Ada Tugas Terlambat',
+                        style: AppTypography.titleMedium.copyWith(
+                          color: AppColors.successColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        'Semua tugas Anda up to date',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.md),
+
+                // Minimalist Success Illustration
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.successColor.withOpacity(0.1),
+                        AppColors.primaryColor.withOpacity(0.1),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: AppColors.successColor.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.schedule_rounded,
+                        size: 35,
+                        color: AppColors.successColor,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Success Message
+                Text(
+                  'Sempurna! 🎯',
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.sm),
+
+                Text(
+                  'Anda memiliki manajemen waktu yang baik! Tidak ada tugas yang terlambat dan semua berjalan sesuai jadwal.',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Action Suggestion
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.successColor.withOpacity(0.05),
+                        AppColors.primaryColor.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.successColor.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.insights_rounded,
+                        color: AppColors.successColor,
+                        size: 24,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Tetap Konsisten',
+                        style: AppTypography.titleSmall.copyWith(
+                          color: AppColors.successColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Pertahankan disiplin waktu yang baik ini untuk produktivitas optimal!',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          height: 1.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              ElevatedButton.icon(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.thumb_up_rounded, size: 18),
+                label: Text(
+                  'Mantap!',
+                  style: AppTypography.labelLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.successColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    nav.NavigationHelper.safeShowDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return Consumer<TaskProvider>(
+              builder: (context, taskProvider, child) {
+                final isDarkMode =
+                    Theme.of(context).brightness == Brightness.dark;
+
+                // Re-calculate overdue tasks in case status changed
+                final currentOverdueTasks = taskProvider.tasks.where((task) {
+                  return task.dueDate.isBefore(today) && !task.isCompleted;
+                }).toList();
+
+                // Check if all overdue tasks are now completed
+                if (currentOverdueTasks.isEmpty) {
+                  // Auto-close current dialog and show success dialog
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                      _showNoOverdueTasksSuccessDialog();
+                    }
+                  });
+
+                  return const SizedBox.shrink(); // Return empty widget
+                }
+
+                return AlertDialog(
+                  backgroundColor: isDarkMode
+                      ? const Color(0xFF2D2D2D)
+                      : Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: isDarkMode ? 8 : 4,
+                  titlePadding: const EdgeInsets.all(AppSpacing.lg),
+                  contentPadding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    0,
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                  ),
+                  actionsPadding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    0,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                  ),
+                  title: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.warning_outlined,
+                          color: AppColors.errorColor,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tugas Terlambat',
+                              style: AppTypography.titleMedium.copyWith(
+                                color: AppColors.errorColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '${currentOverdueTasks.length} tugas memerlukan perhatian',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: SizedBox(
+                    width: double.maxFinite,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 400),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: currentOverdueTasks.length,
+                        itemBuilder: (context, index) {
+                          return _buildProfessionalTaskCardWithCallback(
+                            currentOverdueTasks[index],
+                            true,
+                            onStatusChanged: () {
+                              // Update dialog state when task status changes
+                              setDialogState(() {});
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: TextButton.styleFrom(
+                        foregroundColor: isDarkMode
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Tutup',
+                        style: AppTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        // Scroll to overdue tasks section
+                        _restartProgressAnimation();
+                      },
+                      icon: const Icon(Icons.schedule_rounded, size: 18),
+                      label: Text(
+                        'Lihat Semua',
+                        style: AppTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.errorColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   // Helper to get the number of days in a month
@@ -516,19 +1449,31 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
           return task.dueDate.isBefore(today) && !task.isCompleted;
         }).length;
 
-        // Modified logic: Only count incomplete tasks in progress
+        // Smart Progress Logic - Show Real Progress & Motivate Users
         final allTasks = taskProvider.tasks.length;
         final completedAllTasks = taskProvider.tasks
             .where((task) => task.isCompleted)
             .length;
-        final incompleteTasks = taskProvider.tasks
-            .where((task) => !task.isCompleted)
-            .length;
 
-        // Progress calculation: if all tasks completed, show 0/0 100%
-        final displayTotalTasks = incompleteTasks > 0 ? incompleteTasks : 0;
-        final displayCompletedTasks = 0; // Always 0 for incomplete tasks
-        final isAllCompleted = allTasks > 0 && completedAllTasks == allTasks;
+        // Display Strategy:
+        // 1. If no tasks at all: Show "Mulai dengan membuat tugas pertama"
+        // 2. If all tasks completed: Show "Semua Selesai! 🎉"
+        // 3. If has tasks: Show actual progress (completed/total)
+        final bool hasNoTasks = allTasks == 0;
+        final bool isAllCompleted =
+            allTasks > 0 && completedAllTasks == allTasks;
+        final bool hasActiveTasks = allTasks > 0 && !isAllCompleted;
+
+        // Progress values for display
+        final int displayCompleted = hasActiveTasks
+            ? completedAllTasks
+            : (isAllCompleted ? allTasks : 0);
+        final int displayTotal = hasActiveTasks
+            ? allTasks
+            : (isAllCompleted ? allTasks : 0);
+        final double progressValue = hasNoTasks
+            ? 0.0
+            : (allTasks > 0 ? completedAllTasks / allTasks : 0.0);
         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
         return Container(
@@ -580,7 +1525,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              isAllCompleted ? '0' : '$displayCompletedTasks',
+                              hasNoTasks ? '0' : '$displayCompleted',
                               style: AppTypography.headlineLarge.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
@@ -588,7 +1533,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                               ),
                             ),
                             Text(
-                              isAllCompleted ? ' / 0' : ' / $displayTotalTasks',
+                              hasNoTasks ? ' / 0' : ' / $displayTotal',
                               style: AppTypography.titleMedium.copyWith(
                                 color: Theme.of(
                                   context,
@@ -614,14 +1559,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             child: AnimatedBuilder(
                               animation: _progressAnimation,
                               builder: (context, child) {
-                                final targetProgress = isAllCompleted
-                                    ? 1.0
-                                    : (displayTotalTasks > 0
-                                          ? displayCompletedTasks /
-                                                displayTotalTasks
-                                          : 0.0);
                                 final animatedProgress =
-                                    targetProgress * _progressAnimation.value;
+                                    progressValue * _progressAnimation.value;
 
                                 return LinearProgressIndicator(
                                   value: animatedProgress,
@@ -629,8 +1568,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     isAllCompleted
                                         ? AppColors.successColor
-                                        : (displayTotalTasks > 0 &&
-                                                  displayCompletedTasks > 0
+                                        : (hasActiveTasks &&
+                                                  displayCompleted > 0
                                               ? AppColors.primaryColor
                                               : Theme.of(context)
                                                     .colorScheme
@@ -673,14 +1612,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           child: AnimatedBuilder(
                             animation: _progressAnimation,
                             builder: (context, child) {
-                              final targetProgress = isAllCompleted
-                                  ? 1.0
-                                  : (displayTotalTasks > 0
-                                        ? displayCompletedTasks /
-                                              displayTotalTasks
-                                        : 0.0);
                               final animatedProgress =
-                                  targetProgress * _progressAnimation.value;
+                                  progressValue * _progressAnimation.value;
 
                               return CircularProgressIndicator(
                                 value: animatedProgress,
@@ -689,8 +1622,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   isAllCompleted
                                       ? AppColors.successColor
-                                      : (displayTotalTasks > 0 &&
-                                                displayCompletedTasks > 0
+                                      : (hasActiveTasks && displayCompleted > 0
                                             ? AppColors.primaryColor
                                             : Theme.of(context)
                                                   .colorScheme
@@ -707,9 +1639,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             builder: (context, child) {
                               final targetPercentage = isAllCompleted
                                   ? 100
-                                  : (displayTotalTasks > 0
-                                        ? ((displayCompletedTasks /
-                                                      displayTotalTasks) *
+                                  : (displayTotal > 0
+                                        ? ((displayCompleted / displayTotal) *
                                                   100)
                                               .round()
                                         : 0);
@@ -1195,10 +2126,6 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               task.dueDate.day == selectedDate.day;
         }).toList();
 
-        final overdueTasks = taskProvider.tasks.where((task) {
-          return task.dueDate.isBefore(today) && !task.isCompleted;
-        }).toList();
-
         final upcomingTasks = taskProvider.tasks.where((task) {
           return task.dueDate.isAfter(today) &&
               task.dueDate.isBefore(today.add(const Duration(days: 7)));
@@ -1215,23 +2142,7 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
               ),
             ),
 
-            // Dynamic spacing based on content
-            SizedBox(
-              height: overdueTasks.isNotEmpty ? AppSpacing.lg : AppSpacing.md,
-            ),
-
-            // Priority Sections
-            if (overdueTasks.isNotEmpty) ...[
-              _buildTaskSection(
-                title: 'Tugas Terlambat',
-                subtitle: '${overdueTasks.length} tugas memerlukan perhatian',
-                icon: Icons.warning_outlined,
-                color: AppColors.errorColor,
-                tasks: overdueTasks,
-                showPriority: true,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
+            const SizedBox(height: AppSpacing.md),
 
             _buildTaskSection(
               title: _isSameDay(selectedDate, today)
@@ -1646,8 +2557,10 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
 
                 const SizedBox(height: AppSpacing.md),
 
-                // Date and Status Row
-                Row(
+                // Date and Time Row - Using Wrap to handle overflow
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
                   children: [
                     // Date with icon
                     Container(
@@ -1679,9 +2592,70 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                       ),
                     ),
 
+                    // Time with icon (if available)
+                    if (task.dueTime != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: priorityColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: priorityColor,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              task.dueTime!.format(context),
+                              style: AppTypography.labelMedium.copyWith(
+                                color: priorityColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Recurrence indicator (if recurring)
+                    if (task.isRecurring)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.infoColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              task.recurrenceType.icon,
+                              size: 14,
+                              color: AppColors.infoColor,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              task.getShortNameWithInterval(),
+                              style: AppTypography.labelMedium.copyWith(
+                                color: AppColors.infoColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                     // Status Badge
-                    if (isOverdue && !task.isCompleted) ...[
-                      const SizedBox(width: AppSpacing.sm),
+                    if (isOverdue && !task.isCompleted)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
@@ -1699,9 +2673,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             fontSize: 11,
                           ),
                         ),
-                      ),
-                    ] else if (isToday && !task.isCompleted) ...[
-                      const SizedBox(width: AppSpacing.sm),
+                      )
+                    else if (isToday && !task.isCompleted)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
@@ -1719,9 +2692,8 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                             fontSize: 11,
                           ),
                         ),
-                      ),
-                    ] else if (task.isCompleted) ...[
-                      const SizedBox(width: AppSpacing.sm),
+                      )
+                    else if (task.isCompleted)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
@@ -1740,7 +2712,6 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                           ),
                         ),
                       ),
-                    ],
                   ],
                 ),
               ],
@@ -1760,10 +2731,14 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
                   _showTaskDetailsDialog(task);
                   break;
                 case 'delete':
-                  Provider.of<TaskProvider>(
-                    context,
-                    listen: false,
-                  ).deleteTask(task.id);
+                  if (task.isRecurring) {
+                    _showDeleteRecurringTaskDialog(task);
+                  } else {
+                    Provider.of<TaskProvider>(
+                      context,
+                      listen: false,
+                    ).deleteTask(task.id);
+                  }
                   break;
               }
             },
@@ -1818,6 +2793,233 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
     );
   }
 
+  /// Professional Task Card with Callback for Dialog Updates
+  Widget _buildProfessionalTaskCardWithCallback(
+    Task task,
+    bool showPriority, {
+    VoidCallback? onStatusChanged,
+  }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isOverdue =
+        task.dueDate.isBefore(DateTime.now()) && !task.isCompleted;
+    final isToday = _isSameDay(task.dueDate, DateTime.now());
+
+    Color priorityColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    if (isOverdue) {
+      priorityColor = AppColors.errorColor;
+    } else if (isToday) {
+      priorityColor = AppColors.primaryColor;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: task.isCompleted
+            ? (isDarkMode
+                  ? Colors.grey.withOpacity(0.2)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.3))
+            : (isDarkMode ? const Color(0xFF2D2D2D) : Colors.white),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: task.isCompleted
+              ? Colors.transparent
+              : (isOverdue
+                    ? AppColors.errorColor.withOpacity(0.2)
+                    : (isDarkMode
+                          ? Colors.grey.withOpacity(0.2)
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.1))),
+          width: 1,
+        ),
+        boxShadow: task.isCompleted
+            ? []
+            : [
+                BoxShadow(
+                  color: isOverdue
+                      ? AppColors.errorColor.withOpacity(0.25)
+                      : (isDarkMode
+                            ? Colors.black.withOpacity(0.4)
+                            : Colors.black.withOpacity(0.1)),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                  spreadRadius: -2,
+                ),
+              ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Custom Checkbox with callback
+          GestureDetector(
+            onTap: () {
+              Provider.of<TaskProvider>(
+                context,
+                listen: false,
+              ).toggleTaskStatus(task.id);
+
+              // Call the callback to update dialog state
+              if (onStatusChanged != null) {
+                onStatusChanged();
+              }
+            },
+            child: Container(
+              width: 24,
+              height: 24,
+              margin: const EdgeInsets.only(top: 2),
+              decoration: BoxDecoration(
+                color: task.isCompleted
+                    ? AppColors.successColor
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: task.isCompleted
+                      ? AppColors.successColor
+                      : priorityColor.withOpacity(0.4),
+                  width: 2,
+                ),
+              ),
+              child: task.isCompleted
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: Colors.white,
+                    )
+                  : null,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+
+          // Task Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title with modern typography
+                Text(
+                  task.title,
+                  style: AppTypography.titleSmall.copyWith(
+                    color: task.isCompleted
+                        ? Theme.of(context).colorScheme.onSurfaceVariant
+                        : Theme.of(context).colorScheme.onSurface,
+                    decoration: task.isCompleted
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                    decorationColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+
+                if (task.description.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    task.description,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: task.isCompleted
+                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                      decoration: task.isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      decorationColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+
+                const SizedBox(height: AppSpacing.sm),
+
+                // Enhanced Date and Time Display
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: priorityColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: priorityColor.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.schedule_outlined,
+                            size: 14,
+                            color: priorityColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _indonesianDayFormat.format(task.dueDate),
+                            style: AppTypography.labelSmall.copyWith(
+                              color: priorityColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (task.dueTime != null) ...[
+                            const SizedBox(width: 4),
+                            Text(
+                              '•',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: priorityColor,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              task.dueTime!.format(context),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: priorityColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    if (showPriority && isOverdue)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'Terlambat',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.errorColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Helper method to check if two dates are the same day
   bool _isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
@@ -1838,26 +3040,66 @@ class _TaskPlannerPageState extends State<TaskPlannerPage>
         title: 'Task Planner',
         subtitle: 'Organize your daily workflow',
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: isDarkMode
-                  ? Colors.grey.withOpacity(0.2)
-                  : Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ActionButton(
-              icon: Icons.today_rounded,
-              onPressed: () {
-                setState(() {
-                  _selectedDate = DateTime.now();
-                  _focusedMonth = DateTime.now();
-                });
-              },
-              tooltip: 'Go to Today',
-            ),
+          // Notification button for overdue tasks
+          Consumer<TaskProvider>(
+            builder: (context, taskProvider, child) {
+              final overdueCount = _getOverdueTasksCount(taskProvider);
+
+              return Container(
+                margin: const EdgeInsets.only(right: AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? Colors.grey.withOpacity(0.2)
+                      : Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Stack(
+                  children: [
+                    ActionButton(
+                      icon: Icons.notifications_outlined,
+                      onPressed: () => _showOverdueTasksDialog(taskProvider),
+                      tooltip: overdueCount > 0
+                          ? 'Tugas Terlambat ($overdueCount)'
+                          : 'Notifikasi Tugas',
+                    ),
+                    if (overdueCount > 0)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.errorColor,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.surface,
+                              width: 1.5,
+                            ),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            overdueCount > 99 ? '99+' : overdueCount.toString(),
+                            style: AppTypography.labelSmall.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
           // Add Task Button
           ActionButton(

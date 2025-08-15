@@ -7,11 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:clarity/presentation/widgets/standard_app_bar.dart';
 import 'package:clarity/utils/design_system/design_system.dart';
 import 'package:clarity/core/sync/widgets/sync_status_widget.dart';
-import 'package:clarity/core/sync/services/auto_sync_service.dart';
-import 'package:clarity/core/sync/services/connectivity_service.dart';
 import 'package:clarity/core/theme/theme_provider.dart';
 import 'package:clarity/core/theme/widgets/theme_selector.dart';
-import 'package:clarity/features/settings/presentation/widgets/permission_status_widget.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -1076,89 +1073,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
         const SizedBox(height: 12.0),
 
-        // Auto Sync Toggle
-        Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 12.0,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.sync_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Auto Sync',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 4),
-                      Consumer2<AutoSyncService, ConnectivityService>(
-                        builder:
-                            (
-                              context,
-                              autoSyncService,
-                              connectivityService,
-                              child,
-                            ) {
-                              String subtitle;
-                              if (!connectivityService.isConnected) {
-                                subtitle = 'Offline - sync when connected';
-                              } else if (autoSyncService.isAutoSyncEnabled) {
-                                subtitle =
-                                    'Automatically sync data in background';
-                              } else {
-                                subtitle = 'Manual sync only';
-                              }
-
-                              return Text(
-                                subtitle,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(color: Colors.grey[700]),
-                              );
-                            },
-                      ),
-                    ],
-                  ),
-                ),
-                Consumer2<AutoSyncService, ConnectivityService>(
-                  builder:
-                      (context, autoSyncService, connectivityService, child) {
-                        return Switch(
-                          value: autoSyncService.isAutoSyncEnabled,
-                          onChanged: connectivityService.isConnected
-                              ? (value) {
-                                  // Update actual auto sync service
-                                  autoSyncService.toggleAutoSync();
-
-                                  _showSuccessSnackBar(
-                                    value
-                                        ? 'Auto sync enabled'
-                                        : 'Auto sync disabled',
-                                  );
-                                }
-                              : null,
-                          activeColor: Theme.of(context).colorScheme.primary,
-                        );
-                      },
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 12.0),
-
         // Sync Settings Card
         Card(
           elevation: 2,
@@ -1213,11 +1127,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-
-        const SizedBox(height: 12.0),
-
-        // Permission Status Widget
-        const PermissionStatusWidget(),
 
         const SizedBox(height: 12.0),
 

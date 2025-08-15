@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:clarity/features/cashcard/presentation/provider/cashcard_provider.dart';
 import 'package:clarity/features/cashcard/domain/entities/transaction.dart';
@@ -9,10 +10,38 @@ import 'package:clarity/utils/design_system/app_typography.dart';
 import 'package:clarity/utils/design_system/app_components.dart';
 import 'package:clarity/features/cashcard/presentation/widgets/financial_charts.dart';
 import 'package:clarity/features/cashcard/presentation/widgets/enhanced_budget_management.dart';
-import 'package:clarity/features/cashcard/presentation/widgets/budget_notification_widgets.dart';
 import 'package:clarity/features/cashcard/presentation/widgets/export_functions.dart';
 import 'package:clarity/features/cashcard/presentation/pages/monthly_transaction_detail_page.dart';
 import 'package:clarity/presentation/widgets/standard_app_bar.dart';
+
+// Currency Input Formatter for thousand separators
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Remove all non-digits
+    String digitsOnly = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue();
+    }
+
+    // Format with thousand separators
+    final formatter = NumberFormat('#,###', 'id_ID');
+    String formatted = formatter.format(int.parse(digitsOnly));
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class CashcardPage extends StatefulWidget {
   const CashcardPage({super.key});
@@ -74,14 +103,22 @@ class _CashcardPageState extends State<CashcardPage>
     super.dispose();
   }
 
+  // Helper function to parse formatted amount
+  double _parseAmount(String formattedAmount) {
+    if (formattedAmount.isEmpty) return 0.0;
+    // Remove all non-digits to get the actual number
+    String digitsOnly = formattedAmount.replaceAll(RegExp(r'[^\d]'), '');
+    return double.tryParse(digitsOnly) ?? 0.0;
+  }
+
   void _addTransaction(BuildContext context) {
     // Pass context to access provider
     if (_descriptionController.text.isNotEmpty &&
         _amountController.text.isNotEmpty) {
       final description = _descriptionController.text;
-      final amount = double.tryParse(_amountController.text);
+      final amount = _parseAmount(_amountController.text);
 
-      if (amount != null) {
+      if (amount > 0) {
         // Get selected type and category from provider
         final provider = Provider.of<CashcardProvider>(context, listen: false);
 
@@ -137,142 +174,147 @@ class _CashcardPageState extends State<CashcardPage>
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: isDarkMode
-              ? const Color(0xFF2D2D2D)
-              : Theme.of(context).colorScheme.surface,
-          surfaceTintColor: isDarkMode
-              ? Colors.transparent
-              : Theme.of(context).colorScheme.surfaceTint,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: isDarkMode ? 8 : 4,
-          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-          actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.add_card_rounded,
-                  color: AppColors.primaryColor,
-                  size: 24,
-                ),
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return AlertDialog(
+              backgroundColor: isDarkMode
+                  ? const Color(0xFF2D2D2D)
+                  : Theme.of(context).colorScheme.surface,
+              surfaceTintColor: isDarkMode
+                  ? Colors.transparent
+                  : Theme.of(context).colorScheme.surfaceTint,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Add New Transaction',
-                      style: AppTypography.headlineSmall.copyWith(
-                        color: isDarkMode ? Colors.white : Colors.black87,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Record your income or expense',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
-            child: SingleChildScrollView(
-              child: _buildEnhancedTransactionForm(),
-            ),
-          ),
-          actions: [
-            // Enhanced Cancel Button
-            TextButton(
-              onPressed: () {
-                // Clear the form controllers when canceling
-                _descriptionController.clear();
-                _amountController.clear();
-                // Reset selected date to today
-                setState(() {
-                  _selectedDate = DateTime.now();
-                });
-                // Reset provider selections
-                final provider = Provider.of<CashcardProvider>(
-                  context,
-                  listen: false,
-                );
-                provider.setSelectedTransactionType(TransactionType.expense);
-                provider.setSelectedExpenseCategory(ExpenseCategory.others);
-                // Close the dialog
-                Navigator.of(dialogContext).pop();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: isDarkMode
-                    ? Colors.grey[400]
-                    : Colors.grey[600],
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                'Cancel',
-                style: AppTypography.labelLarge.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Enhanced Add Button
-            ElevatedButton(
-              onPressed: () => _addTransaction(dialogContext),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              elevation: isDarkMode ? 8 : 4,
+              titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              title: Row(
                 children: [
-                  const Icon(Icons.add_rounded, size: 18),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Add Transaction',
-                    style: AppTypography.labelLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.add_card_rounded,
+                      color: AppColors.primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Add New Transaction',
+                          style: AppTypography.headlineSmall.copyWith(
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Record your income or expense',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: isDarkMode
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: SingleChildScrollView(
+                  child: _buildEnhancedTransactionForm(setDialogState),
+                ),
+              ),
+              actions: [
+                // Enhanced Cancel Button
+                TextButton(
+                  onPressed: () {
+                    // Clear the form controllers when canceling
+                    _descriptionController.clear();
+                    _amountController.clear();
+                    // Reset selected date to today (use main setState since we're closing dialog)
+                    setState(() {
+                      _selectedDate = DateTime.now();
+                    });
+                    // Reset provider selections
+                    final provider = Provider.of<CashcardProvider>(
+                      context,
+                      listen: false,
+                    );
+                    provider.setSelectedExpenseCategory(ExpenseCategory.others);
+                    // Close the dialog
+                    Navigator.of(dialogContext).pop();
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: isDarkMode
+                        ? Colors.grey[400]
+                        : Colors.grey[600],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: AppTypography.labelLarge.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Enhanced Add Button
+                ElevatedButton(
+                  onPressed: () => _addTransaction(dialogContext),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add_rounded, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Add Transaction',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 
   // Enhanced Transaction Form
-  Widget _buildEnhancedTransactionForm() {
+  Widget _buildEnhancedTransactionForm(StateSetter setDialogState) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Consumer<CashcardProvider>(
@@ -432,6 +474,7 @@ class _CashcardPageState extends State<CashcardPage>
             TextFormField(
               controller: _amountController,
               keyboardType: TextInputType.number,
+              inputFormatters: [CurrencyInputFormatter()],
               style: TextStyle(
                 color: isDarkMode ? Colors.white : Colors.black87,
               ),
@@ -499,7 +542,7 @@ class _CashcardPageState extends State<CashcardPage>
                     lastDate: DateTime(2101),
                   );
                   if (picked != null && picked != _selectedDate) {
-                    setState(() {
+                    setDialogState(() {
                       _selectedDate = picked;
                     });
                   }
@@ -1514,10 +1557,22 @@ class _CashcardPageState extends State<CashcardPage>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.orange,
+              color: isIncome
+                  ? AppColors.successColor.withOpacity(0.1)
+                  : AppColors.errorColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isIncome
+                    ? AppColors.successColor.withOpacity(0.3)
+                    : AppColors.errorColor.withOpacity(0.3),
+                width: 1,
+              ),
             ),
-            child: Icon(Icons.qr_code, color: Colors.white, size: 24),
+            child: Icon(
+              isIncome ? Icons.trending_up : Icons.trending_down,
+              color: isIncome ? AppColors.successColor : AppColors.errorColor,
+              size: 24,
+            ),
           ),
 
           const SizedBox(width: AppSpacing.md),
@@ -1547,7 +1602,7 @@ class _CashcardPageState extends State<CashcardPage>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${DateFormat('dd MMM yyyy HH:mm', 'id_ID').format(transaction.date)} WIB',
+                  '${DateFormat('dd MMM yyyy HH:mm', 'id_ID').format(transaction.date)}',
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.greyColor,
                   ),
@@ -1572,13 +1627,14 @@ class _CashcardPageState extends State<CashcardPage>
                 ),
               ),
               const SizedBox(height: 4),
-              if (!isIncome && transaction.category != null)
-                Text(
-                  transaction.getCategoryDisplayName(),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.greyColor,
-                  ),
+              Text(
+                transaction.type == TransactionType.income
+                    ? 'Income'
+                    : 'Expense',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.greyColor,
                 ),
+              ),
             ],
           ),
         ],
@@ -1647,18 +1703,53 @@ class _CashcardPageState extends State<CashcardPage>
               ],
             ),
           ),
-          // Refresh Button
-          ActionButton(
-            icon: Icons.refresh_rounded,
-            onPressed: () async {
-              final cashcardProvider = Provider.of<CashcardProvider>(
-                context,
-                listen: false,
+          // Budget Alert Notification Button
+          Consumer<CashcardProvider>(
+            builder: (context, provider, child) {
+              final overBudgetCount = provider.budgetCategories
+                  .where((category) => category.isOverBudget)
+                  .length;
+
+              return Stack(
+                children: [
+                  ActionButton(
+                    icon: Icons.notifications_outlined,
+                    onPressed: () {
+                      _showBudgetAlertsDialog(context, provider);
+                    },
+                    tooltip: 'Budget Alerts',
+                    color: overBudgetCount > 0
+                        ? AppColors.errorColor
+                        : AppColors.infoColor,
+                  ),
+                  if (overBudgetCount > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorColor,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          overBudgetCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               );
-              await cashcardProvider.refresh();
             },
-            tooltip: 'Refresh Data',
-            color: AppColors.infoColor,
           ),
           // Add Transaction Button
           ActionButton(
@@ -1717,6 +1808,664 @@ class _CashcardPageState extends State<CashcardPage>
     );
   }
 
+  // Budget Alerts Dialog with Professional Design
+  void _showBudgetAlertsDialog(
+    BuildContext context,
+    CashcardProvider provider,
+  ) {
+    final overBudgetCategories = provider.budgetCategories
+        .where((category) => category.isOverBudget)
+        .toList();
+    final nearLimitCategories = provider.budgetCategories
+        .where(
+          (category) =>
+              !category.isOverBudget && category.progressPercentage >= 0.8,
+        )
+        .toList();
+
+    // If no alerts, show success dialog
+    if (overBudgetCategories.isEmpty && nearLimitCategories.isEmpty) {
+      _showNoBudgetAlertsSuccessDialog();
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return Consumer<CashcardProvider>(
+              builder: (context, cashcardProvider, child) {
+                final isDarkMode =
+                    Theme.of(context).brightness == Brightness.dark;
+
+                // Re-calculate budget issues in case status changed
+                final currentOverBudgetCategories = cashcardProvider
+                    .budgetCategories
+                    .where((category) => category.isOverBudget)
+                    .toList();
+                final currentNearLimitCategories = cashcardProvider
+                    .budgetCategories
+                    .where(
+                      (category) =>
+                          !category.isOverBudget &&
+                          category.progressPercentage >= 0.8,
+                    )
+                    .toList();
+
+                // Check if all budget issues are now resolved
+                if (currentOverBudgetCategories.isEmpty &&
+                    currentNearLimitCategories.isEmpty) {
+                  // Auto-close current dialog and show success dialog
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                      _showNoBudgetAlertsSuccessDialog();
+                    }
+                  });
+
+                  return const SizedBox.shrink(); // Return empty widget
+                }
+
+                return AlertDialog(
+                  backgroundColor: isDarkMode
+                      ? const Color(0xFF2D2D2D)
+                      : Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: isDarkMode ? 8 : 4,
+                  titlePadding: const EdgeInsets.all(AppSpacing.lg),
+                  contentPadding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    0,
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                  ),
+                  actionsPadding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    0,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                  ),
+                  title: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.warning_outlined,
+                          color: AppColors.errorColor,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Budget Alert',
+                              style: AppTypography.titleMedium.copyWith(
+                                color: AppColors.errorColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '${currentOverBudgetCategories.length + currentNearLimitCategories.length} kategori perlu perhatian',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: AppSpacing.md),
+
+                        if (currentOverBudgetCategories.isNotEmpty) ...[
+                          // Over Budget Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.sm,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.errorColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppColors.errorColor.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: AppColors.errorColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Text(
+                                  'Over Budget (${currentOverBudgetCategories.length})',
+                                  style: AppTypography.titleSmall.copyWith(
+                                    color: AppColors.errorColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                        ],
+
+                        if (currentNearLimitCategories.isNotEmpty) ...[
+                          // Near Limit Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.sm,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.warningColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppColors.warningColor.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.warning_amber_outlined,
+                                  color: AppColors.warningColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Text(
+                                  'Near Limit (${currentNearLimitCategories.length})',
+                                  style: AppTypography.titleSmall.copyWith(
+                                    color: AppColors.warningColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                        ],
+
+                        // Scrollable Budget Category List
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                // Over Budget Categories
+                                ...currentOverBudgetCategories.map(
+                                  (category) =>
+                                      _buildProfessionalBudgetCardWithCallback(
+                                        category,
+                                        isOverBudget: true,
+                                        isDarkMode: isDarkMode,
+                                        setDialogState: setDialogState,
+                                      ),
+                                ),
+
+                                // Near Limit Categories
+                                ...currentNearLimitCategories.map(
+                                  (category) =>
+                                      _buildProfessionalBudgetCardWithCallback(
+                                        category,
+                                        isOverBudget: false,
+                                        isDarkMode: isDarkMode,
+                                        setDialogState: setDialogState,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      style: TextButton.styleFrom(
+                        foregroundColor: isDarkMode
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Tutup',
+                        style: AppTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        // Switch to budget tab
+                        _tabController.animateTo(2);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.tune_rounded, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Kelola Budget',
+                            style: AppTypography.labelLarge.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Show success dialog for no budget alerts (mimicking task planner design)
+  void _showNoBudgetAlertsSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+        return AlertDialog(
+          backgroundColor: isDarkMode ? const Color(0xFF2D2D2D) : Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: isDarkMode ? 8 : 4,
+          titlePadding: const EdgeInsets.all(AppSpacing.lg),
+          contentPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.md,
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.successColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.check_circle_outline,
+                  color: AppColors.successColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Budget Terkendali',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.successColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Semua kategori budget dalam batas',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: AppSpacing.md),
+
+              // Minimalist Success Illustration
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.successColor.withOpacity(0.1),
+                      AppColors.primaryColor.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.successColor.withOpacity(0.2),
+                          AppColors.primaryColor.withOpacity(0.2),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: AppColors.successColor,
+                      size: 32,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              // Success message
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.successColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.successColor.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Pengelolaan Keuangan Excellent! 💰',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.successColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Pertahankan disiplin budget yang baik ini untuk kesehatan finansial optimal!',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        height: 1.3,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.thumb_up_rounded, size: 18),
+              label: Text(
+                'Mantap!',
+                style: AppTypography.labelLarge.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.successColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Professional Budget Card with Callback (mimicking task design)
+  Widget _buildProfessionalBudgetCardWithCallback(
+    dynamic category, {
+    required bool isOverBudget,
+    required bool isDarkMode,
+    required StateSetter setDialogState,
+  }) {
+    final percentage = (category.progressPercentage * 100).clamp(0.0, 100.0);
+    final color = isOverBudget ? AppColors.errorColor : AppColors.warningColor;
+    final statusIcon = isOverBudget
+        ? Icons.error_outline
+        : Icons.warning_amber_outlined;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF3D3D3D) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : color.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with category info
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(statusIcon, color: color, size: 20),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      category.name,
+                      style: AppTypography.titleSmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isOverBudget ? 'Melebihi Budget' : 'Mendekati Batas',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${percentage.toStringAsFixed(0)}%',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Amount details
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Terpakai',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.greyColor,
+                    ),
+                  ),
+                  Text(
+                    'Rp ${_formatNumber(category.spentAmount)}',
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Budget',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.greyColor,
+                    ),
+                  ),
+                  Text(
+                    'Rp ${_formatNumber(category.budgetAmount)}',
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.sm),
+
+          // Progress bar
+          Container(
+            height: 8,
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? Colors.grey.withOpacity(0.3)
+                  : AppColors.greyLightColor.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: (percentage / 100).clamp(0.0, 1.0),
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+                minHeight: 8,
+              ),
+            ),
+          ),
+
+          if (isOverBudget) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.errorColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.errorColor.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.trending_up,
+                    color: AppColors.errorColor,
+                    size: 16,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    'Lebih Rp ${_formatNumber(category.spentAmount - category.budgetAmount)}',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.errorColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   // Tab Content Methods
   Widget _buildOverviewTab(
     CashcardProvider cashcardProvider,
@@ -1736,10 +2485,7 @@ class _CashcardPageState extends State<CashcardPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Budget Notification - Contextual alert (minimal spacing)
-              const BudgetNotificationWidget(),
               const SizedBox(height: AppSpacing.sm),
-
               // Financial Card - Primary hero element (generous spacing)
               _buildPremiumFinancialCard(
                 context,

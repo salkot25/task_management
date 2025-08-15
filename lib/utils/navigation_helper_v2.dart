@@ -47,10 +47,9 @@ class NavigationHelper {
 
   /// Safe dialog dismissal
   static void safePopDialog(BuildContext context, [Object? result]) {
-    if (_isNavigating || !context.mounted) return;
+    if (!context.mounted) return;
 
-    _isNavigating = true;
-
+    // Don't check _isNavigating for dialog dismissal to prevent getting stuck
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         if (context.mounted && Navigator.canPop(context)) {
@@ -59,7 +58,10 @@ class NavigationHelper {
       } catch (e) {
         debugPrint('SafePopDialog error: $e');
       } finally {
-        _isNavigating = false;
+        // Reset navigation state after dialog operations
+        if (_isNavigating) {
+          _isNavigating = false;
+        }
       }
     });
   }
